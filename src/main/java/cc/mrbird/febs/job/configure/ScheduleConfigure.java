@@ -14,7 +14,7 @@ import java.util.Properties;
  *
  * @author MrBird
  */
-@Configuration
+//@Configuration
 public class ScheduleConfigure {
 
     @Autowired

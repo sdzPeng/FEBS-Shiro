@@ -40,7 +40,6 @@ public class FebsMetricsEndpoint {
         } else {
             registry.getMeters().stream().map(this::getName).forEach(names::add);
         }
-
     }
 
     private String getName(Meter meter) {

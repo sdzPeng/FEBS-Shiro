@@ -517,3 +517,59 @@ INSERT INTO `t_user_role` VALUES (7, 79);
 INSERT INTO `t_user_role` VALUES (7, 80);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- Table structure for t_fix_value_meta
+-- ----------------------------
+DROP TABLE IF EXISTS `t_fixed_value_meta`;
+CREATE TABLE `t_fixed_value_meta`  (
+                                     `FIXED_VALUE_META_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '元数据ID',
+                                     `CODE` varchar(20)  CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编码',
+                                     `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
+                                     `PARENT_CODE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '父编码',
+                                     `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
+                                     PRIMARY KEY (`FIXED_VALUE_META_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for t_fixed_value_table
+-- ----------------------------
+DROP TABLE IF EXISTS `t_fixed_value_table`;
+CREATE TABLE `t_fixed_value_table`  (
+                                        `FIXED_VALUE_Table_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '部门ID',
+                                        `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
+                                        `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
+                                        PRIMARY KEY (`FIXED_VALUE_Table_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for t_fixed_value_version
+-- ----------------------------
+DROP TABLE IF EXISTS `t_fixed_value_version`;
+CREATE TABLE `t_fixed_value_version`  (
+                                          `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '部门ID',
+                                          `VERSION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
+                                          `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
+                                          `DIRECTION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '方向',
+                                          `FIXED_VALUE_TABLE_ID` bigint(20) NOT NULL COMMENT '定值表id',
+                                          PRIMARY KEY (`FIXED_VALUE_VERSION_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_fixed_value
+-- ----------------------------
+DROP TABLE IF EXISTS `t_fixed_value`;
+CREATE TABLE `t_fixed_value`  (
+                                  `FIXED_VALUE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '定值ID',
+                                  `SERIAL_NUMBER` bigint(100) COMMENT '序号',
+                                  `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '名称',
+                                  `UNIT` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '单位',
+                                  `BOUNDARY` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '范围',
+                                  `DEFAULT_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '缺省值',
+                                  `SUMMON_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '召唤值',
+                                  `NEW_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '新值',
+                                  `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
+                                  PRIMARY KEY (`FIXED_VALUE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值表' ROW_FORMAT = Dynamic;
+
