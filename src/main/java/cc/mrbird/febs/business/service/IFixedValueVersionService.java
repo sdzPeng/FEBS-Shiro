@@ -14,5 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @desc：
  */
 public interface IFixedValueVersionService extends IService<FixedValueVersion> {
-    IPage<?> fixedValueVersionList(String fixedValueTableId, QueryRequest request);
+    IPage<?> fixedValueVersionList(Long fixedValueTableId, QueryRequest request);
+
 }

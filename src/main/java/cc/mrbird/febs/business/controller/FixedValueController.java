@@ -4,7 +4,6 @@ import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.FixedValueMeta;
 import cc.mrbird.febs.business.listener.FixValueListener;
 import cc.mrbird.febs.business.listener.FixValueMetaListener;
-import cc.mrbird.febs.business.service.IFixedValueService;
 import cc.mrbird.febs.business.service.IFixedValueTableService;
 import cc.mrbird.febs.business.service.IFixedValueVersionService;
 import cc.mrbird.febs.common.annotation.ControllerEndpoint;
@@ -18,10 +17,7 @@ import com.alibaba.excel.read.metadata.ReadSheet;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Map;
@@ -40,9 +36,6 @@ import java.util.Map;
 public class FixedValueController extends BaseController {
 
     @Autowired
-    private IFixedValueService fixedValueService;
-
-    @Autowired
     private IFixedValueTableService fixedValueTableService;
 
     @Autowired
@@ -53,13 +46,12 @@ public class FixedValueController extends BaseController {
     // 定值入库 入库
     @PostMapping("import")
     @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
-//    @RequiresPermissions("fixed:value:import")
     public FebsResponse fixedValueImport(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new FebsException("导入数据为空");
         }
         String filename = file.getOriginalFilename();
-        if (!StringUtils.endsWith(filename, ".xlsx")||!StringUtils.endsWith(filename, ".xlsx")) {
+        if (!StringUtils.endsWith(filename, ".xlsx")&&!StringUtils.endsWith(filename, ".xls")) {
             throw new FebsException("只支持.xlsx、.xls类型文件导入");
         }
 
@@ -85,9 +77,21 @@ public class FixedValueController extends BaseController {
     }
 
     @GetMapping("/version/list")
-    public FebsResponse fixedValueTableList(String fixedValueTableId, QueryRequest request) {
-        Map<String, Object> dataTable = getDataTable(this.fixedValueVersionService.fixedValueVersionList(fixedValueTableId, request));
+    public FebsResponse fixedValueTableList(Long fixedValueVersionId, QueryRequest request) {
+        Map<String, Object> dataTable = getDataTable(this.fixedValueVersionService.fixedValueVersionList(fixedValueVersionId, request));
         return new FebsResponse().success().data(dataTable);
+    }
+
+    @DeleteMapping("/table")
+    public FebsResponse delValueTable(Long fixedValueTableId) {
+        this.fixedValueTableService.delValueTable(fixedValueTableId);
+        return new FebsResponse().success();
+    }
+
+    @DeleteMapping("/table/all")
+    public FebsResponse delAllValueTable() {
+        fixedValueTableService.delAllValueTable();
+        return new FebsResponse().success();
     }
 
 }

@@ -14,6 +14,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
@@ -54,6 +55,8 @@ public class FixValueListener extends AnalysisEventListener<FixedValue> {
 
     private final String FIXED_VALUE_REGEXP = "定值表[\\d]*";
 
+    private final String DIRECTION = "公里标方向(相减-1/相加1)";
+
     @Override
     public void invoke(FixedValue fixValue, AnalysisContext analysisContext) {
         ReadSheet readSheet = analysisContext.readSheetHolder().getReadSheet();
@@ -65,12 +68,18 @@ public class FixValueListener extends AnalysisEventListener<FixedValue> {
             extracted();
         }
         log.info("解析到一条数据:{}", JSON.toJSONString(fixValue));
-        list.add(fixValue);
-        // 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
-        if (list.size() >= BATCH_COUNT) {
-            saveData();
-            // 存储完成清理 list
-            list.clear();
+        if (StringUtils.equals(fixValue.getName(), DIRECTION)) {
+            final FixedValueVersion fixedValueVersion = this.fixedValueVersionService.getById(Long.parseLong(THREAD_LOCAL.get().get(FIXED_VALUE_VERSION).toString()));
+            fixedValueVersion.setDirection(fixValue.getSummonValue());
+            this.fixedValueVersionService.updateById(fixedValueVersion);
+        }else {
+            list.add(fixValue);
+            // 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
+            if (list.size() >= BATCH_COUNT) {
+                saveData();
+                // 存储完成清理 list
+                list.clear();
+            }
         }
     }
 
@@ -97,7 +106,7 @@ public class FixValueListener extends AnalysisEventListener<FixedValue> {
         FixedValueVersion fixedValueVersion = new FixedValueVersion();
         fixedValueVersion.setCreateTime(new Date());
         fixedValueVersion.setVersion("一");
-        fixedValueVersion.setFixValueTableId(temp.getFixValueTableId());
+        fixedValueVersion.setFixedValueTableId(temp.getFixedValueTableId());
         fixedValueVersionService.save(fixedValueVersion);
         THREAD_LOCAL.get().put(FIXED_VALUE_VERSION, fixedValueVersion.getFixValueVersionId());
     }

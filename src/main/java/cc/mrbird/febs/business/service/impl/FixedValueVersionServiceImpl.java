@@ -27,12 +27,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
 public class FixedValueVersionServiceImpl  extends ServiceImpl<FixedValueVersionMapper, FixedValueVersion> implements IFixedValueVersionService {
+
     @Override
-    public IPage<?> fixedValueVersionList(String fixedValueTableId, QueryRequest request) {
+    public IPage<?> fixedValueVersionList(Long fixedValueTableId, QueryRequest request) {
         QueryWrapper<FixedValueVersion> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("fixValueTableId", fixedValueTableId);
+        queryWrapper.eq("FIXED_VALUE_TABLE_ID", fixedValueTableId);
         Page<FixedValueVersion> page = new Page<>(request.getPageNum(), request.getPageSize());
         SortUtil.handlePageSort(request, page, "createTime", FebsConstant.ORDER_DESC, true);
         return this.page(page, queryWrapper);
     }
+
 }

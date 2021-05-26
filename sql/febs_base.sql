@@ -486,7 +486,7 @@ CREATE TABLE `t_user`  (
 -- ----------------------------
 -- Records of t_user
 -- ----------------------------
-INSERT INTO `t_user` VALUES (1, 'MrBird', 'cb62ad1497597283961545d608f80241', 1, 'mrbird@qq.com', '17788888888', '1', '2019-06-14 20:39:22', '2019-12-04 16:47:11', '2019-12-04 16:48:10', '0', '1', 'black', 'cnrhVkzwxjPwAaCfPbdc.png', '我是帅比作者。');
+INSERT INTO `t_user` VALUES (1, 'zhangyp', 'cb62ad1497597283961545d608f80241', 1, 'mrbird@qq.com', '17788888888', '1', '2019-06-14 20:39:22', '2019-12-04 16:47:11', '2019-12-04 16:48:10', '0', '1', 'black', 'cnrhVkzwxjPwAaCfPbdc.png', '我是帅比作者。');
 INSERT INTO `t_user` VALUES (2, 'Scott', '1d685729d113cfd03872f154939bee1c', 10, 'scott@gmail.com', '17722222222', '1', '2019-06-14 20:55:53', '2019-06-14 21:05:43', '2019-08-18 17:36:18', '0', '1', 'black', 'gaOngJwsRYRaVAuXXcmB.png', '我是scott。');
 INSERT INTO `t_user` VALUES (3, 'Reina', '1461afff857c02afbfb768aa3771503d', 4, 'Reina@hotmail.com', '17711111111', '0', '2019-06-14 21:07:38', '2019-06-14 21:09:06', '2019-06-14 21:08:26', '1', '1', 'black', '5997fedcc7bd4cffbd350b40d1b5b987.jpg', '由于公款私用，已被封禁。');
 INSERT INTO `t_user` VALUES (4, 'Micaela', '9f2daa2c7bed6870fcbb5b9a51d6300e', 10, 'Micaela@163.com', '17733333333', '1', '2019-06-14 21:10:13', '2019-06-14 21:11:26', '2019-06-14 21:10:37', '0', '0', 'white', '20180414165909.jpg', '我叫米克拉');
@@ -572,4 +572,46 @@ CREATE TABLE `t_fixed_value`  (
                                   `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
                                   PRIMARY KEY (`FIXED_VALUE_ID`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_device
+-- ----------------------------
+DROP TABLE IF EXISTS `t_device`;
+CREATE TABLE `t_device`  (
+                                  `DEVICE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备ID',
+                                  `FAILURE_TIME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障时间',
+                                  `SITE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '被控站名称',
+                                  `DEVICE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '设备名称',
+                                  `FAILURE_NUM` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障序号',
+                                  `CONTENT` varchar(4000) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障内容',
+                                  `FAILURE_PROFILE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '',
+                                  `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
+                                  PRIMARY KEY (`DEVICE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_device
+-- ----------------------------
+DROP TABLE IF EXISTS `t_device_data`;
+CREATE TABLE `t_device_data`  (
+                             `DEVICE_DATA_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备故障数据ID',
+                             `DEVICE_KEY` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'key',
+                             `DEVICE_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'value',
+                             `DEVICE_RESOURCE_ID` bigint(20) NOT NULL COMMENT '设备数据源id',
+                             PRIMARY KEY (`DEVICE_DATA_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备故障数据表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_device_resource
+-- ----------------------------
+DROP TABLE IF EXISTS `t_device_resource`;
+CREATE TABLE `t_device_resource`  (
+                                  `DEVICE_RESOURCE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备故障数据ID',
+                                  `DEVICE_RESOURCE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'key',
+                                  `DEVICE_ID` bigint(20) NOT NULL COMMENT '设备数据源id',
+                                  PRIMARY KEY (`DEVICE_RESOURCE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备数据源表' ROW_FORMAT = Dynamic;
 

@@ -37,5 +37,5 @@ public class FixedValueVersion implements Serializable {
     private String direction;
 
     @TableField("FIXED_VALUE_TABLE_ID")
-    private Long fixValueTableId;
+    private Long fixedValueTableId;
 }

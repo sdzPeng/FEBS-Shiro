@@ -15,4 +15,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IFixedValueTableService  extends IService<FixedValueTable> {
     IPage<?> fixedValueTableList(QueryRequest request);
+
+    void delValueTable(Long fixedValueTableId);
+
+    void delAllValueTable();
 }

@@ -22,7 +22,7 @@ import java.util.Date;
 public class FixedValueTable {
 
     @TableId(value = "FIXED_VALUE_TABLE_ID", type = IdType.AUTO)
-    private Long fixValueTableId;
+    private Long fixedValueTableId;
 
     @TableField(value = "NAME")
     private String name;
