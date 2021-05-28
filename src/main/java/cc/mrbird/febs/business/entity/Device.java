@@ -55,4 +55,7 @@ public class Device implements Serializable {
     @TableField(value = "FIXED_VALUE_VERSION_ID")
     private Long fixedValueVersionId;
 
+    @TableField(value = "RESOURCE_ID")
+    private Long resourceId;
+
 }

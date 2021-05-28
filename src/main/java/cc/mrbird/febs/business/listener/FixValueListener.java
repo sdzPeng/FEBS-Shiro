@@ -3,9 +3,11 @@ package cc.mrbird.febs.business.listener;
 import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.FixedValueTable;
 import cc.mrbird.febs.business.entity.FixedValueVersion;
+import cc.mrbird.febs.business.entity.Resource;
 import cc.mrbird.febs.business.service.IFixedValueService;
 import cc.mrbird.febs.business.service.IFixedValueTableService;
 import cc.mrbird.febs.business.service.IFixedValueVersionService;
+import cc.mrbird.febs.business.service.IResourceService;
 import cc.mrbird.febs.business.util.ApplicationContextUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
@@ -15,8 +17,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import static cc.mrbird.febs.business.listener.FixValueMetaListener.FIXED_VALUE_VERSION;
 import static cc.mrbird.febs.business.listener.FixValueMetaListener.THREAD_LOCAL;
@@ -30,7 +30,6 @@ import static cc.mrbird.febs.business.listener.FixValueMetaListener.THREAD_LOCAL
  * @desc：
  */
 @Slf4j
-@Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
 public class FixValueListener extends AnalysisEventListener<FixedValue> {
 
     private final IFixedValueService fixedValueService;
@@ -39,12 +38,25 @@ public class FixValueListener extends AnalysisEventListener<FixedValue> {
 
     final private IFixedValueVersionService fixedValueVersionService;
 
+    private final IResourceService resourceService;
+
     public static String SHEET_NAME = "sheetName";
+
+    private Resource resource;
 
     public FixValueListener() {
         this.fixedValueService = ApplicationContextUtil.getBean(IFixedValueService.class);
-        fixedValueTableService = ApplicationContextUtil.getBean(IFixedValueTableService.class);
-        fixedValueVersionService = ApplicationContextUtil.getBean(IFixedValueVersionService.class);
+        this.fixedValueTableService = ApplicationContextUtil.getBean(IFixedValueTableService.class);
+        this.fixedValueVersionService = ApplicationContextUtil.getBean(IFixedValueVersionService.class);
+        this.resourceService = ApplicationContextUtil.getBean(IResourceService.class);
+    }
+
+    public FixValueListener(Resource resource) {
+        this.fixedValueService = ApplicationContextUtil.getBean(IFixedValueService.class);
+        this.fixedValueTableService = ApplicationContextUtil.getBean(IFixedValueTableService.class);
+        this.fixedValueVersionService = ApplicationContextUtil.getBean(IFixedValueVersionService.class);
+        this.resourceService = ApplicationContextUtil.getBean(IResourceService.class);
+        this.resource = resource;
     }
 
     /**
@@ -104,7 +116,10 @@ public class FixValueListener extends AnalysisEventListener<FixedValue> {
             temp = fixValueTable;
         }
         FixedValueVersion fixedValueVersion = new FixedValueVersion();
+        resourceService.save(resource);
+        fixedValueVersion.setResourceId(resource.getResourceId());
         fixedValueVersion.setCreateTime(new Date());
+        // todo 版本控制
         fixedValueVersion.setVersion("一");
         fixedValueVersion.setFixedValueTableId(temp.getFixedValueTableId());
         fixedValueVersionService.save(fixedValueVersion);

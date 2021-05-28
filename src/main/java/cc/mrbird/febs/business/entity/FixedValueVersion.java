@@ -38,4 +38,7 @@ public class FixedValueVersion implements Serializable {
 
     @TableField("FIXED_VALUE_TABLE_ID")
     private Long fixedValueTableId;
+
+    @TableField("RESOURCE_ID")
+    private Long resourceId;
 }

@@ -47,3 +47,13 @@ spring:
         max-wait: 10000
     # 连接超时时间（毫秒）
     timeout: 5000
+
+  # mongodb的配置
+  data:
+    mongodb:
+      authentication-database: admin
+      username: userims
+      password: dist2019
+      host: localhost
+      database: ims
+      port: 27017

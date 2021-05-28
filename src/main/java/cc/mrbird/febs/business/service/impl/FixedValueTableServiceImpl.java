@@ -11,9 +11,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mongodb.client.gridfs.model.GridFSFile;
 import lombok.extern.slf4j.Slf4j;
 import org.ehcache.core.util.CollectionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsCriteria;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +46,8 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
     @Autowired private IDeviceService deviceService;
     @Autowired private IDeviceResourceService deviceResourceService;
     @Autowired private IDeviceDataService deviceDataService;
+    @Autowired private IResourceService resourceService;
+    @Autowired private GridFsTemplate gridFsTemplate;
     @Override
     public IPage<?> fixedValueTableList(QueryRequest request) {
         QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
@@ -55,6 +61,7 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
         QueryWrapper<FixedValueVersion> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("FIXED_VALUE_TABLE_ID", fixedValueTableId);
         List<FixedValueVersion> fixedValueVersions = fixedValueVersionService.list(queryWrapper);
+        List<Long> resourceIds = fixedValueVersions.stream().map(FixedValueVersion::getResourceId).distinct().collect(Collectors.toList());
         fixedValueVersions.forEach(o-> {
             QueryWrapper<FixedValue> fixedValueQueryWrapper = new QueryWrapper<>();
             fixedValueQueryWrapper.eq("FIXED_VALUE_VERSION_ID", o.getFixValueVersionId());
@@ -67,6 +74,12 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
         QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
         deviceQueryWrapper.in("FIXED_VALUE_VERSION_ID", fixedValueVersions.stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList()));
         List<Device> list = deviceService.list(deviceQueryWrapper);
+        // 删除关联文件
+        resourceIds.addAll(list.stream().map(Device::getResourceId).distinct().collect(Collectors.toList()));
+        List<String> uuids = resourceService.listByIds(resourceIds).stream().map(Resource::getUuid).collect(Collectors.toList());
+        Query query = Query.query(GridFsCriteria.where("metadata.uuid").in(uuids));
+        gridFsTemplate.delete(query);
+        log.info("文件[{}]删除完成！", uuids.toString());
         QueryWrapper<DeviceResource> deviceResourceQueryWrapper = new QueryWrapper<>();
         List<Long> deviceIds = list.stream().map(Device::getDeviceId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(deviceIds)) {
