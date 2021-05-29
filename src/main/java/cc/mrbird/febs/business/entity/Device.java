@@ -52,10 +52,7 @@ public class Device implements Serializable {
     @TableField(value = "FAILURE_PROFILE")
     private String failureProfile;
 
-    @TableField(value = "FIXED_VALUE_VERSION_ID")
-    private Long fixedValueVersionId;
-
-    @TableField(value = "RESOURCE_ID")
-    private Long resourceId;
+    @TableField(value = "DEVICE_TABLE_ID")
+    private Long deviceTableId;
 
 }

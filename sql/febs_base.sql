@@ -518,117 +518,129 @@ INSERT INTO `t_user_role` VALUES (7, 80);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
-    -- ----------------------------
-    -- Table structure for t_fix_value_meta
-    -- ----------------------------
-    DROP TABLE IF EXISTS `t_fixed_value_meta`;
-    CREATE TABLE `t_fixed_value_meta`  (
-                                         `FIXED_VALUE_META_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '元数据ID',
-                                         `CODE` varchar(20)  CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编码',
-                                         `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
-                                         `PARENT_CODE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '父编码',
-                                         `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
-                                         PRIMARY KEY (`FIXED_VALUE_META_ID`) USING BTREE
-    ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
+-- ----------------------------
+-- Table structure for t_fix_value_meta
+-- ----------------------------
+DROP TABLE IF EXISTS `t_fixed_value_meta`;
+CREATE TABLE `t_fixed_value_meta`  (
+                                     `FIXED_VALUE_META_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '元数据ID',
+                                     `CODE` varchar(20)  CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编码',
+                                     `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
+                                     `PARENT_CODE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '父编码',
+                                     `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
+                                     PRIMARY KEY (`FIXED_VALUE_META_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
 
-    -- ----------------------------
-    -- Table structure for t_fixed_value_table
-    -- ----------------------------
-    DROP TABLE IF EXISTS `t_fixed_value_table`;
-    CREATE TABLE `t_fixed_value_table`  (
-                                            `FIXED_VALUE_Table_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '部门ID',
-                                            `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
-                                            `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
-                                            PRIMARY KEY (`FIXED_VALUE_Table_ID`) USING BTREE
-    ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
+-- ----------------------------
+-- Table structure for t_fixed_value_table
+-- ----------------------------
+DROP TABLE IF EXISTS `t_fixed_value_table`;
+CREATE TABLE `t_fixed_value_table`  (
+                                        `FIXED_VALUE_Table_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '部门ID',
+                                        `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
+                                        `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
+                                        PRIMARY KEY (`FIXED_VALUE_Table_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
 
-    -- ----------------------------
-    -- Table structure for t_fixed_value_version
-    -- ----------------------------
-    DROP TABLE IF EXISTS `t_fixed_value_version`;
-    CREATE TABLE `t_fixed_value_version`  (
-                                              `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '部门ID',
-                                              `VERSION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
-                                              `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
-                                              `DIRECTION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '方向',
-                                              `RESOURCE_ID` bigint(20) NOT NULL COMMENT '资源id',
-                                              `FIXED_VALUE_TABLE_ID` bigint(20) NOT NULL COMMENT '定值表id',
-                                              PRIMARY KEY (`FIXED_VALUE_VERSION_ID`) USING BTREE
-    ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
-
-
-    -- ----------------------------
-    -- Table structure for t_fixed_value
-    -- ----------------------------
-    DROP TABLE IF EXISTS `t_fixed_value`;
-    CREATE TABLE `t_fixed_value`  (
-                                      `FIXED_VALUE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '定值ID',
-                                      `SERIAL_NUMBER` bigint(100) COMMENT '序号',
-                                      `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '名称',
-                                      `UNIT` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '单位',
-                                      `BOUNDARY` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '范围',
-                                      `DEFAULT_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '缺省值',
-                                      `SUMMON_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '召唤值',
-                                      `NEW_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '新值',
-                                      `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
-                                      PRIMARY KEY (`FIXED_VALUE_ID`) USING BTREE
-    ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值表' ROW_FORMAT = Dynamic;
+-- ----------------------------
+-- Table structure for t_fixed_value_version
+-- ----------------------------
+DROP TABLE IF EXISTS `t_fixed_value_version`;
+CREATE TABLE `t_fixed_value_version`  (
+                                          `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '部门ID',
+                                          `VERSION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
+                                          `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
+                                          `DIRECTION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '方向',
+                                          `RESOURCE_ID` bigint(20) NOT NULL COMMENT '资源id',
+                                          `FIXED_VALUE_TABLE_ID` bigint(20) NOT NULL COMMENT '定值表id',
+                                          PRIMARY KEY (`FIXED_VALUE_VERSION_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
 
 
-    -- ----------------------------
+-- ----------------------------
+-- Table structure for t_fixed_value
+-- ----------------------------
+DROP TABLE IF EXISTS `t_fixed_value`;
+CREATE TABLE `t_fixed_value`  (
+                                  `FIXED_VALUE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '定值ID',
+                                  `SERIAL_NUMBER` bigint(100) COMMENT '序号',
+                                  `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '名称',
+                                  `UNIT` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '单位',
+                                  `BOUNDARY` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '范围',
+                                  `DEFAULT_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '缺省值',
+                                  `SUMMON_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '召唤值',
+                                  `NEW_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '新值',
+                                  `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
+                                  PRIMARY KEY (`FIXED_VALUE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_device
+-- ----------------------------
+DROP TABLE IF EXISTS `t_device`;
+CREATE TABLE `t_device`  (
+                                  `DEVICE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备ID',
+                                  `FAILURE_TIME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障时间',
+                                  `SITE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '被控站名称',
+                                  `DEVICE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '设备名称',
+                                  `FAILURE_NUM` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障序号',
+                                  `CONTENT` varchar(4000) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障内容',
+                                  `FAILURE_PROFILE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '',
+                                  `DEVICE_TABLE_ID` bigint(20) NOT NULL COMMENT '设备表id',
+                                  PRIMARY KEY (`DEVICE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_device
+-- ----------------------------
+DROP TABLE IF EXISTS `t_device_data`;
+CREATE TABLE `t_device_data`  (
+                             `DEVICE_DATA_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备故障数据ID',
+                             `DEVICE_KEY` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'key',
+                             `DEVICE_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'value',
+                             `DEVICE_RESOURCE_ID` bigint(20) NOT NULL COMMENT '设备数据源id',
+                             PRIMARY KEY (`DEVICE_DATA_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备故障数据表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_device_resource
+-- ----------------------------
+DROP TABLE IF EXISTS `t_device_resource`;
+CREATE TABLE `t_device_resource`  (
+                                  `DEVICE_RESOURCE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备故障数据ID',
+                                  `DEVICE_RESOURCE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'key',
+                                  `DEVICE_ID` bigint(20) NOT NULL COMMENT '设备数据源id',
+                                  PRIMARY KEY (`DEVICE_RESOURCE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备数据源表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_resource
+-- ----------------------------
+DROP TABLE IF EXISTS `t_resource`;
+CREATE TABLE `t_resource`  (
+                               `RESOURCE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
+                               `FILE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '文件名称',
+                               `FILE_LENGTH` bigint(20) NOT NULL COMMENT '文件长度',
+                               `CONTENT_TYPE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '文件类型',
+                               `UUID` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '资源uuid',
+                               `SUFFIX` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '后缀',
+                               PRIMARY KEY (`RESOURCE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '数据源表' ROW_FORMAT = Dynamic;
+
+   -- ----------------------------
     -- Table structure for t_device
     -- ----------------------------
-    DROP TABLE IF EXISTS `t_device`;
-    CREATE TABLE `t_device`  (
-                                      `DEVICE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备ID',
-                                      `FAILURE_TIME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障时间',
-                                      `SITE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '被控站名称',
-                                      `DEVICE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '设备名称',
-                                      `FAILURE_NUM` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障序号',
-                                      `CONTENT` varchar(4000) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '故障内容',
-                                      `FAILURE_PROFILE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '',
-                                      `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
-                                      `RESOURCE_ID` bigint(20) NOT NULL COMMENT '资源id',
-                                      PRIMARY KEY (`DEVICE_ID`) USING BTREE
-    ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备表' ROW_FORMAT = Dynamic;
-
-
-    -- ----------------------------
-    -- Table structure for t_device
-    -- ----------------------------
-    DROP TABLE IF EXISTS `t_device_data`;
-    CREATE TABLE `t_device_data`  (
-                                 `DEVICE_DATA_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备故障数据ID',
-                                 `DEVICE_KEY` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'key',
-                                 `DEVICE_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'value',
-                                 `DEVICE_RESOURCE_ID` bigint(20) NOT NULL COMMENT '设备数据源id',
-                                 PRIMARY KEY (`DEVICE_DATA_ID`) USING BTREE
-    ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备故障数据表' ROW_FORMAT = Dynamic;
-
-
-    -- ----------------------------
-    -- Table structure for t_device_resource
-    -- ----------------------------
-    DROP TABLE IF EXISTS `t_device_resource`;
-    CREATE TABLE `t_device_resource`  (
-                                      `DEVICE_RESOURCE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备故障数据ID',
-                                      `DEVICE_RESOURCE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'key',
-                                      `DEVICE_ID` bigint(20) NOT NULL COMMENT '设备数据源id',
-                                      PRIMARY KEY (`DEVICE_RESOURCE_ID`) USING BTREE
-    ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备数据源表' ROW_FORMAT = Dynamic;
-
-
-    -- ----------------------------
-    -- Table structure for t_resource
-    -- ----------------------------
-    DROP TABLE IF EXISTS `t_resource`;
-    CREATE TABLE `t_resource`  (
-                                   `RESOURCE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
-                                   `FILE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '文件名称',
-                                   `FILE_LENGTH` bigint(20) NOT NULL COMMENT '文件长度',
-                                   `CONTENT_TYPE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '文件类型',
-                                   `UUID` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '资源uuid',
-                                   `SUFFIX` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '后缀',
-                                   PRIMARY KEY (`RESOURCE_ID`) USING BTREE
-    ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '数据源表' ROW_FORMAT = Dynamic;
+DROP TABLE IF EXISTS `t_device_table`;
+CREATE TABLE `t_device_table`  (
+                             `DEVICE_TABLE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备ID',
+                             `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '表名称',
+                             `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
+                             `RESOURCE_ID` bigint(20) NOT NULL COMMENT '资源id',
+                             `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
+                             PRIMARY KEY (`DEVICE_TABLE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备表' ROW_FORMAT = Dynamic;
 

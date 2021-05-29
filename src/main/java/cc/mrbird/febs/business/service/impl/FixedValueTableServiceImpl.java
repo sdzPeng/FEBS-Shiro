@@ -43,6 +43,7 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
     @Autowired private IFixedValueMetaService fixedValueMetaService;
     @Autowired private IFixedValueService fixedValueService;
     @Autowired private IFixedValueTableService fixedValueTableService;
+    @Autowired private IDeviceTableService deviceTableService;
     @Autowired private IDeviceService deviceService;
     @Autowired private IDeviceResourceService deviceResourceService;
     @Autowired private IDeviceDataService deviceDataService;
@@ -71,25 +72,32 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
             fixedValueMetaService.remove(tableMetaQueryWrapper);
         });
         // 删除关联的设备故障数据
-        QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
-        deviceQueryWrapper.in("FIXED_VALUE_VERSION_ID", fixedValueVersions.stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList()));
-        List<Device> list = deviceService.list(deviceQueryWrapper);
+        QueryWrapper<DeviceTable> deviceTableQueryWrapper = new QueryWrapper<>();
+        deviceTableQueryWrapper.in("FIXED_VALUE_VERSION_ID", fixedValueVersions.stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList()));
+        List<DeviceTable> deviceTalbeList = deviceTableService.list(deviceTableQueryWrapper);
         // 删除关联文件
-        resourceIds.addAll(list.stream().map(Device::getResourceId).distinct().collect(Collectors.toList()));
+        resourceIds.addAll(deviceTalbeList.stream().map(DeviceTable::getResourceId).distinct().collect(Collectors.toList()));
         List<String> uuids = resourceService.listByIds(resourceIds).stream().map(Resource::getUuid).collect(Collectors.toList());
         Query query = Query.query(GridFsCriteria.where("metadata.uuid").in(uuids));
         gridFsTemplate.delete(query);
         log.info("文件[{}]删除完成！", uuids.toString());
         QueryWrapper<DeviceResource> deviceResourceQueryWrapper = new QueryWrapper<>();
+        List<Long> deviceTableIds = deviceTalbeList.stream().map(DeviceTable::getDeviceTableId).collect(Collectors.toList());
+        QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
+        deviceQueryWrapper.in("DEVICE_TABLE_ID", deviceTableIds);
+        List<Device> list = deviceService.list(deviceQueryWrapper);
         List<Long> deviceIds = list.stream().map(Device::getDeviceId).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(deviceIds)) {
+        if (!CollectionUtils.isEmpty(deviceTableIds)) {
             deviceResourceQueryWrapper.in("DEVICE_ID",deviceIds);
             List<Long> deviceResourceIds = deviceResourceService.list(deviceResourceQueryWrapper).stream().map(DeviceResource::getDeviceResourceId).collect(Collectors.toList());
-            QueryWrapper<DeviceData> deviceDataQueryWrapper = new QueryWrapper<>();
-            deviceDataQueryWrapper.in("DEVICE_RESOURCE_ID", deviceResourceIds);
-            deviceDataService.remove(deviceDataQueryWrapper);
+            if (!CollectionUtils.isEmpty(deviceResourceIds)) {
+                QueryWrapper<DeviceData> deviceDataQueryWrapper = new QueryWrapper<>();
+                deviceDataQueryWrapper.in("DEVICE_RESOURCE_ID", deviceResourceIds);
+                deviceDataService.remove(deviceDataQueryWrapper);
+            }
             deviceResourceService.remove(deviceResourceQueryWrapper);
             deviceService.remove(deviceQueryWrapper);
+            deviceTableService.remove(deviceTableQueryWrapper);
         }
 
         fixedValueVersionService.remove(queryWrapper);

@@ -72,7 +72,7 @@ public class DeviceFailureController {
         // 读取定值
         ReadSheet readSheet = EasyExcel.readSheet().build();
         ExcelReader fixedValueReader = EasyExcel.read(file.getInputStream(), DeviceDto.class,
-                new DeviceListener(fixedValueVersionId, resource))
+                new DeviceListener(fixedValueVersionId, resource, file.getOriginalFilename()))
                 .headRowNumber(3)
                 .build();
         fixedValueReader.read(readSheet);

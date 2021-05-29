@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
+import static cc.mrbird.febs.business.service.impl.FixedValueServiceImpl.THREAD_LOCAL;
+
 /**
  * @company: 上海数慧系统技术有限公司
  * @department: 数据中心
@@ -27,8 +29,6 @@ public class FixValueMetaListener extends AnalysisEventListener<FixedValueMeta> 
 
     public static String FIXED_VALUE_VERSION = "fixedValueVersion";
 
-    public static ThreadLocal<Map<String, Object>> THREAD_LOCAL = new ThreadLocal<>();
-
     public FixValueMetaListener() {
         // 这里是demo，所以随便new一个。实际使用如果到了spring,请使用下面的有参构造函数
         fixedValueMetaService = ApplicationContextUtil.getBean(IFixedValueMetaService.class);
@@ -37,19 +37,12 @@ public class FixValueMetaListener extends AnalysisEventListener<FixedValueMeta> 
     /**
      * 每隔5条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
-    private static final int BATCH_COUNT = 5;
     List<FixedValueMeta> list = new ArrayList<>();
 
     @Override
     public void invoke(FixedValueMeta fixValue, AnalysisContext analysisContext) {
         log.info("解析到一条数据:{}", JSON.toJSONString(fixValue));
         list.add(fixValue);
-        // 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
-        if (list.size() >= BATCH_COUNT) {
-            saveData();
-            // 存储完成清理 list
-            list.clear();
-        }
     }
 
     @Override
@@ -64,10 +57,11 @@ public class FixValueMetaListener extends AnalysisEventListener<FixedValueMeta> 
      * 加上存储数据库
      */
     private void saveData() {
-        list.forEach(o->o.setFixedValueVersionId(Long.parseLong(THREAD_LOCAL.get().get(FIXED_VALUE_VERSION).toString())));
+        list.forEach(o->o.setFixedValueVersionId(THREAD_LOCAL.get()));
         log.info("{}条数据，开始存储数据库！", list.size());
         fixedValueMetaService.saveBatch(list);
         System.out.println(list);
         log.info("存储数据库成功！");
+        list.clear();
     }
 }
