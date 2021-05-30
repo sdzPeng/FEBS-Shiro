@@ -1,5 +1,6 @@
 package cc.mrbird.febs.business.service.impl;
 
+import cc.mrbird.febs.business.dto.FixedValueTableDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.mapper.FixedValueTableMapper;
 import cc.mrbird.febs.business.service.*;
@@ -14,6 +15,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import lombok.extern.slf4j.Slf4j;
 import org.ehcache.core.util.CollectionUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsCriteria;
@@ -58,9 +60,36 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
     }
 
     @Override
+    public List<FixedValueTableDto> fixedValueTableList() {
+        QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("CREATE_TIME");
+
+        return fixedValueTableService.list(queryWrapper).stream().map(o-> {
+            FixedValueTableDto fixedValueTableDto = new FixedValueTableDto();
+            BeanUtils.copyProperties(o, fixedValueTableDto);
+            QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
+            fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", o.getFixedValueTableId());
+            List<Long> fixValueVersions = fixedValueVersionService.list(fixedValueVersionQueryWrapper).stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList());
+            fixedValueTableDto.setFixedValueVersionId(fixValueVersions);
+            return fixedValueTableDto;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
     public void delValueTable(Long fixedValueTableId) {
         QueryWrapper<FixedValueVersion> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("FIXED_VALUE_TABLE_ID", fixedValueTableId);
+        List<FixedValueVersion> fixedValueVersions = fixedValueVersionService.list(queryWrapper);
+        delFixedValueVersion(fixedValueVersions.stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList()));
+        QueryWrapper<FixedValueTable> tableQueryWrapper = new QueryWrapper<>();
+        tableQueryWrapper.eq("FIXED_VALUE_TABLE_ID", fixedValueTableId);
+        fixedValueTableService.remove(tableQueryWrapper);
+    }
+
+    @Override
+    public void delFixedValueVersion(List<Long> fixValueVersionId) {
+        QueryWrapper<FixedValueVersion> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("FIXED_VALUE_VERSION_ID", fixValueVersionId);
         List<FixedValueVersion> fixedValueVersions = fixedValueVersionService.list(queryWrapper);
         List<Long> resourceIds = fixedValueVersions.stream().map(FixedValueVersion::getResourceId).distinct().collect(Collectors.toList());
         fixedValueVersions.forEach(o-> {
@@ -71,6 +100,7 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
             tableMetaQueryWrapper.eq("FIXED_VALUE_VERSION_ID", o.getFixValueVersionId());
             fixedValueMetaService.remove(tableMetaQueryWrapper);
         });
+        if (CollectionUtils.isEmpty(fixedValueVersions)) return;
         // 删除关联的设备故障数据
         QueryWrapper<DeviceTable> deviceTableQueryWrapper = new QueryWrapper<>();
         deviceTableQueryWrapper.in("FIXED_VALUE_VERSION_ID", fixedValueVersions.stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList()));
@@ -83,27 +113,25 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
         log.info("文件[{}]删除完成！", uuids.toString());
         QueryWrapper<DeviceResource> deviceResourceQueryWrapper = new QueryWrapper<>();
         List<Long> deviceTableIds = deviceTalbeList.stream().map(DeviceTable::getDeviceTableId).collect(Collectors.toList());
-        QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
-        deviceQueryWrapper.in("DEVICE_TABLE_ID", deviceTableIds);
-        List<Device> list = deviceService.list(deviceQueryWrapper);
-        List<Long> deviceIds = list.stream().map(Device::getDeviceId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(deviceTableIds)) {
-            deviceResourceQueryWrapper.in("DEVICE_ID",deviceIds);
-            List<Long> deviceResourceIds = deviceResourceService.list(deviceResourceQueryWrapper).stream().map(DeviceResource::getDeviceResourceId).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(deviceResourceIds)) {
-                QueryWrapper<DeviceData> deviceDataQueryWrapper = new QueryWrapper<>();
-                deviceDataQueryWrapper.in("DEVICE_RESOURCE_ID", deviceResourceIds);
-                deviceDataService.remove(deviceDataQueryWrapper);
+            QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
+            deviceQueryWrapper.in("DEVICE_TABLE_ID", deviceTableIds);
+            List<Device> list = deviceService.list(deviceQueryWrapper);
+            List<Long> deviceIds = list.stream().map(Device::getDeviceId).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(deviceIds)) {
+                deviceResourceQueryWrapper.in("DEVICE_ID",deviceIds);
+                List<Long> deviceResourceIds = deviceResourceService.list(deviceResourceQueryWrapper).stream().map(DeviceResource::getDeviceResourceId).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(deviceResourceIds)) {
+                    QueryWrapper<DeviceData> deviceDataQueryWrapper = new QueryWrapper<>();
+                    deviceDataQueryWrapper.in("DEVICE_RESOURCE_ID", deviceResourceIds);
+                    deviceDataService.remove(deviceDataQueryWrapper);
+                }
+                deviceResourceService.remove(deviceResourceQueryWrapper);
+                deviceService.remove(deviceQueryWrapper);
             }
-            deviceResourceService.remove(deviceResourceQueryWrapper);
-            deviceService.remove(deviceQueryWrapper);
             deviceTableService.remove(deviceTableQueryWrapper);
         }
-
         fixedValueVersionService.remove(queryWrapper);
-        QueryWrapper<FixedValueTable> tableQueryWrapper = new QueryWrapper<>();
-        tableQueryWrapper.eq("FIXED_VALUE_TABLE_ID", fixedValueTableId);
-        fixedValueTableService.remove(tableQueryWrapper);
     }
 
     @Override

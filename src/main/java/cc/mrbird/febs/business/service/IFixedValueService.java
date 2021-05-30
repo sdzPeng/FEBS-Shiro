@@ -1,11 +1,14 @@
 package cc.mrbird.febs.business.service;
 
+import cc.mrbird.febs.business.constants.DeviceFailureConstants;
+import cc.mrbird.febs.business.dto.DeviceDescDto;
 import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.Resource;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: 上海数慧系统技术有限公司
@@ -17,9 +20,13 @@ import java.util.List;
  */
 public interface IFixedValueService extends IService<FixedValue> {
 
-    void analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource);
+    Long analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource);
 
     void saveData(List<FixedValue> list);
 
     void updateVersion(FixedValue fixValue);
+
+    FixedValue getOneByDeviceIdAndFixedValueName(Long fixedValueVersionId, String fixedValueName);
+
+    List<DeviceDescDto> findByFixedValueVersionIdAndDimension(Long fixedValueVersionId, List<DeviceFailureConstants.DIMENSION> params);
 }

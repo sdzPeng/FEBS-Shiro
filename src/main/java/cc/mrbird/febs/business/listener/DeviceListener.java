@@ -10,7 +10,6 @@ import cc.mrbird.febs.business.service.IResourceService;
 import cc.mrbird.febs.business.util.ApplicationContextUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -18,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: 上海数慧系统技术有限公司
@@ -36,6 +36,7 @@ public class DeviceListener extends AnalysisEventListener<DeviceDto> {
     private Long fixedValueVersionId;
     private Resource resource;
     private String fileName;
+    Map<String, Object> callBack;
 
     public DeviceListener() {
         this.resourceService =  ApplicationContextUtil.getBean(IResourceService.class);
@@ -43,13 +44,14 @@ public class DeviceListener extends AnalysisEventListener<DeviceDto> {
         this.deviceTableService = ApplicationContextUtil.getBean(IDeviceTableService.class);
     }
 
-    public DeviceListener(Long fixedValueVersionId, Resource resource, String fileName) {
+    public DeviceListener(Long fixedValueVersionId, Resource resource, String fileName, Map<String, Object> callBack) {
         this.fixedValueVersionId = fixedValueVersionId;
         this.resourceService =  ApplicationContextUtil.getBean(IResourceService.class);
         this.deviceService = ApplicationContextUtil.getBean(IDeviceService.class);
         this.deviceTableService = ApplicationContextUtil.getBean(IDeviceTableService.class);
         this.resource = resource;
         this.fileName = fileName;
+        this.callBack = callBack;
     }
 
     @Override
@@ -71,6 +73,7 @@ public class DeviceListener extends AnalysisEventListener<DeviceDto> {
             deviceTableWrapper.eq("RESOURCE_ID", resource.getResourceId());
             deviceTable = deviceTableService.getOne(deviceTableWrapper);
         }
+        callBack.put("deviceTableId", deviceTable.getDeviceTableId());
         Device target = new Device();
         target.setDeviceTableId(deviceTable.getDeviceTableId());
         BeanUtils.copyProperties(device, target);

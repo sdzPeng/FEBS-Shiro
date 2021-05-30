@@ -34,11 +34,15 @@ public class DeviceServiceImpl  extends ServiceImpl<DeviceMapper, Device> implem
     @Autowired private IDeviceService deviceService;
     @Autowired private IDeviceDataService deviceDataService;
     @Autowired private IDeviceResourceService deviceResourceService;
+    private static final String DEVICE_REGEXP = "[\\d]*号故障测距装置";
 
     @Override
     public void saveData(List<Device> list, Long fixedValueVersionId) {
         log.info("{}条数据，开始存储数据库！", list.size());
-        Map<String, List<Device>> deviceGroups = list.stream().collect(Collectors.groupingBy(Device::getDeviceName));
+        Map<String, List<Device>> deviceGroups = list
+                .stream()
+                .filter(o-> o.getDeviceName().matches(DEVICE_REGEXP))
+                .collect(Collectors.groupingBy(Device::getDeviceName));
         deviceGroups.forEach((k, v) -> {
             // 保存第一个设备，设备源保存v.size() 条数
             Device device = v.get(0);

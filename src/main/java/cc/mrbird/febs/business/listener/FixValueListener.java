@@ -26,13 +26,17 @@ public class FixValueListener extends AnalysisEventListener<FixedValue> {
 
     private Resource resource;
 
+    private Map<String, Object> callBack;
+
     public FixValueListener() {
         this.fixedValueService = ApplicationContextUtil.getBean(IFixedValueService.class);
     }
 
-    public FixValueListener(Resource resource) {
+    public FixValueListener(Resource resource, Map<String, Object> callBack) {
         this.fixedValueService = ApplicationContextUtil.getBean(IFixedValueService.class);
         this.resource = resource;
+        this.callBack = callBack;
+
     }
 
     /**
@@ -50,7 +54,7 @@ public class FixValueListener extends AnalysisEventListener<FixedValue> {
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
         ReadSheet readSheet = analysisContext.readSheetHolder().getReadSheet();
         // 这里也要保存数据，确保最后遗留的数据也存储到数据库
-        fixedValueService.analysis(readSheet, list, resource);
+        callBack.put("fixedValueTableId", fixedValueService.analysis(readSheet, list, resource));
         fixedValueService.saveData(list);
         log.info("所有数据解析完成！");
         list.clear();

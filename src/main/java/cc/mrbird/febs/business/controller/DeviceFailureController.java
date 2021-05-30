@@ -3,6 +3,7 @@ package cc.mrbird.febs.business.controller;
 import cc.mrbird.febs.business.dto.DeviceDto;
 import cc.mrbird.febs.business.entity.Resource;
 import cc.mrbird.febs.business.listener.DeviceListener;
+import cc.mrbird.febs.business.service.IDeviceFailureService;
 import cc.mrbird.febs.common.annotation.ControllerEndpoint;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.exception.FebsException;
@@ -11,17 +12,19 @@ import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.mongodb.client.gridfs.GridFSBucket;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -39,10 +42,10 @@ import java.util.UUID;
 public class DeviceFailureController {
 
     @Autowired
-    private GridFsTemplate gridFsTemplate;
+    private IDeviceFailureService deviceFailureService;
 
     @Autowired
-    private GridFSBucket gridFSBucket;
+    private GridFsTemplate gridFsTemplate;
 
     @PostMapping("import")
 //    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
@@ -69,14 +72,20 @@ public class DeviceFailureController {
         resource.setUuid(uuid);
         resource.setContentType(file.getContentType());
         resource.setFileLength(file.getSize());
+        Map<String, Object> callBack = new HashMap<>();
         // 读取定值
         ReadSheet readSheet = EasyExcel.readSheet().build();
         ExcelReader fixedValueReader = EasyExcel.read(file.getInputStream(), DeviceDto.class,
-                new DeviceListener(fixedValueVersionId, resource, file.getOriginalFilename()))
+                new DeviceListener(fixedValueVersionId, resource, file.getOriginalFilename(), callBack))
                 .headRowNumber(3)
                 .build();
         fixedValueReader.read(readSheet);
+        return new FebsResponse().success().data(callBack.get("deviceTableId"));
+    }
 
-        return new FebsResponse().success();
+
+    @GetMapping("/table/devices")
+    public FebsResponse getDevices(String deviceTableId) {
+        return new FebsResponse().success().data(deviceFailureService.getDevicesByDeviceTableId(deviceTableId));
     }
 }

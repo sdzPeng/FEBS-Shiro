@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -83,7 +84,8 @@ public class FixedValueController extends BaseController {
 
         // 读取定值
         ReadSheet readSheet = EasyExcel.readSheet().build();
-        ExcelReader fixedValueReader = EasyExcel.read(file.getInputStream(), FixedValue.class, new FixValueListener(resource))
+        Map<String, Object> callBack = new HashMap<>();
+        ExcelReader fixedValueReader = EasyExcel.read(file.getInputStream(), FixedValue.class, new FixValueListener(resource, callBack))
                 .headRowNumber(2).build();
         fixedValueReader.read(readSheet);
 
@@ -94,20 +96,23 @@ public class FixedValueController extends BaseController {
         excelReader.read(fixedValueSheet);
 
         // 文件入库操作
-
-
-        return new FebsResponse().success();
+        return new FebsResponse().success().data(callBack.get("fixedValueTableId"));
     }
 
-    @GetMapping("/table/list")
-    public FebsResponse fixedValueTableList(QueryRequest request) {
+    @GetMapping("/table/list/page")
+    public FebsResponse fixedValueTableListPage(QueryRequest request) {
         Map<String, Object> dataTable = getDataTable(this.fixedValueTableService.fixedValueTableList(request));
         return new FebsResponse().success().data(dataTable);
     }
 
-    @GetMapping("/version/list")
-    public FebsResponse fixedValueTableList(Long fixedValueVersionId, QueryRequest request) {
-        Map<String, Object> dataTable = getDataTable(this.fixedValueVersionService.fixedValueVersionList(fixedValueVersionId, request));
+    @GetMapping("/table/list")
+    public FebsResponse fixedValueTableList() {
+        return new FebsResponse().success().data(this.fixedValueTableService.fixedValueTableList());
+    }
+
+    @GetMapping("/version/list/page")
+    public FebsResponse fixedValueTableList(Long fixedValueTableId, QueryRequest request) {
+        Map<String, Object> dataTable = getDataTable(this.fixedValueVersionService.fixedValueVersionList(fixedValueTableId, request));
         return new FebsResponse().success().data(dataTable);
     }
 
