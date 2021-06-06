@@ -107,8 +107,8 @@ public class DeviceFailureController {
             @ApiImplicitParam(name = "resourceName", value = "数据源名称[子站1测距数据]、[变电所测距数据]、[子站2测距数据]", dataTypeClass = String.class, example="子站1测距数据")
     })
     @ApiOperation(value = "根据设备故障表中的某个具体设备的某个具体数据源")
-    public FebsResponse getResourceData(Long deviceTableId, String resourceName) {
-        List<DeviceData> deviceDatas = deviceFailureService.getResourceData(deviceTableId, resourceName);
+    public FebsResponse getResourceData(Long deviceId, String resourceName) {
+        List<DeviceData> deviceDatas = deviceFailureService.getResourceData(deviceId, resourceName);
         return new FebsResponse().success().data(deviceDatas);
     }
 }
