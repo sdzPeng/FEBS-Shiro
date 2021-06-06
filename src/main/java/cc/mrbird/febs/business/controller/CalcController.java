@@ -3,6 +3,9 @@ package cc.mrbird.febs.business.controller;
 import cc.mrbird.febs.business.dto.KeyValueResult;
 import cc.mrbird.febs.business.service.ICalcService;
 import cc.mrbird.febs.common.entity.FebsResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,17 +26,21 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("calc")
+@Api(tags = "设备故障计算服务")
 public class CalcController {
 
     @Autowired ICalcService calcService;
 
     @GetMapping("/analysis/result")
-    public FebsResponse analysisResult(Long fixedValueVersionId, Long deviceId) {
-        List<KeyValueResult> dataTable = calcService.analysisResult(fixedValueVersionId, deviceId);
+//    @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = String.class)
+    @ApiOperation(value = "分析计算结果")
+    public FebsResponse analysisResult(Long deviceId) {
+        List<KeyValueResult> dataTable = calcService.analysisResult(deviceId);
         return new FebsResponse().success().data(dataTable);
     }
 
     @GetMapping("/calc/data")
+    @ApiOperation(value = "计算源数据")
     public FebsResponse calcData() {
         List<KeyValueResult> keyValueResults = new ArrayList<>();
         keyValueResults.add(new KeyValueResult("变电所上网点公里标", "K220+724.41"));

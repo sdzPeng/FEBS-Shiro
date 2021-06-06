@@ -5,5 +5,5 @@
 |                                         |
 |    Shiro edition v2.0                   |
 |    Spring-Boot-Version: ${spring-boot.version}   |
-|    QQ group : 715689981                 |
+|                     |
 |-----------------------------------------|

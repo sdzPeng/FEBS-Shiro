@@ -28,6 +28,9 @@ public class DeviceData {
     @TableId(value = "DEVICE_VALUE")
     private String deviceValue;
 
+    @TableId(value = "UNIT")
+    private String unit;
+
     @TableId(value = "DEVICE_RESOURCE_ID")
     private Long deviceResourceId;
 

@@ -5,6 +5,8 @@ import cc.mrbird.febs.business.service.IResourceService;
 import cc.mrbird.febs.common.controller.BaseController;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
@@ -32,6 +34,7 @@ import java.net.URLEncoder;
 @Slf4j
 @RestController
 @RequestMapping("resource")
+@Api(tags = "资源操作服务")
 public class ResourceController extends BaseController {
 
     @Autowired
@@ -41,6 +44,7 @@ public class ResourceController extends BaseController {
     private IResourceService resourceService;
 
     @GetMapping("download")
+    @ApiOperation(value = "资源下载")
     public void download(Long resourceId, HttpServletResponse response) throws IOException {
         Resource origin = resourceService.getById(resourceId);
         Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(origin.getUuid()));
@@ -66,6 +70,7 @@ public class ResourceController extends BaseController {
     }
 
     @DeleteMapping("delete")
+    @ApiOperation(value = "删除")
     public FebsResponse delete(Long resourceId) throws IOException {
         Resource resource = resourceService.getById(resourceId);
         Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(resource.getUuid()));

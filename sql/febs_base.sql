@@ -600,6 +600,7 @@ CREATE TABLE `t_device_data`  (
                              `DEVICE_DATA_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '设备故障数据ID',
                              `DEVICE_KEY` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'key',
                              `DEVICE_VALUE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'value',
+                             `UNIT` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'unit',
                              `DEVICE_RESOURCE_ID` bigint(20) NOT NULL COMMENT '设备数据源id',
                              PRIMARY KEY (`DEVICE_DATA_ID`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备故障数据表' ROW_FORMAT = Dynamic;

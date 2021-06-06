@@ -1,5 +1,7 @@
 package cc.mrbird.febs.business.constants;
 
+import lombok.Getter;
+
 /**
  * @company: 上海数慧系统技术有限公司
  * @department: 数据中心
@@ -12,5 +14,26 @@ public class FixedValueConstants {
 
     public static final String TF短路故障判别 = "TF短路故障判别";
 
+    @Getter
+    public enum DIMENSION {
+        起点公里标("起点公里标"),
+        区间1长度("区间1长度"),
+        区间2长度("区间2长度"),
+        区间4长度("区间4长度"),
+        变电所的QT值("变电所的QT值"),
+        变电所供电线长度("变电所供电线长度"),
+        AT1的QT1值("AT1的QT1值"),
+        AT2的QT2值("AT2的QT2值"),
+        AT2的QT1值("AT2的QT1值"),
+        AT3的QT1值("AT3的QT1值"),
+        AT1供电线长度("AT1供电线长度"),
+        AT1的QF1值("AT1的QF1值"),
 
+        ;
+        private String name;
+        DIMENSION(){}
+        DIMENSION(String name) {
+            this.name = name;
+        }
+    }
 }

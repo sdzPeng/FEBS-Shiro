@@ -1,10 +1,8 @@
 package cc.mrbird.febs.business.service.impl;
 
 import cc.mrbird.febs.business.constants.DeviceFailureConstants;
-import cc.mrbird.febs.business.dto.DeviceAttachDto;
+import cc.mrbird.febs.business.constants.FixedValueConstants;
 import cc.mrbird.febs.business.dto.DeviceDataDto;
-import cc.mrbird.febs.business.dto.DeviceDescDto;
-import cc.mrbird.febs.business.dto.DeviceResourceDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.mapper.FixedValueMapper;
 import cc.mrbird.febs.business.service.*;
@@ -109,8 +107,10 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
     }
 
     @Override
-    public FixedValue getOneByDeviceIdAndFixedValueName(Long fixedValueVersionId, String fixedValueName) {
-        FixedValueVersion fixedValueVersion = this.fixedValueVersionService.getById(fixedValueVersionId);
+    public FixedValue getOneByDeviceIdAndFixedValueName(Long deviceId, String fixedValueName) {
+        Device device = this.deviceService.getById(deviceId);
+        DeviceTable deviceTable = this.deviceTableService.getById(device.getDeviceTableId());
+        FixedValueVersion fixedValueVersion = this.fixedValueVersionService.getById(deviceTable.getFixedValueVersionId());
         QueryWrapper<FixedValue> fixedValueQueryWrapper = new QueryWrapper<>();
         fixedValueQueryWrapper.eq("FIXED_VALUE_VERSION_ID", fixedValueVersion.getFixValueVersionId());
         fixedValueQueryWrapper.eq("NAME", fixedValueName);
@@ -118,42 +118,40 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
     }
 
     @Override
-    public List<DeviceDescDto> findByFixedValueVersionIdAndDimension(Long fixedValueVersionId,
+    public List<DeviceDataDto> findByFixedValueVersionIdAndDimension(Long deviceId,
                                                            List<DeviceFailureConstants.DIMENSION> params) {
-        QueryWrapper<DeviceTable> fixedValueQueryWrapper = new QueryWrapper<>();
-        fixedValueQueryWrapper.eq("FIXED_VALUE_VERSION_ID", fixedValueVersionId);
-        DeviceTable deviceTable = deviceTableService.getOne(fixedValueQueryWrapper);
-        QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
-        deviceQueryWrapper.eq("DEVICE_TABLE_ID", deviceTable.getDeviceTableId());
-        List<Device> deviceList = deviceService.list(deviceQueryWrapper);
-        return deviceList.stream().map(o -> {
-            DeviceDescDto deviceDescDto = new DeviceDescDto();
-            deviceDescDto.setName(o.getDeviceName());
-            DeviceAttachDto deviceAttachDto = new DeviceAttachDto();
-            deviceAttachDto.setDeviceId(o.getDeviceId());
-            deviceAttachDto.setDeviceName(o.getDeviceName());
-            params.forEach(param -> {
-
-            });
+        Device device = deviceService.getById(deviceId);
+        return params.stream().map(o -> {
             QueryWrapper<DeviceResource> deviceResourceQueryWrapper = new QueryWrapper<>();
-            deviceResourceQueryWrapper.eq("DEVICE_ID", o.getDeviceId());
-            List<DeviceResourceDto> deviceResources = deviceResourceService.list(deviceResourceQueryWrapper).stream().map(resource -> {
-                DeviceResourceDto resourceDto = new DeviceResourceDto();
-                BeanUtils.copyProperties(resource, resourceDto);
-                resourceDto.setDeviceResourceName(resource.getDeviceResourceName());
+            deviceResourceQueryWrapper.eq("DEVICE_ID", device.getDeviceId());
+            deviceResourceQueryWrapper.eq("DEVICE_RESOURCE_NAME", o.getResource());
+            List<DeviceResource> deviceResources = deviceResourceService.list(deviceResourceQueryWrapper).stream().distinct().collect(Collectors.toList());
+            return deviceResources.stream().map(deviceResource -> {
                 QueryWrapper<DeviceData> dataQueryWrapper = new QueryWrapper<>();
-                dataQueryWrapper.eq("DEVICE_RESOURCE_ID", resource.getDeviceResourceId());
-                List<DeviceDataDto> deviceDatas = deviceDataService.list(dataQueryWrapper).stream().map(deviceData -> {
-                    DeviceDataDto subDeviceData = new DeviceDataDto();
-                    BeanUtils.copyProperties(deviceData, subDeviceData);
-                    return subDeviceData;
+                dataQueryWrapper.eq("DEVICE_RESOURCE_ID", deviceResource.getDeviceResourceId());
+                dataQueryWrapper.in("DEVICE_KEY", o.getName());
+                return deviceDataService.list(dataQueryWrapper).stream().map(deviceData -> {
+                    DeviceDataDto deviceDataDto = new DeviceDataDto();
+                    deviceDataDto.setDeviceResourceName(deviceResource.getDeviceResourceName());
+                    deviceDataDto.setDeviceName(o.getResource());
+                    deviceDataDto.setDesc(o.getDesc());
+                    deviceDataDto.setDirection(o.getDirection());
+                    BeanUtils.copyProperties(deviceData, deviceDataDto);
+                    return deviceDataDto;
                 }).collect(Collectors.toList());
-                resourceDto.setChildren(deviceDatas);
-                return resourceDto;
-            }).collect(Collectors.toList());
-            deviceAttachDto.setChildren(deviceResources);
-            deviceDescDto.setData(deviceResources);
-            return deviceDescDto;
-        }).collect(Collectors.toList());
+            }).flatMap(Collection::stream).distinct().collect(Collectors.toList());
+        }).flatMap(Collection::stream).distinct().collect(Collectors.toList());
+
+    }
+
+    @Override
+    public FixedValue findByDeviceIdAndFixedName(Long deviceId, FixedValueConstants.DIMENSION dimension) {
+        Device device = deviceService.getById(deviceId);
+        DeviceTable deviceTable = deviceTableService.getById(device.getDeviceTableId());
+        FixedValueVersion fixedValueVersion = fixedValueVersionService.getById(deviceTable.getFixedValueVersionId());
+        QueryWrapper<FixedValue> fixedValueQueryWrapper = new QueryWrapper<>();
+        fixedValueQueryWrapper.eq("FIXED_VALUE_VERSION_ID", fixedValueVersion.getFixValueVersionId());
+        fixedValueQueryWrapper.eq("name",dimension.getName());
+        return getOne(fixedValueQueryWrapper);
     }
 }

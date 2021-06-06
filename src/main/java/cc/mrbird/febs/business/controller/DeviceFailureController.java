@@ -1,10 +1,10 @@
 package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.dto.DeviceDto;
+import cc.mrbird.febs.business.entity.DeviceData;
 import cc.mrbird.febs.business.entity.Resource;
 import cc.mrbird.febs.business.listener.DeviceListener;
 import cc.mrbird.febs.business.service.IDeviceFailureService;
-import cc.mrbird.febs.common.annotation.ControllerEndpoint;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.exception.FebsException;
 import com.alibaba.excel.EasyExcel;
@@ -12,6 +12,10 @@ import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @company: 上海数慧系统技术有限公司
@@ -39,6 +40,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("devicefailure")
+@Api(tags = "设备故障服务")
 public class DeviceFailureController {
 
     @Autowired
@@ -48,6 +50,8 @@ public class DeviceFailureController {
     private GridFsTemplate gridFsTemplate;
 
     @PostMapping("import")
+    @ApiOperation(value = "设备故障表导入")
+    @ApiImplicitParam(name = "fixedValueVersionId", value = "设备表id", dataTypeClass = Long.class, example="14")
 //    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
     public FebsResponse fixedValueImport(Long fixedValueVersionId, MultipartFile file) throws IOException {
         if (file.isEmpty()) {
@@ -83,9 +87,28 @@ public class DeviceFailureController {
         return new FebsResponse().success().data(callBack.get("deviceTableId"));
     }
 
+    @GetMapping("/table/all")
+    @ApiOperation(value = "获取所有设备故障表")
+    public FebsResponse getDevices() {
+        return new FebsResponse().success().data(deviceFailureService.findAllTables());
+    }
+
 
     @GetMapping("/table/devices")
-    public FebsResponse getDevices(String deviceTableId) {
+    @ApiImplicitParam(name = "deviceTableId", value = "设备表id", dataTypeClass = Long.class)
+    @ApiOperation(value = "根据设备故障表获取表中所有设备")
+    public FebsResponse getDevices(Long deviceTableId) {
         return new FebsResponse().success().data(deviceFailureService.getDevicesByDeviceTableId(deviceTableId));
+    }
+
+    @GetMapping("/table/resource/data")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = Long.class),
+            @ApiImplicitParam(name = "resourceName", value = "数据源名称[子站1测距数据]、[变电所测距数据]、[子站2测距数据]", dataTypeClass = String.class, example="子站1测距数据")
+    })
+    @ApiOperation(value = "根据设备故障表中的某个具体设备的某个具体数据源")
+    public FebsResponse getResourceData(Long deviceTableId, String resourceName) {
+        List<DeviceData> deviceDatas = deviceFailureService.getResourceData(deviceTableId, resourceName);
+        return new FebsResponse().success().data(deviceDatas);
     }
 }

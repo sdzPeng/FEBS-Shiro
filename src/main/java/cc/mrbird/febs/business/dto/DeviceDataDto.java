@@ -1,6 +1,5 @@
 package cc.mrbird.febs.business.dto;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -21,4 +20,12 @@ public class DeviceDataDto implements Serializable {
     private String deviceKey;
 
     private String deviceValue;
+
+    private String deviceResourceName;
+
+    private String deviceName;
+
+    private String desc;
+
+    private String direction;
 }

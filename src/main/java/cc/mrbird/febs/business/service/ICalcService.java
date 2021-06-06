@@ -14,5 +14,5 @@ import java.util.Map;
  * @desc：
  */
 public interface ICalcService {
-    List<KeyValueResult> analysisResult(Long fixedValueVersionId, Long deviceId);
+    List<KeyValueResult> analysisResult(Long deviceId);
 }
