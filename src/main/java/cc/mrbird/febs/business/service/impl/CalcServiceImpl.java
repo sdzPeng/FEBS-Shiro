@@ -293,10 +293,11 @@ public class CalcServiceImpl implements ICalcService {
             // 上下行电流比法（第一AT段）
             /**
              * 2*第一AT段长度*MIN(AT所横联电流Ihl1,分区所横联电流Ihl2)/(AT所横联电流Ihl1+分区所横联电流Ihl2)
+             *
              */
             FixedValue 第一AT段长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.区间1长度);
-            KeyValueResult keyValueResult = AT所横联电流Ihl1(deviceId, null);
-            KeyValueResult fqsKeyValueResult = 分区所横联电流Ihl2(deviceId, null);
+            KeyValueResult keyValueResult = 变电所上行电流Ihl0(deviceId, null);
+            KeyValueResult fqsKeyValueResult = 变电所下行电流Ihl0(deviceId, null);
             Double result = 2*Double.parseDouble(第一AT段长度.getSummonValue())
                     *Math.min(Double.parseDouble(keyValueResult.getValue().toString()),
                     Double.parseDouble(fqsKeyValueResult.getValue().toString()))/(Double.parseDouble(keyValueResult.getValue().toString())+
@@ -426,6 +427,46 @@ public class CalcServiceImpl implements ICalcService {
                 Double.parseDouble(bdsdlxlDeviceData.get(7).getDeviceValue()));
         RealVector bdsResult = number1.subtract(number2).subtract(number3).add(number4);
         KeyValueResult keyValueResult = new KeyValueResult("变电所横联电流Ihl0(A)", bdsResult.getNorm() / 2);
+        if (null != keyValueResults) {
+            keyValueResults.add(keyValueResult);
+        }
+        return keyValueResult;
+    }
+
+    private KeyValueResult 变电所上行电流Ihl0(Long deviceId, List<KeyValueResult> keyValueResults) {
+        List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行T电流);
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行T电流角度);
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行F电流);
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行F电流角度);
+        List<DeviceDataDto> bdsdlxlDeviceData = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
+                bdsdlxl);
+        RealVector number1 = MathUtils.toRealVector(Double.parseDouble(bdsdlxlDeviceData.get(0).getDeviceValue()),
+                Double.parseDouble(bdsdlxlDeviceData.get(1).getDeviceValue()));
+        RealVector number2 = MathUtils.toRealVector(Double.parseDouble(bdsdlxlDeviceData.get(2).getDeviceValue()),
+                Double.parseDouble(bdsdlxlDeviceData.get(3).getDeviceValue()));
+        RealVector bdsResult = number1.subtract(number2);
+        KeyValueResult keyValueResult = new KeyValueResult("变电所上行电流Ihl0(A)", bdsResult.getNorm() / 2);
+        if (null != keyValueResults) {
+            keyValueResults.add(keyValueResult);
+        }
+        return keyValueResult;
+    }
+
+    private KeyValueResult 变电所下行电流Ihl0(Long deviceId, List<KeyValueResult> keyValueResults) {
+        List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所下行T电流);
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所下行T电流角度);
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所下行F电流);
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所下行F电流角度);
+        List<DeviceDataDto> bdsdlxlDeviceData = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
+                bdsdlxl);
+        RealVector number1 = MathUtils.toRealVector(Double.parseDouble(bdsdlxlDeviceData.get(0).getDeviceValue()),
+                Double.parseDouble(bdsdlxlDeviceData.get(1).getDeviceValue()));
+        RealVector number2 = MathUtils.toRealVector(Double.parseDouble(bdsdlxlDeviceData.get(2).getDeviceValue()),
+                Double.parseDouble(bdsdlxlDeviceData.get(3).getDeviceValue()));
+        RealVector bdsResult = number1.subtract(number2);
+        KeyValueResult keyValueResult = new KeyValueResult("变电所下行电流Ihl0(A)", bdsResult.getNorm() / 2);
         if (null != keyValueResults) {
             keyValueResults.add(keyValueResult);
         }
