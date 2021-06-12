@@ -6,6 +6,7 @@ import cc.mrbird.febs.business.dto.DeviceDataDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.mapper.FixedValueMapper;
 import cc.mrbird.febs.business.service.*;
+import cc.mrbird.febs.common.exception.FebsException;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
@@ -45,8 +46,8 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
 
     @Override
     public Long analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource) {
-        if (null == readSheet||!readSheet.getSheetName().matches(FIXED_VALUE_REGEXP)) return null;
-        FixedValue direction = list.stream().filter(o -> DIRECTION.equals(o.getName())).findFirst().get();
+        if (null == readSheet||!readSheet.getSheetName().matches(FIXED_VALUE_REGEXP)) throw new FebsException("sheet页命名要求「定值表标识符数字」！");
+        FixedValue direction = list.stream().filter(o -> DIRECTION.equals(o.getName())).findFirst().orElseThrow(()->new FebsException("定值表中确实属性「公里标方向(相减-1/相加1)」"));
         Long fixedValueTableId = extracted(resource, readSheet.getSheetName());
 
         if (!ObjectUtils.isEmpty(direction)) {

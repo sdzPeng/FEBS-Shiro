@@ -4,6 +4,7 @@ import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.common.exception.FileDownloadException;
 import cc.mrbird.febs.common.exception.LimitAccessException;
+import cc.mrbird.febs.common.exception.ValidaException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -41,6 +42,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = FebsException.class)
     public FebsResponse handleFebsException(FebsException e) {
+        log.error("系统错误", e);
+        return new FebsResponse().code(HttpStatus.INTERNAL_SERVER_ERROR).message(e.getMessage());
+    }
+
+    @ExceptionHandler(value = ValidaException.class)
+    public FebsResponse handleValidateException(ValidaException e) {
         log.error("系统错误", e);
         return new FebsResponse().code(HttpStatus.INTERNAL_SERVER_ERROR).message(e.getMessage());
     }

@@ -66,7 +66,7 @@ public class FixedValueController extends BaseController {
 
     // 定值入库 入库
     @PostMapping("import")
-    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
+//    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
     public FebsResponse fixedValueImport(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new FebsException("导入数据为空");
