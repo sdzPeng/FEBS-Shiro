@@ -36,7 +36,7 @@ public class CalcServiceImpl implements ICalcService {
     @Autowired private IFixedValueVersionService fixedValueVersionService;
 
     private static int compare(DeviceDataDto o1, DeviceDataDto o2) {
-        return Double.parseDouble(o1.getDeviceValue()) < Double.parseDouble(o2.getDeviceValue()) ? 1 : -1;
+        return Double.parseDouble(o1.getDeviceValue()) > Double.parseDouble(o2.getDeviceValue()) ? 1 : -1;
     }
 
     @Override
@@ -75,6 +75,7 @@ public class CalcServiceImpl implements ICalcService {
         otherParams.add(DeviceFailureConstants.DIMENSION.AT所上行T电流);
         otherParams.add(DeviceFailureConstants.DIMENSION.AT所上行F电流);
         otherParams.add(DeviceFailureConstants.DIMENSION.AT所下行T电流);
+        otherParams.add(DeviceFailureConstants.DIMENSION.AT所下行F电流);
         otherParams.add(DeviceFailureConstants.DIMENSION.分区所上行T电流);
         otherParams.add(DeviceFailureConstants.DIMENSION.分区所上行F电流);
         otherParams.add(DeviceFailureConstants.DIMENSION.分区所下行T电流);
@@ -135,27 +136,28 @@ public class CalcServiceImpl implements ICalcService {
                 // 吸上电流比法（第一AT段故障）T相
                 /**
                  * 1、 第一AT段长度/(100-变电所Q值-AT所QT1)*(100*(AT所吸上电流（子站1)/(AT所吸上电流（子站1)+变电所吸上电流))-变电所Q值)
+                 *    =B7/(100-B9-B10)*(100*(D7/(D7+D2))-B9)
                  */
                 //1、第一AT段长度（定值表：起点公里标）
                 FixedValue 第一AT段长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.区间1长度);
+                Double b7 = Double.parseDouble(第一AT段长度.getSummonValue());
                 //2、变电所Q值
                 FixedValue 变电所的QT值 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.变电所的QT值);
+                Double b9 = Double.parseDouble(变电所的QT值.getSummonValue());
                 //3、AT所QT1
                 FixedValue AT1的QT1值 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.AT1的QT1值);
+                Double b10 = Double.parseDouble(AT1的QT1值.getSummonValue());
                 //4、AT所吸上电流（子站1)
                 List<DeviceDataDto> xsdlatDeviceData = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
                         Collections.singletonList(DeviceFailureConstants.DIMENSION.AT所吸上电流));
                 String xsdlatDeviceDataValue = xsdlatDeviceData.get(0).getDeviceValue();
+                Double d7 = Double.parseDouble(xsdlatDeviceDataValue);
                 //5、变电所吸上电流
                 List<DeviceDataDto> xsdlbdDeviceData = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
                         Collections.singletonList(DeviceFailureConstants.DIMENSION.变电所吸上电流));
                 String xsdlbdDeviceDataValue = xsdlbdDeviceData.get(0).getDeviceValue();
-                Double xsdlResult = Double.parseDouble(第一AT段长度.getSummonValue())
-                        /(100-Double.parseDouble(变电所的QT值.getSummonValue())-Double.parseDouble(AT1的QT1值.getSummonValue()))
-                        *(100*(Double.parseDouble(xsdlatDeviceData.get(0).getDeviceValue())
-                        /(Double.parseDouble(xsdlatDeviceDataValue)
-                        +Double.parseDouble(xsdlbdDeviceDataValue))
-                        -Double.parseDouble(变电所的QT值.getSummonValue())));
+                Double d2 = Double.parseDouble(xsdlbdDeviceDataValue);
+                Double xsdlResult = b7 /(100-b9-b10) *(100*d7 /(d7 +d2)-b9);
                 keyValueResults.add(new KeyValueResult("吸上电流比法T相距离（km）", xsdlResult));
             }else {
                 // 吸上电流比法（第二AT段故障）T相
@@ -253,7 +255,7 @@ public class CalcServiceImpl implements ICalcService {
                 keyValueResults.add(new KeyValueResult("吸上电流比法F相距离（km）", result));
             }
         }else {
-            keyValueResults.add(new KeyValueResult("吸上电流比法F相距离（km）", ""));
+            keyValueResults.add(new KeyValueResult("吸上电流比法F相距离（km）", null));
         }
         // 横联电流比法距离（km）
         if (StringUtils.equals(temp.get("故障区段").toString(), "第一AT区段")) {

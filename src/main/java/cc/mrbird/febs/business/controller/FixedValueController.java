@@ -1,5 +1,6 @@
 package cc.mrbird.febs.business.controller;
 
+import cc.mrbird.febs.business.config.CustomStringNumberConverter;
 import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.FixedValueMeta;
 import cc.mrbird.febs.business.entity.FixedValueVersion;
@@ -96,6 +97,7 @@ public class FixedValueController extends BaseController {
         ReadSheet readSheet = EasyExcel.readSheet().build();
         Map<String, Object> callBack = new HashMap<>();
         ExcelReader fixedValueReader = EasyExcel.read(file.getInputStream(), FixedValue.class, new FixValueListener(resource, callBack))
+                .registerConverter(new CustomStringNumberConverter())
                 .headRowNumber(2).build();
         fixedValueReader.read(readSheet);
 
