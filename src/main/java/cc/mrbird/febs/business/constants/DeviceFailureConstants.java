@@ -30,8 +30,11 @@ public class DeviceFailureConstants {
     @Getter
     public enum DIMENSION {
         变电所吸上电流("变电所测距数据", "总吸上电流", "", ""),
+        变电所吸上电流角度("变电所吸上电流角度", "总吸上电流角度", "", ""),
         AT所吸上电流("子站1测距数据", "总吸上电流", "", ""),
+        AT所吸上电流角度("子站1测距数据", "总吸上电流角度", "", ""),
         分区所吸上电流("子站2测距数据", "总吸上电流", "", ""),
+        分区所吸上电流角度("子站2测距数据", "总吸上电流角度", "", ""),
         变电所上行T电流("变电所测距数据", "上行T线电流", "TR故障", "上行"),
         变电所上行T电流角度("变电所测距数据", "上行T线电流角度", "", ""),
         变电所上行F电流("变电所测距数据", "上行F线电流", "FR故障", "上行"),
@@ -73,6 +76,13 @@ public class DeviceFailureConstants {
                     .filter(o-> StringUtils.equals(o.getResource(), resource))
                     .map(DIMENSION::getName)
                     .collect(Collectors.toList());
+        }
+
+        public static DIMENSION getByNameAndResource(String name, String resource) {
+            return Arrays.stream(DIMENSION.values())
+                    .filter(o->StringUtils.equals(name, o.getName())&&StringUtils.equals(resource, o.getResource()))
+                    .findFirst()
+                    .get();
         }
 
 

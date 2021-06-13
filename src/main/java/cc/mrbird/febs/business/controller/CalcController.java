@@ -41,43 +41,8 @@ public class CalcController {
 
     @GetMapping("/calc/data")
     @ApiOperation(value = "计算源数据")
-    public FebsResponse calcData() {
-        List<KeyValueResult> keyValueResults = new ArrayList<>();
-        keyValueResults.add(new KeyValueResult("变电所上网点公里标", "K220+724.41"));
-        keyValueResults.add(new KeyValueResult("变电所供电线电缆长度", "2.01"));
-        keyValueResults.add(new KeyValueResult("AT所上网点公里标", ""));
-        keyValueResults.add(new KeyValueResult("AT所供电线电缆长度", "-0.07"));
-        keyValueResults.add(new KeyValueResult("分区所上网点公里标", ""));
-        keyValueResults.add(new KeyValueResult("分区所供电线电缆长度", "0.25"));
-        keyValueResults.add(new KeyValueResult("第一AT段长度", "12.96"));
-        keyValueResults.add(new KeyValueResult("第二AT段长度", "12.57"));
-        keyValueResults.add(new KeyValueResult("变电所Q值", "10.246"));
-        keyValueResults.add(new KeyValueResult("AT所QT1", "25.677"));
-        keyValueResults.add(new KeyValueResult("AT所QT2", "7"));
-        keyValueResults.add(new KeyValueResult("分区所QT1", "9.779"));
-        keyValueResults.add(new KeyValueResult("分区所QT2", "14"));
-        keyValueResults.add(new KeyValueResult("AT所QF1", "12"));
-        keyValueResults.add(new KeyValueResult("AT所QF2", "15"));
-        keyValueResults.add(new KeyValueResult("分区所QF1", "14"));
-        keyValueResults.add(new KeyValueResult("分区所QF2", "14"));
-        keyValueResults.add(new KeyValueResult("变电所吸上电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("变电所上行T电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("变电所上行F电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("变电所下行T电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("变电所下行F电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("变电所上行F电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("AT所吸上电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("AT所上行T电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("AT所上行F电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("AT所下行T电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("AT所下行F电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("分区所吸上电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("分区所上行T电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("分区所上行F电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("分区所下行T电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("分区所下行F电流", "178.64安,-360.90度"));
-        keyValueResults.add(new KeyValueResult("Kp", "2000"));
-        keyValueResults.add(new KeyValueResult("In TF短路故障判别系数", "0.05"));
+    public FebsResponse calcData(Long deviceId) {
+        List<KeyValueResult> keyValueResults = calcService.calcData(deviceId);
         return new FebsResponse().success().data(keyValueResults);
     }
 }

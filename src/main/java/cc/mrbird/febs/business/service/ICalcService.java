@@ -2,9 +2,8 @@ package cc.mrbird.febs.business.service;
 
 import cc.mrbird.febs.business.dto.KeyValueResult;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 /**
  * @company: 上海数慧系统技术有限公司
  * @department: 数据中心
@@ -15,4 +14,6 @@ import java.util.Map;
  */
 public interface ICalcService {
     List<KeyValueResult> analysisResult(Long deviceId);
+
+    List<KeyValueResult> calcData(Long deviceId);
 }
