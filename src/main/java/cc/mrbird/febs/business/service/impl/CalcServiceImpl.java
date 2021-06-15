@@ -46,7 +46,7 @@ public class CalcServiceImpl implements ICalcService {
         List<KeyValueResult> keyValueResults = new ArrayList<>();
         // 故障类型
         // 规则：
-        // FR故障：【变电所吸上电流】、【AT所吸上电流】、【分区所吸上电流】最大值小于【定值表】中【TF短路故障判别】
+        // TF故障：【变电所吸上电流】、【AT所吸上电流】、【分区所吸上电流】最小值小于【定值表】中【TF短路故障判别】
         // 如果不符合上述，则取最大值：
         // 【变电所上行T电流】、【变电所上行F电流】、【变电所下行T电流】、【变电所下行F电流】、
         // 【AT所上行T电流】、【AT所上行F电流】、【AT所下行T电流】、
@@ -70,9 +70,9 @@ public class CalcServiceImpl implements ICalcService {
         params.add(DeviceFailureConstants.DIMENSION.分区所吸上电流);
 
         List<DeviceDataDto> deviceDataGroups = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,params);
-        DeviceDataDto maxDevice = deviceDataGroups
+        DeviceDataDto minDevice = deviceDataGroups
                 .stream()
-                .max(Comparator.comparing(DeviceDataDto::getDeviceValue))
+                .min(Comparator.comparing(DeviceDataDto::getDeviceValue))
                 .get();
         // 变电所横联电流Ihl0(A)
 //        MathUtils.toRealVector()
@@ -126,7 +126,7 @@ public class CalcServiceImpl implements ICalcService {
             // 故障行别
             keyValueResults.add(new KeyValueResult("故障行别", otherMaxDevice.getDirection()));
         }
-        if (Double.parseDouble(maxDevice.getDeviceValue().replaceAll("[a-zA-Z]*", ""))-
+        if (Double.parseDouble(minDevice.getDeviceValue().replaceAll("[a-zA-Z]*", ""))-
                 Double.parseDouble(TF短路故障判别.getSummonValue())*Double.parseDouble(吸上电流流互变比.getSummonValue())<0) {
             temp.put("故障类型", "TF故障");
             keyValueResults.add(new KeyValueResult("故障类型", "TF故障"));
