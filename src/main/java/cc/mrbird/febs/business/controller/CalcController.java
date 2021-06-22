@@ -1,5 +1,6 @@
 package cc.mrbird.febs.business.controller;
 
+import cc.mrbird.febs.business.dto.CurrentValue;
 import cc.mrbird.febs.business.dto.KeyValueResult;
 import cc.mrbird.febs.business.service.ICalcService;
 import cc.mrbird.febs.common.entity.FebsResponse;
@@ -11,9 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: 上海数慧系统技术有限公司
@@ -44,5 +44,15 @@ public class CalcController {
     public FebsResponse calcData(Long deviceId) {
         List<KeyValueResult> keyValueResults = calcService.calcData(deviceId);
         return new FebsResponse().success().data(keyValueResults);
+    }
+
+    @GetMapping("/current/distribution/map")
+    @ApiOperation(value = "电流分布图")
+    public FebsResponse currentDistMap(
+            Long deviceId
+    ) {
+        Map<String, CurrentValue> result = calcService.currentDistMap(deviceId);
+        return new FebsResponse().success().data(result);
+
     }
 }

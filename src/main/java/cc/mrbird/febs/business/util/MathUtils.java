@@ -20,11 +20,21 @@ public final class MathUtils {
         return new ArrayRealVector(new Double[]{cosValue, sinValue});
     }
 
+    public static Float toAngle(RealVector realVector) {
+        double[] values = realVector.toArray();
+        return (float)Math.atan(values[1] / values[0]);
+    }
+
     public static void main(String[] args) {
         RealVector add = toRealVector(402.695, 296.335)
                 .subtract(toRealVector(89.245, 94.378))
                 .subtract(toRealVector(381.431, 295.615))
                 .add(toRealVector(6097.024, 111.239));
+        double[] test = toRealVector(402.695, 296.335).toArray();
+        System.out.println(test);
+        float r = (float)Math.sqrt(Math.pow(test[0], 2) + Math.pow(test[1], 2));
+        float v = (float)Math.atan(test[1] / test[0]);
+        double v1 = Math.toDegrees(v);
         System.out.println(add.getNorm()/2);
 //        RealVector add = toRealVector(402.695, 296.335)
 //                .subtract(toRealVector(381.431, 295.615))

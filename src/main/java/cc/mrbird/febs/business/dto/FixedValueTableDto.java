@@ -1,5 +1,6 @@
 package cc.mrbird.febs.business.dto;
 
+import cc.mrbird.febs.business.entity.FixedValueVersion;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
@@ -24,5 +25,5 @@ public class FixedValueTableDto implements Serializable {
 
     private Date createTime;
 
-    private List<Long> fixedValueVersionId;
+    private List<FixedValueVersion> fixedValueVersionId;
 }

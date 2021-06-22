@@ -6,6 +6,7 @@ import cc.mrbird.febs.business.dto.DeviceDataDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.mapper.FixedValueMapper;
 import cc.mrbird.febs.business.service.*;
+import cc.mrbird.febs.business.util.NumberUtil;
 import cc.mrbird.febs.common.exception.FebsException;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -72,16 +73,17 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
         }
         QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
         fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", temp.getFixedValueTableId());
-        FixedValueVersion fixValueVersion = fixedValueVersionService.getOne(fixedValueVersionQueryWrapper);
-        if (null != fixValueVersion) {
-            fixedValueTableService.delFixedValueVersion(new ArrayList<Long>(){{add(fixValueVersion.getFixValueVersionId());}});
-        }
+//        FixedValueVersion fixValueVersion = fixedValueVersionService.getOne(fixedValueVersionQueryWrapper);
+//        if (null != fixValueVersion) {
+//            fixedValueTableService.delFixedValueVersion(new ArrayList<Long>(){{add(fixValueVersion.getFixValueVersionId());}});
+//        }
+        int count = fixedValueVersionService.count(fixedValueVersionQueryWrapper);
         FixedValueVersion fixedValueVersion = new FixedValueVersion();
         resourceService.save(resource);
         fixedValueVersion.setResourceId(resource.getResourceId());
         fixedValueVersion.setCreateTime(new Date());
         // todo 版本控制
-        fixedValueVersion.setVersion("一");
+        fixedValueVersion.setVersion(NumberUtil.numberToChinaStr(count));
         fixedValueVersion.setFixedValueTableId(temp.getFixedValueTableId());
         fixedValueVersionService.save(fixedValueVersion);
         THREAD_LOCAL.set(fixedValueVersion.getFixValueVersionId());

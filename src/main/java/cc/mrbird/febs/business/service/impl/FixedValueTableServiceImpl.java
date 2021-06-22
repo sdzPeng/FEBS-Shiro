@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,7 +70,7 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
             BeanUtils.copyProperties(o, fixedValueTableDto);
             QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
             fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", o.getFixedValueTableId());
-            List<Long> fixValueVersions = fixedValueVersionService.list(fixedValueVersionQueryWrapper).stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList());
+            List<FixedValueVersion> fixValueVersions = fixedValueVersionService.list(fixedValueVersionQueryWrapper);
             fixedValueTableDto.setFixedValueVersionId(fixValueVersions);
             return fixedValueTableDto;
         }).collect(Collectors.toList());
