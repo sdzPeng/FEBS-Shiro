@@ -12,10 +12,9 @@ import cc.mrbird.febs.business.service.ICalcService;
 import cc.mrbird.febs.business.service.IFixedValueService;
 import cc.mrbird.febs.business.service.IFixedValueVersionService;
 import cc.mrbird.febs.business.util.MathUtils;
-import cc.mrbird.febs.business.util.NumberUtil;
+import cc.mrbird.febs.common.exception.ValidaException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.math3.linear.RealVector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,7 +50,7 @@ public class CalcServiceImpl implements ICalcService {
     }
 
     @Override
-    public List<KeyValueResult> analysisResult(Long deviceId) {
+    public List<KeyValueResult> analysisResult(Long deviceId) throws ValidaException {
         Map<String, Object> paramsMap = new HashMap<>();
         THREAD_LOCAL.set(paramsMap);
         List<KeyValueResult> keyValueResults = new ArrayList<>();
@@ -295,7 +294,7 @@ public class CalcServiceImpl implements ICalcService {
         return keyValueResults;
     }
 
-    private void extracted(Long deviceId, List<KeyValueResult> keyValueResults) {
+    private void extracted(Long deviceId, List<KeyValueResult> keyValueResults) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> params = new ArrayList<>();
         params.add(DeviceFailureConstants.DIMENSION.变电所吸上电流);
         params.add(DeviceFailureConstants.DIMENSION.AT所吸上电流);
@@ -324,6 +323,8 @@ public class CalcServiceImpl implements ICalcService {
                 Map<String, Object> result = new HashMap<>();
                 result.put("故障区段", "第一AT区段");
                 THREAD_LOCAL.set(result);
+            }else {
+                THREAD_LOCAL.get().put("故障区段", "第一AT区段");
             }
             List<DeviceFailureConstants.DIMENSION> otherParams = new ArrayList<>();
             otherParams.add(DeviceFailureConstants.DIMENSION.变电所上行T电流);
@@ -379,10 +380,10 @@ public class CalcServiceImpl implements ICalcService {
     }
 
     @Override
-    public List<KeyValueResult> calcData(Long deviceId) {
+    public List<KeyValueResult> calcData(Long deviceId) throws ValidaException {
         List<KeyValueResult> keyValueResults = new ArrayList<>();
-        FixedValue TF短路故障判别 = fixedValueService.getOneByDeviceIdAndFixedValueName(deviceId, FixedValueConstants.DIMENSION.起点公里标.getName());
-        Double tfValue = Double.parseDouble(TF短路故障判别.getSummonValue());
+        FixedValue 起点公里标 = fixedValueService.getOneByDeviceIdAndFixedValueName(deviceId, FixedValueConstants.DIMENSION.起点公里标.getName());
+        Double tfValue = Double.parseDouble(起点公里标.getSummonValue());
         keyValueResults.add(new KeyValueResult("变电所上网点公里标", tfValue));
         FixedValue 变电所供电线长度 = fixedValueService.getOneByDeviceIdAndFixedValueName(deviceId, FixedValueConstants.DIMENSION.变电所供电线长度.getName());
         Double bdValue = Double.parseDouble(变电所供电线长度.getSummonValue());
@@ -473,13 +474,15 @@ public class CalcServiceImpl implements ICalcService {
                     return new KeyValueResult(o.getDeviceKey(), o.getDeviceValue() + "安," + deviceDataDto.getDeviceValue() + "度");
                 }).collect(Collectors.toList());
         keyValueResults.addAll(电流);
-        keyValueResults.add(new KeyValueResult("Kp", 2000));
-        keyValueResults.add(new KeyValueResult("In TF短路故障判别系数", 0.05));
+        FixedValue 吸上电流流互变比 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.吸上电流流互变比);
+        FixedValue TF短路故障判别 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.TF短路故障判别);
+        keyValueResults.add(new KeyValueResult("Kp", Float.parseFloat(吸上电流流互变比.getSummonValue())));
+        keyValueResults.add(new KeyValueResult("In TF短路故障判别系数", Integer.parseInt(TF短路故障判别.getSummonValue())));
         return keyValueResults;
     }
 
     @Override
-    public Map<String, CurrentValue> currentDistMap(Long deviceId) {
+    public Map<String, CurrentValue> currentDistMap(Long deviceId) throws ValidaException {
         Map<String, CurrentValue> currentMap = new HashMap<>();
 //        I0st=上行T线电流（变电所测距数据）
         RealVector I0stVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所上行T电流);
@@ -518,12 +521,12 @@ public class CalcServiceImpl implements ICalcService {
         RealVector I2xfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.分区所下行F电流);
         currentMap.put("I2xf", analysisCurrentValue(I2xfVector, 标准零度));
         // I1f=I1sf+I1xf
-        RealVector I1fVactor = I1stVector.add(I1xfVector);
+        RealVector I1fVactor = I1sfVector.add(I1xfVector);
         currentMap.put("I1f", analysisCurrentValue(I1fVactor, 标准零度));
         // I1t=I1st+I1xt
         RealVector I1tVector = I1stVector.add(I1xtVector);
         currentMap.put("I1tV", analysisCurrentValue(I1tVector, 标准零度));
-        // I2f=I2sf+I2xf
+        // I2f=I2sf+I2xf todo why wrong????
         RealVector I2fVector = I2sfVector.add(I2xfVector);
         currentMap.put("I2f", analysisCurrentValue(I2fVector, 标准零度));
         // I2t=I2st+I2xt
@@ -532,6 +535,9 @@ public class CalcServiceImpl implements ICalcService {
         // I0=I0st+I0xt+I0sf+I0xf
         RealVector I0Vector = I0stVector.add(I0xtVector).add(I0sfVector).add(I0xfVector);
         currentMap.put("I0", analysisCurrentValue(I0Vector, 标准零度));
+        // I1=I1st+I1xt+I1sf+I1xf
+        RealVector I1Vector = I1stVector.add(I1xtVector).add(I1sfVector).add(I1xfVector);
+        currentMap.put("I1", analysisCurrentValue(I1Vector, 标准零度));
         // I2=I2t+I2f
         RealVector I2Vector = I2tVector.add(I2fVector);
         currentMap.put("I2", analysisCurrentValue(I2Vector, 标准零度));
@@ -591,13 +597,13 @@ public class CalcServiceImpl implements ICalcService {
 
     private CurrentValue analysisCurrentValue(RealVector vector, RealVector base) {
         CurrentValue currentValue = new CurrentValue();
-        float sub = MathUtils.toAngle(vector) - MathUtils.toAngle(base);
+        Double sub = MathUtils.toAngle(vector) - MathUtils.toAngle(base);
         currentValue.setValue(vector.getNorm());
         currentValue.setDirection(Math.cos(sub)>0?1:-1);
         return currentValue;
     }
 
-    private RealVector buildDimension(Long deviceId, DeviceFailureConstants.DIMENSION dimension) {
+    private RealVector buildDimension(Long deviceId, DeviceFailureConstants.DIMENSION dimension) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(dimension);
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.getByNameAndResource(dimension.getName()+"角度", dimension.getResource()));
@@ -607,7 +613,7 @@ public class CalcServiceImpl implements ICalcService {
                 Double.parseDouble(bdsdlxlDeviceData.get(1).getDeviceValue()));
     }
 
-    private Double 下行(Long deviceId) {
+    private Double 下行(Long deviceId) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所下行T电流);
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所下行T电流角度);
@@ -631,7 +637,7 @@ public class CalcServiceImpl implements ICalcService {
         return bdsResult.getNorm();
     }
 
-    private Double 上行(Long deviceId) {
+    private Double 上行(Long deviceId) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行T电流);
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行T电流角度);
@@ -655,7 +661,7 @@ public class CalcServiceImpl implements ICalcService {
         return bdsResult.getNorm();
     }
 
-    private KeyValueResult 分区所横联电流Ihl2(Long deviceId) {
+    private KeyValueResult 分区所横联电流Ihl2(Long deviceId) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.分区所上行T电流);
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.分区所上行T电流角度);
@@ -671,7 +677,7 @@ public class CalcServiceImpl implements ICalcService {
         return new KeyValueResult("分区所横联电流Ihl2(A)", bdsResult.getNorm());
     }
 
-    private KeyValueResult 变电所横联电流Ihl0(Long deviceId) {
+    private KeyValueResult 变电所横联电流Ihl0(Long deviceId) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行T电流);
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行T电流角度);
@@ -695,7 +701,7 @@ public class CalcServiceImpl implements ICalcService {
         return new KeyValueResult("变电所横联电流Ihl0(A)", bdsResult.getNorm() / 2);
     }
 
-    private KeyValueResult 变电所上行电流Ihl0(Long deviceId, List<KeyValueResult> keyValueResults) {
+    private KeyValueResult 变电所上行电流Ihl0(Long deviceId, List<KeyValueResult> keyValueResults) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行T电流);
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所上行T电流角度);
@@ -715,7 +721,7 @@ public class CalcServiceImpl implements ICalcService {
         return keyValueResult;
     }
 
-    private KeyValueResult 变电所下行电流Ihl0(Long deviceId, List<KeyValueResult> keyValueResults) {
+    private KeyValueResult 变电所下行电流Ihl0(Long deviceId, List<KeyValueResult> keyValueResults) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所下行T电流);
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.变电所下行T电流角度);
@@ -735,7 +741,7 @@ public class CalcServiceImpl implements ICalcService {
         return keyValueResult;
     }
 
-    private KeyValueResult AT所横联电流Ihl1(Long deviceId) {
+    private KeyValueResult AT所横联电流Ihl1(Long deviceId) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.AT所上行T电流);
         bdsdlxl.add(DeviceFailureConstants.DIMENSION.AT所上行T电流角度);

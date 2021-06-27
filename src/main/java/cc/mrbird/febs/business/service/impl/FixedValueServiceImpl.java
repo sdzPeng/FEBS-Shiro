@@ -8,6 +8,7 @@ import cc.mrbird.febs.business.mapper.FixedValueMapper;
 import cc.mrbird.febs.business.service.*;
 import cc.mrbird.febs.business.util.NumberUtil;
 import cc.mrbird.febs.common.exception.FebsException;
+import cc.mrbird.febs.common.exception.ValidaException;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
@@ -123,8 +124,9 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
 
     @Override
     public List<DeviceDataDto> findByFixedValueVersionIdAndDimension(Long deviceId,
-                                                           List<DeviceFailureConstants.DIMENSION> params) {
+                                                           List<DeviceFailureConstants.DIMENSION> params) throws ValidaException {
         Device device = deviceService.getById(deviceId);
+        if (ObjectUtils.isNull(device)) throw new ValidaException(String.format("设备[%s]不存在", deviceId));
         return params.stream().map(o -> {
             QueryWrapper<DeviceResource> deviceResourceQueryWrapper = new QueryWrapper<>();
             deviceResourceQueryWrapper.eq("DEVICE_ID", device.getDeviceId());

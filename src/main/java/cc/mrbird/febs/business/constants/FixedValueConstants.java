@@ -16,6 +16,10 @@ public class FixedValueConstants {
 
     public static final String 吸上电流流互变比 = "吸上电流流互变比";
 
+    /**
+     *         TF短路故障判别("TF短路故障判别", "TF短路故障判别","",""),
+     *         吸上电流流互变比("吸上电流流互变比", "吸上电流流互变比","",""),
+     */
     @Getter
     public enum DIMENSION {
         起点公里标("起点公里标"),
@@ -35,6 +39,8 @@ public class FixedValueConstants {
         AT1的QF2值("AT1的QF2值"),
         AT2的QF1值("AT2的QF1值"),
         AT2的QF2值("AT2的QF2值"),
+        TF短路故障判别("TF短路故障判别"),
+        吸上电流流互变比("吸上电流流互变比"),
 
         ;
         private String name;

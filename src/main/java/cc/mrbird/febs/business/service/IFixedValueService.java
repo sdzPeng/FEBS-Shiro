@@ -6,6 +6,7 @@ import cc.mrbird.febs.business.dto.DeviceDataDto;
 import cc.mrbird.febs.business.dto.DeviceDescDto;
 import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.Resource;
+import cc.mrbird.febs.common.exception.ValidaException;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -30,7 +31,7 @@ public interface IFixedValueService extends IService<FixedValue> {
 
     FixedValue getOneByDeviceIdAndFixedValueName(Long fixedValueVersionId, String fixedValueName);
 
-    List<DeviceDataDto> findByFixedValueVersionIdAndDimension(Long deviceId, List<DeviceFailureConstants.DIMENSION> params);
+    List<DeviceDataDto> findByFixedValueVersionIdAndDimension(Long deviceId, List<DeviceFailureConstants.DIMENSION> params) throws ValidaException;
 
     FixedValue findByDeviceIdAndFixedName(Long deviceId, FixedValueConstants.DIMENSION dimension);
 }

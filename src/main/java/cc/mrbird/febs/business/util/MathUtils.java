@@ -20,9 +20,9 @@ public final class MathUtils {
         return new ArrayRealVector(new Double[]{cosValue, sinValue});
     }
 
-    public static Float toAngle(RealVector realVector) {
+    public static Double toAngle(RealVector realVector) {
         double[] values = realVector.toArray();
-        return (float)Math.atan(values[1] / values[0]);
+        return Math.toDegrees(Math.atan(values[1] / values[0]));
     }
 
     public static void main(String[] args) {

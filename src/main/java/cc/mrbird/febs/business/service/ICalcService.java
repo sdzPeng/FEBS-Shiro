@@ -2,6 +2,7 @@ package cc.mrbird.febs.business.service;
 
 import cc.mrbird.febs.business.dto.CurrentValue;
 import cc.mrbird.febs.business.dto.KeyValueResult;
+import cc.mrbird.febs.common.exception.ValidaException;
 
 import java.util.List;
 import java.util.Map;
@@ -15,9 +16,9 @@ import java.util.Map;
  * @desc：
  */
 public interface ICalcService {
-    List<KeyValueResult> analysisResult(Long deviceId);
+    List<KeyValueResult> analysisResult(Long deviceId) throws ValidaException;
 
-    List<KeyValueResult> calcData(Long deviceId);
+    List<KeyValueResult> calcData(Long deviceId) throws ValidaException;
 
-    Map<String, CurrentValue> currentDistMap(Long deviceId);
+    Map<String, CurrentValue> currentDistMap(Long deviceId) throws ValidaException;
 }
