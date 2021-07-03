@@ -10,6 +10,7 @@ import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSource
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.servlet.Cookie;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.crazycake.shiro.RedisCacheManager;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.session.web.http.DefaultCookieSerializer;
 import org.springframework.util.Base64Utils;
 
 import java.nio.charset.StandardCharsets;
@@ -121,6 +123,9 @@ public class ShiroConfig {
     private SimpleCookie rememberMeCookie() {
         // 设置 cookie 名称，对应 login.html 页面的 <input type="checkbox" name="rememberMe"/>
         SimpleCookie cookie = new SimpleCookie("rememberMe");
+        cookie.setSameSite(Cookie.SameSiteOptions.NONE);
+        cookie.setSecure(false);
+        cookie.setHttpOnly(true);
         // 设置 cookie 的过期时间，单位为秒，这里为一天
         cookie.setMaxAge(febsProperties.getShiro().getCookieTimeout());
         return cookie;

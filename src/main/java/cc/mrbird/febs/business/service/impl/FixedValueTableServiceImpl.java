@@ -12,9 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mongodb.client.gridfs.model.GridFSFile;
 import lombok.extern.slf4j.Slf4j;
-import org.ehcache.core.util.CollectionUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
@@ -23,8 +21,6 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,7 +67,7 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
             QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
             fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", o.getFixedValueTableId());
             List<FixedValueVersion> fixValueVersions = fixedValueVersionService.list(fixedValueVersionQueryWrapper);
-            fixedValueTableDto.setFixedValueVersionId(fixValueVersions);
+            fixedValueTableDto.setFixedValueVersions(fixValueVersions);
             return fixedValueTableDto;
         }).collect(Collectors.toList());
     }

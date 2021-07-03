@@ -4,7 +4,6 @@ import cc.mrbird.febs.business.constants.DeviceFailureConstants;
 import cc.mrbird.febs.business.constants.FixedValueConstants;
 import cc.mrbird.febs.business.dto.CurrentValue;
 import cc.mrbird.febs.business.dto.DeviceDataDto;
-import cc.mrbird.febs.business.dto.DimensionDto;
 import cc.mrbird.febs.business.dto.KeyValueResult;
 import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.FixedValueVersion;
@@ -361,7 +360,13 @@ public class CalcServiceImpl implements ICalcService {
                     .max(CalcServiceImpl::compare)
                     .get();
             keyValueResults.add(new KeyValueResult("故障区段", "第二AT区段"));
-            THREAD_LOCAL.get().put("故障区段", "第二AT区段");
+            if (null == THREAD_LOCAL.get()) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("故障区段", "第二AT区段");
+                THREAD_LOCAL.set(result);
+            }else {
+                THREAD_LOCAL.get().put("故障区段", "第二AT区段");
+            }
             // 故障行别
             THREAD_LOCAL.get().put("故障行别", otherMaxDevice.getDirection());
             keyValueResults.add(new KeyValueResult("故障行别", otherMaxDevice.getDirection()));
@@ -477,7 +482,7 @@ public class CalcServiceImpl implements ICalcService {
         FixedValue 吸上电流流互变比 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.吸上电流流互变比);
         FixedValue TF短路故障判别 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.TF短路故障判别);
         keyValueResults.add(new KeyValueResult("Kp", Float.parseFloat(吸上电流流互变比.getSummonValue())));
-        keyValueResults.add(new KeyValueResult("In TF短路故障判别系数", Integer.parseInt(TF短路故障判别.getSummonValue())));
+        keyValueResults.add(new KeyValueResult("In TF短路故障判别系数", Float.parseFloat(TF短路故障判别.getSummonValue())));
         return keyValueResults;
     }
 

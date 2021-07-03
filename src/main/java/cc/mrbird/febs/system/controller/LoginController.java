@@ -13,10 +13,7 @@ import cc.mrbird.febs.system.service.IUserService;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,6 +53,26 @@ public class LoginController extends BaseController {
         // 保存登录日志
         LoginLog loginLog = new LoginLog();
         loginLog.setUsername(username);
+        loginLog.setSystemBrowserInfo();
+        this.loginLogService.saveLoginLog(loginLog);
+
+        return new FebsResponse().success();
+    }
+
+    @PostMapping("v2/login")
+    @Limit(key = "v2/login", period = 60, count = 20, name = "登录接口", prefix = "limit")
+    public FebsResponse loginv2(
+            @RequestBody LoginDto loginDto,
+            HttpServletRequest request, HttpServletResponse response) throws FebsException, IOException {
+        validateCodeService.createWithOutValidateCode(request, response);
+//        HttpSession session = request.getSession();
+//        validateCodeService.check(session.getId(), loginDto.getVerifyCode());
+        String password = MD5Util.encrypt(loginDto.getUsername().toLowerCase(), loginDto.getPassword());
+        UsernamePasswordToken token = new UsernamePasswordToken(loginDto.getUsername(), password, loginDto.getRememberMe());
+        super.login(token);
+        // 保存登录日志
+        LoginLog loginLog = new LoginLog();
+        loginLog.setUsername(loginDto.getUsername());
         loginLog.setSystemBrowserInfo();
         this.loginLogService.saveLoginLog(loginLog);
 

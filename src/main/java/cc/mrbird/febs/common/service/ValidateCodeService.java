@@ -32,6 +32,14 @@ public class ValidateCodeService {
     @Autowired
     private FebsProperties properties;
 
+    public void createWithOutValidateCode(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        String key = session.getId();
+        ValidateCodeProperties code = properties.getCode();
+        setHeader(response, code.getType());
+        Captcha captcha = createCaptcha(code);
+        redisService.set(FebsConstant.CODE_PREFIX  + key, StringUtils.lowerCase(captcha.text()), code.getTime());
+    }
     
     public void create(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
