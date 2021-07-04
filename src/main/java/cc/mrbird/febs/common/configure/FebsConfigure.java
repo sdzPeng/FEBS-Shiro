@@ -5,6 +5,7 @@ import cc.mrbird.febs.common.properties.FebsProperties;
 import cc.mrbird.febs.common.properties.SwaggerProperties;
 import cc.mrbird.febs.common.xss.XssFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 @EnableSwagger2
 public class FebsConfigure {
+
+    @Value("${swagger.host}")
+    private String swaggerHost;
 
     @Autowired
     private FebsProperties properties;
@@ -68,6 +72,7 @@ public class FebsConfigure {
     public Docket swaggerApi() {
         SwaggerProperties swagger = properties.getSwagger();
         return new Docket(DocumentationType.SWAGGER_2)
+                .host(swaggerHost)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage(swagger.getBasePackage()))
                 .paths(PathSelectors.any())
