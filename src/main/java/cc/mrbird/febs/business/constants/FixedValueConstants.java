@@ -39,6 +39,7 @@ public class FixedValueConstants {
         AT1的QF2值("AT1的QF2值"),
         AT2的QF1值("AT2的QF1值"),
         AT2的QF2值("AT2的QF2值"),
+        AT3的QF1值("AT3的QF1值"),
         TF短路故障判别("TF短路故障判别"),
         吸上电流流互变比("吸上电流流互变比"),
 
