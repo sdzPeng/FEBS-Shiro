@@ -125,6 +125,12 @@ public class FixedValueController extends BaseController {
         return new FebsResponse().success().data(this.fixedValueTableService.fixedValueTableList());
     }
 
+    @GetMapping("/table/list/table")
+    @ApiOperation(value = "获取所定值表的版本列表")
+    public FebsResponse fixedValueTableVersionList(Long fixedValueTableId) {
+        return new FebsResponse().success().data(this.fixedValueTableService.fixedValueTableVersionList(fixedValueTableId));
+    }
+
     @GetMapping("/version/list/page")
     @ApiOperation(value = "获取定值表版本信息")
     public FebsResponse fixedValueTableList(Long fixedValueTableId, QueryRequest request) {

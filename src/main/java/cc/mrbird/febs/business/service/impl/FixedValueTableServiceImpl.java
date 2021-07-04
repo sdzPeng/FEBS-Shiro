@@ -135,4 +135,12 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
     public void delAllValueTable() {
         fixedValueTableService.list().forEach(o->delValueTable(o.getFixedValueTableId()));
     }
+
+    @Override
+    public List<FixedValueVersion> fixedValueTableVersionList(Long fixedValueTableId) {
+        QueryWrapper<FixedValueVersion> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("CREATE_TIME");
+        queryWrapper.eq("FIXED_VALUE_TABLE_ID", fixedValueTableId);
+        return fixedValueVersionService.list(queryWrapper);
+    }
 }

@@ -28,4 +28,6 @@ public interface IFixedValueTableService  extends IService<FixedValueTable> {
     void delAllValueTable();
 
     void delFixedValueVersion(List<Long> fixedValueTableIds);
+
+    List<FixedValueVersion> fixedValueTableVersionList(Long fixedValueTableId);
 }
