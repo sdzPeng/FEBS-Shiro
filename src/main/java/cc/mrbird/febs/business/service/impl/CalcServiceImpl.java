@@ -467,7 +467,11 @@ public class CalcServiceImpl implements ICalcService {
                 .filter(o -> o.getDeviceKey().endsWith("电流"))
                 .map(o -> {
                     if (o.getDeviceKey().contains("吸上电流")) return new KeyValueResult(o.getDeviceKey(), o.getDeviceValue()+"安");
-                    DeviceDataDto deviceDataDto = deviceDataMap.get(o.getDeviceResourceName()+"_"+o.getDeviceKey() + "角度").get(0);
+                    List<DeviceDataDto> deviceDataDtos = deviceDataMap.get(o.getDeviceResourceName() + "_" + o.getDeviceKey() + "角度");
+                    if (null == deviceDataDtos) {
+                        return new KeyValueResult(o.getDeviceKey(), null);
+                    }
+                    DeviceDataDto deviceDataDto = deviceDataDtos.get(0);
                     return new KeyValueResult(o.getDeviceKey(), o.getDeviceValue() + "安," + deviceDataDto.getDeviceValue() + "度");
                 }).collect(Collectors.toList());
         keyValueResults.addAll(电流);

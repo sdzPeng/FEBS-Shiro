@@ -1,6 +1,7 @@
 package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.dto.DeviceDto;
+import cc.mrbird.febs.business.dto.FixedValueTableReturnDto;
 import cc.mrbird.febs.business.entity.DeviceData;
 import cc.mrbird.febs.business.entity.Resource;
 import cc.mrbird.febs.business.listener.DeviceListener;
@@ -16,6 +17,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @company: 上海数慧系统技术有限公司
@@ -49,11 +52,21 @@ public class DeviceFailureController {
     @Autowired
     private GridFsTemplate gridFsTemplate;
 
+    @PostMapping("attach/fixedtableversion")
+    @ApiOperation(value = "设别故障报文关联定值表版本id")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceTableId", value = "设备表id", dataTypeClass = Long.class, example="14"),
+            @ApiImplicitParam(name = "fixedValueVersionId", value = "定值表版本id", dataTypeClass = Long.class, example="14")
+    })
+    public FebsResponse attachFixedTableVersion(Long deviceTableId, Long fixedValueVersionId) {
+        deviceFailureService.attachFixedTableVersion(deviceTableId, fixedValueVersionId);
+        return new FebsResponse().success();
+    }
+
     @PostMapping("import")
     @ApiOperation(value = "设备故障表导入")
-    @ApiImplicitParam(name = "fixedValueVersionId", value = "设备表id", dataTypeClass = Long.class, example="14")
 //    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
-    public FebsResponse fixedValueImport(Long fixedValueVersionId, MultipartFile file) throws IOException {
+    public FebsResponse fixedValueImport(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new FebsException("导入数据为空");
         }
@@ -80,7 +93,7 @@ public class DeviceFailureController {
         // 读取定值
         ReadSheet readSheet = EasyExcel.readSheet().build();
         ExcelReader fixedValueReader = EasyExcel.read(file.getInputStream(), DeviceDto.class,
-                new DeviceListener(fixedValueVersionId, resource, file.getOriginalFilename(), callBack))
+                new DeviceListener(resource, file.getOriginalFilename(), callBack))
                 .headRowNumber(3)
                 .build();
         fixedValueReader.read(readSheet);

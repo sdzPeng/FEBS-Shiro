@@ -44,8 +44,7 @@ public class DeviceListener extends AnalysisEventListener<DeviceDto> {
         this.deviceTableService = ApplicationContextUtil.getBean(IDeviceTableService.class);
     }
 
-    public DeviceListener(Long fixedValueVersionId, Resource resource, String fileName, Map<String, Object> callBack) {
-        this.fixedValueVersionId = fixedValueVersionId;
+    public DeviceListener(Resource resource, String fileName, Map<String, Object> callBack) {
         this.resourceService =  ApplicationContextUtil.getBean(IResourceService.class);
         this.deviceService = ApplicationContextUtil.getBean(IDeviceService.class);
         this.deviceTableService = ApplicationContextUtil.getBean(IDeviceTableService.class);
@@ -66,7 +65,6 @@ public class DeviceListener extends AnalysisEventListener<DeviceDto> {
             deviceTable.setResourceId(resource.getResourceId());
             deviceTable.setName(fileName);
             deviceTable.setCreateTime(new Date());
-            deviceTable.setFixedValueVersionId(fixedValueVersionId);
             deviceTableService.save(deviceTable);
         }else {
             QueryWrapper<DeviceTable> deviceTableWrapper = new QueryWrapper<>();
@@ -85,7 +83,7 @@ public class DeviceListener extends AnalysisEventListener<DeviceDto> {
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
-        deviceService.saveData(list, fixedValueVersionId);
+        deviceService.saveData(list);
         list.clear();
     }
 }

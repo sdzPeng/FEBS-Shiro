@@ -15,5 +15,5 @@ import java.util.List;
  */
 public interface IDeviceService extends IService<Device> {
 
-    void saveData(List<Device> list, Long fixedValueVersionId);
+    void saveData(List<Device> list);
 }

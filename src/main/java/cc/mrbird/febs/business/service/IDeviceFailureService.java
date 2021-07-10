@@ -20,4 +20,6 @@ public interface IDeviceFailureService {
     List<DeviceData> getResourceData(Long deviceId, String resourceName);
 
     List<DeviceTable> findAllTables();
+
+    void attachFixedTableVersion(Long deviceTableId, Long fixedValueVersionId);
 }

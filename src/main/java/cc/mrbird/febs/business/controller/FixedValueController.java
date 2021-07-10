@@ -100,13 +100,24 @@ public class FixedValueController extends BaseController {
         ExcelReader fixedValueReader = EasyExcel.read(file.getInputStream(), FixedValue.class, new FixValueListener(resource, callBack))
                 .registerConverter(new CustomStringNumberConverter())
                 .headRowNumber(2).build();
-        fixedValueReader.read(readSheet);
+        try {
+            fixedValueReader.read(readSheet);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new FebsException("定值表不符合要求！");
+        }
 
         // 读取元数据值
         ReadSheet fixedValueSheet = EasyExcel.readSheet(FIXED_VALUE_META_REGEXP).build();
         ExcelReader excelReader = EasyExcel.read(file.getInputStream(), FixedValueMeta.class,
                 new FixValueMetaListener()).build();
-        excelReader.read(fixedValueSheet);
+        try {
+            excelReader.read(fixedValueSheet);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new FebsException("元数据表不符合要求！");
+        }
 
         // 文件入库操作
         return new FebsResponse().success().data(callBack.get("fixedValueTableId"));

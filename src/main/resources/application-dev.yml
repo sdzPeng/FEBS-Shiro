@@ -51,9 +51,9 @@ spring:
   # mongodb的配置
 #  data:
 #    mongodb:
-##      authentication-database: admin
-##      username: febs
-##      password: dist2019
+#      authentication-database: admin
+#      username: febs
+#      password: dist2019
 ##      host: 47.96.126.248
 #      host: localhost
 #      database: febs

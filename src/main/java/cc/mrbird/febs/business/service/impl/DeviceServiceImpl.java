@@ -42,7 +42,7 @@ public class DeviceServiceImpl  extends ServiceImpl<DeviceMapper, Device> implem
 
 
     @Override
-    public void saveData(List<Device> list, Long fixedValueVersionId) {
+    public void saveData(List<Device> list) {
         log.info("{}条数据，开始存储数据库！", list.size());
         Map<String, List<Device>> deviceGroups = list
                 .stream()

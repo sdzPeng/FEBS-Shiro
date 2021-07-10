@@ -53,4 +53,12 @@ public class DeviceFailureServiceImpl implements IDeviceFailureService {
     public List<DeviceTable> findAllTables() {
         return deviceTableService.list();
     }
+
+    @Override
+    public void attachFixedTableVersion(Long deviceTableId, Long fixedValueVersionId) {
+        QueryWrapper<DeviceTable> deviceTableQueryWrapper = new QueryWrapper<>();
+        deviceTableQueryWrapper.eq("DEVICE_TABLE_ID", deviceTableId);
+        DeviceTable deviceTable = deviceTableService.getOne(deviceTableQueryWrapper);
+        deviceTable.setFixedValueVersionId(fixedValueVersionId);
+    }
 }
