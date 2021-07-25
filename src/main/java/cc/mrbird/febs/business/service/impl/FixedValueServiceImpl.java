@@ -115,6 +115,7 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
         Device device = this.deviceService.getById(deviceId);
         if (null == device) throw new FebsException(String.format("设备唯一标识「%s」不存在", deviceId));
         DeviceTable deviceTable = this.deviceTableService.getById(device.getDeviceTableId());
+        if (null == deviceTable.getFixedValueVersionId())throw new FebsException(String.format("设备表未绑定定制表id「%s」", deviceId));
         FixedValueVersion fixedValueVersion = this.fixedValueVersionService.getById(deviceTable.getFixedValueVersionId());
         QueryWrapper<FixedValue> fixedValueQueryWrapper = new QueryWrapper<>();
         fixedValueQueryWrapper.eq("FIXED_VALUE_VERSION_ID", fixedValueVersion.getFixValueVersionId());

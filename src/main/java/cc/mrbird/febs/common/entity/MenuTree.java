@@ -28,6 +28,6 @@ public class MenuTree<T> implements Serializable {
     private boolean hasParent = false;
     private boolean hasChild = false;
 
-    private Menu data;
+    private T data;
 
 }

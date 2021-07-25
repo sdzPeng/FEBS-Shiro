@@ -130,6 +130,12 @@ public class ViewController extends BaseController {
         return FebsUtil.view("system/menu/menu");
     }
 
+    @GetMapping(FebsConstant.VIEW_PREFIX + "site/manage")
+    @RequiresPermissions("site:view")
+    public String fixedValueManage() {
+        return FebsUtil.view("site/manage/manage");
+    }
+
     @GetMapping(FebsConstant.VIEW_PREFIX + "system/dept")
     @RequiresPermissions("dept:view")
     public String systemDept() {

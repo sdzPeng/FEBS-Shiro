@@ -527,7 +527,7 @@ CREATE TABLE `t_fixed_value_meta`  (
                                      `CODE` varchar(20)  CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编码',
                                      `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
                                      `PARENT_CODE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '父编码',
-                                     `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
+                                     `FIXED_VALUE_VERSION_ID` bigint(20) COMMENT '定值版本id',
                                      PRIMARY KEY (`FIXED_VALUE_META_ID`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;
 
@@ -641,7 +641,23 @@ CREATE TABLE `t_device_table`  (
                              `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '表名称',
                              `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
                              `RESOURCE_ID` bigint(20) NOT NULL COMMENT '资源id',
-                             `FIXED_VALUE_VERSION_ID` bigint(20) NOT NULL COMMENT '定值版本id',
+                             `FIXED_VALUE_VERSION_ID` bigint(20) COMMENT '定值版本id',
                              PRIMARY KEY (`DEVICE_TABLE_ID`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for t_device
+-- ----------------------------
+DROP TABLE IF EXISTS `t_site_dic`;
+CREATE TABLE `t_site_dic`  (
+                                   `SITE_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '站点ID',
+                                   `PARENT_ID` bigint(20) NOT NULL COMMENT '父ID',
+                                   `SITE_NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '站点名称',
+                                   `SITE_CODE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '站点code',
+                                   `ORDER_NUM` bigint(20) COMMENT '排序',
+                                   `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
+                                   `MODIFY_TIME` datetime(0) NOT NULL COMMENT '修改时间',
+                                   PRIMARY KEY (`SITE_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '站点表' ROW_FORMAT = Dynamic;
 

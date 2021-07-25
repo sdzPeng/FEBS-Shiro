@@ -1,10 +1,8 @@
 package cc.mrbird.febs.business.service.impl;
 
-import cc.mrbird.febs.business.entity.Device;
-import cc.mrbird.febs.business.entity.DeviceData;
-import cc.mrbird.febs.business.entity.DeviceResource;
-import cc.mrbird.febs.business.entity.DeviceTable;
+import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.service.*;
+import cc.mrbird.febs.common.exception.FebsException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +28,7 @@ public class DeviceFailureServiceImpl implements IDeviceFailureService {
     @Autowired private IDeviceDataService deviceDataService;
     @Autowired private IDeviceResourceService deviceResourceService;
     @Autowired private IDeviceTableService deviceTableService;
+    @Autowired private IFixedValueVersionService versionService;
     @Override
     public Object getDevicesByDeviceTableId(Long deviceTableId) {
         QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
@@ -56,9 +55,13 @@ public class DeviceFailureServiceImpl implements IDeviceFailureService {
 
     @Override
     public void attachFixedTableVersion(Long deviceTableId, Long fixedValueVersionId) {
+        FixedValueVersion fixedValueVersion = versionService.getById(fixedValueVersionId);
+        if (null == fixedValueVersion) throw new FebsException(String.format("定制表版本id「%s」不存在", fixedValueVersionId));
         QueryWrapper<DeviceTable> deviceTableQueryWrapper = new QueryWrapper<>();
         deviceTableQueryWrapper.eq("DEVICE_TABLE_ID", deviceTableId);
         DeviceTable deviceTable = deviceTableService.getOne(deviceTableQueryWrapper);
+        if (null == deviceTable) throw new FebsException(String.format("设备表表id「%s」不存在", deviceTableId));
         deviceTable.setFixedValueVersionId(fixedValueVersionId);
+        deviceTableService.update(deviceTable, deviceTableQueryWrapper);
     }
 }
