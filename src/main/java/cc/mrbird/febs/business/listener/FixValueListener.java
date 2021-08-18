@@ -54,7 +54,8 @@ public class FixValueListener extends AnalysisEventListener<FixedValue> {
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
         ReadSheet readSheet = analysisContext.readSheetHolder().getReadSheet();
         // 这里也要保存数据，确保最后遗留的数据也存储到数据库
-        callBack.put("fixedValueTableId", fixedValueService.analysis(readSheet, list, resource));
+        callBack.put("fixedValueTableId", fixedValueService.analysis(readSheet, list,
+                resource, Long.valueOf(callBack.get("siteId").toString())));
         fixedValueService.saveData(list);
         log.info("所有数据解析完成！");
         list.clear();

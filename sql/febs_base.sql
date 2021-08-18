@@ -536,8 +536,9 @@ CREATE TABLE `t_fixed_value_meta`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `t_fixed_value_table`;
 CREATE TABLE `t_fixed_value_table`  (
-                                        `FIXED_VALUE_Table_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '部门ID',
+                                        `FIXED_VALUE_Table_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '定值表ID',
                                         `NAME` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
+                                        `SITE_ID` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '站点id',
                                         `CREATE_TIME` datetime(0) NOT NULL COMMENT '创建时间',
                                         PRIMARY KEY (`FIXED_VALUE_Table_ID`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '定值元数据表' ROW_FORMAT = Dynamic;

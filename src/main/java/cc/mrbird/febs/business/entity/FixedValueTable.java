@@ -30,4 +30,7 @@ public class FixedValueTable {
     @TableField(value = "CREATE_TIME")
     private Date createTime;
 
+    @TableField(value = "SITE_ID")
+    private Long siteId;
+
 }

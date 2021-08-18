@@ -1,10 +1,7 @@
 package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.config.CustomStringNumberConverter;
-import cc.mrbird.febs.business.entity.FixedValue;
-import cc.mrbird.febs.business.entity.FixedValueMeta;
-import cc.mrbird.febs.business.entity.FixedValueVersion;
-import cc.mrbird.febs.business.entity.Resource;
+import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.listener.FixValueListener;
 import cc.mrbird.febs.business.listener.FixValueMetaListener;
 import cc.mrbird.febs.business.service.IFixedValueService;
@@ -32,10 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @company: 上海数慧系统技术有限公司
@@ -69,7 +63,7 @@ public class FixedValueController extends BaseController {
     @PostMapping("import")
     @ApiOperation(value = "定值表导入")
 //    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
-    public FebsResponse fixedValueImport(MultipartFile file) throws IOException {
+    public FebsResponse fixedValueImport(MultipartFile file, @RequestParam String siteId) throws IOException {
         if (file.isEmpty()) {
             throw new FebsException("导入数据为空");
         }
@@ -97,6 +91,7 @@ public class FixedValueController extends BaseController {
         // 读取定值
         ReadSheet readSheet = EasyExcel.readSheet().build();
         Map<String, Object> callBack = new HashMap<>();
+        callBack.put("siteId", siteId);
         ExcelReader fixedValueReader = EasyExcel.read(file.getInputStream(), FixedValue.class, new FixValueListener(resource, callBack))
                 .registerConverter(new CustomStringNumberConverter())
                 .headRowNumber(2).build();
@@ -170,6 +165,15 @@ public class FixedValueController extends BaseController {
         QueryWrapper<FixedValue> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("FIXED_VALUE_VERSION_ID", fixedValueVersionId);
         return new FebsResponse().success().data(fixedValueService.list(queryWrapper));
+    }
+
+    @GetMapping("/list/site")
+    @ApiOperation(value = "通过siteId获取定值表列表")
+    @ApiImplicitParam(name = "siteId", value = "定值版本id", dataTypeClass = Long.class, example="")
+    public FebsResponse fixedTableVersionList(Long siteId) {
+        QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("SITE_ID", siteId);
+        return new FebsResponse().success().data(fixedValueTableService.list(queryWrapper));
     }
 
 }

@@ -47,10 +47,10 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
     public static ThreadLocal<Long> THREAD_LOCAL = new ThreadLocal<>();
 
     @Override
-    public Long analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource) {
+    public Long analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource, Long siteId) {
         if (null == readSheet||!readSheet.getSheetName().matches(FIXED_VALUE_REGEXP)) throw new FebsException("sheet页命名要求「定值表标识符数字」！");
         FixedValue direction = list.stream().filter(o -> DIRECTION.equals(o.getName())).findFirst().orElseThrow(()->new FebsException("定值表中确实属性「公里标方向(相减-1/相加1)」"));
-        Long fixedValueTableId = extracted(resource, readSheet.getSheetName());
+        Long fixedValueTableId = extracted(resource, readSheet.getSheetName(), siteId);
 
         if (!ObjectUtils.isEmpty(direction)) {
             updateVersion(direction);
@@ -59,7 +59,7 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
         return fixedValueTableId;
     }
 
-    private Long extracted(Resource resource, String sheetName) {
+    private Long extracted(Resource resource, String sheetName, Long siteId) {
         QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("name", sheetName);
         final FixedValueTable temp;
@@ -68,6 +68,7 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
             temp = new FixedValueTable();
             temp.setName(sheetName);
             temp.setCreateTime(new Date());
+            temp.setSiteId(siteId);
             fixedValueTableService.save(temp);
         }else {
             temp = fixValueTable;

@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public interface IFixedValueService extends IService<FixedValue> {
 
-    Long analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource);
+    Long analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource, Long siteId);
 
     void saveData(List<FixedValue> list);
 
