@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @company: 上海数慧系统技术有限公司
+ * @company: test
  * @department: 数据中心
  * @date: 2021-05-30 7:23 上午
- * @author: zhangyp
- * @email: zhangyp@dist.com.cn
+ * @author: test
+ * @email: test@163.com
  * @desc：
  */
 public class DeviceFailureConstants {

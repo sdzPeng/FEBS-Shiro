@@ -10,11 +10,11 @@ import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
 
 /**
- * @company: 上海数慧系统技术有限公司
+ * @company: test
  * @department: 数据中心
  * @date: 2021-08-20 3:35 下午
- * @author: zhangyp
- * @email: zhangyp@dist.com.cn
+ * @author: test
+ * @email: test@163.com
  * @desc：
  */
 @Data

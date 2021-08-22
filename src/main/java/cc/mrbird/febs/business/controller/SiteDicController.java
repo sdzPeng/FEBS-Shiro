@@ -17,11 +17,11 @@ import javax.validation.constraints.NotBlank;
 import java.util.Collections;
 
 /**
- * @company: 上海数慧系统技术有限公司
+ * @company: test
  * @department: 数据中心
  * @date: 2021-07-25 1:44 上午
- * @author: zhangyp
- * @email: zhangyp@dist.com.cn
+ * @author: test
+ * @email: test@163.com
  * @desc：
  */
 @Slf4j

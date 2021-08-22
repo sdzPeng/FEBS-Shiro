@@ -5,11 +5,11 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * @company: 上海数慧系统技术有限公司
+ * @company: test
  * @department: 数据中心
  * @date: 2021-06-29 10:31 下午
- * @author: zhangyp
- * @email: zhangyp@dist.com.cn
+ * @author: test
+ * @email: test@163.com
  * @desc：
  */
 @Data

@@ -4,11 +4,11 @@ import cc.mrbird.febs.business.entity.Bim;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
- * @company: 上海数慧系统技术有限公司
+ * @company: test
  * @department: 数据中心
  * @date: 2021-08-21 11:35 下午
- * @author: zhangyp
- * @email: zhangyp@dist.com.cn
+ * @author: test
+ * @email: test@163.com
  * @desc：
  */
 public interface IBimService extends IService<Bim> {

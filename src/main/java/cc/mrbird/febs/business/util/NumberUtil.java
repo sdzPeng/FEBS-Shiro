@@ -3,7 +3,7 @@ package cc.mrbird.febs.business.util;
 import java.math.BigDecimal;
 
 /**
- * @author yinxp@dist.com.cn
+ * @author yinxp@163.com
  * @date 2019/4/28
  */
 public abstract class NumberUtil {

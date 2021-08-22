@@ -4,11 +4,11 @@ import cc.mrbird.febs.business.entity.FixedValueVersion;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
- * @company: 上海数慧系统技术有限公司
- * @department: 数据中心
+ * @company: test
+ * @department: test
  * @date: 2021-05-23 2:42 上午
- * @author: zhangyp
- * @email: zhangyp@dist.com.cn
+ * @author: test
+ * @email: test@163.com
  * @desc：
  */
 public interface FixedValueVersionMapper extends BaseMapper<FixedValueVersion> {

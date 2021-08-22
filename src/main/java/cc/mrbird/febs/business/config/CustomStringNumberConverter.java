@@ -12,11 +12,11 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.util.NumberToTextConverter;
 import java.math.BigDecimal;
 /**
- * @company: 上海数慧系统技术有限公司
+ * @company: test
  * @department: 数据中心
  * @date: 2021-06-12 8:35 下午
- * @author: zhangyp
- * @email: zhangyp@dist.com.cn
+ * @author: test
+ * @email: test@163.com
  * @desc：
  */
 public class CustomStringNumberConverter implements Converter<String> {
