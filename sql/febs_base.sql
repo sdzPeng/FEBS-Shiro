@@ -662,3 +662,25 @@ CREATE TABLE `t_site_dic`  (
                                    PRIMARY KEY (`SITE_ID`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '站点表' ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for t_bim_info
+-- ----------------------------
+DROP TABLE IF EXISTS `t_bim_info`;
+CREATE TABLE `t_bim_info`  (
+                               `BIM_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'BIM表信息ID',
+                               `BIM_CODE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'BIM编码',
+                               `PILLAR_CODE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '支柱编码',
+                               `MILEAGE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '里程',
+                               `LINE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '行别',
+                               `PILLAR_MODEL` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '支柱型号',
+                               `BASE_MODEL` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '基础型号',
+                               `STAY_WIRE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '拉线',
+                               `STAY_WIRE_BASE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '拉线基础',
+                               `WBAZTH` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '腕臂安装图号',
+                               `JCWXM` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '接触网下锚',
+                               `ZXMJ` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '中心锚结',
+                               `REGION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '区间/车站',
+                               `OTHER` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '其他',
+                               PRIMARY KEY (`BIM_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'BIM信息表' ROW_FORMAT = Dynamic;
+
