@@ -684,3 +684,19 @@ CREATE TABLE `t_bim_info`  (
                                PRIMARY KEY (`BIM_ID`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'BIM信息表' ROW_FORMAT = Dynamic;
 
+
+-- ----------------------------
+-- Table structure for t_label_info
+-- ----------------------------
+DROP TABLE IF EXISTS `t_label_info`;
+CREATE TABLE `t_label_info`  (
+                               `LABEL_ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'LABEL信息ID',
+                               `LINE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '行别',
+                               `PILLAR_NUM` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '支柱号',
+                               `MILEAGE` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '里程',
+                               `LABEL` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '标签',
+                               `ADDITION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '附加信息',
+                               `REGION` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '区间车站',
+                               `OFFSET_NUM` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '偏移量',
+                               PRIMARY KEY (`LABEL_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'LABEL信息表' ROW_FORMAT = Dynamic;

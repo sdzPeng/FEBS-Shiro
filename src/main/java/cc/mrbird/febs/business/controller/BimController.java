@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,7 +48,7 @@ public class BimController {
     @PostMapping("import")
     @ApiOperation(value = "BIM数据导入")
 //    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
-    public FebsResponse fixedValueImport(MultipartFile file) throws IOException {
+    public FebsResponse bimImport(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new FebsException("导入数据为空");
         }
@@ -58,7 +59,9 @@ public class BimController {
 
         // 删除已有数据
         List<Long> ids = bimService.list().stream().map(Bim::getBimId).collect(Collectors.toList());
-        bimService.removeByIds(ids);
+        if (!CollectionUtils.isEmpty(ids)) {
+            bimService.removeByIds(ids);
+        }
         // 读取上行
         ReadSheet readSheet = EasyExcel.readSheet("上行1").build();
         ExcelReader bimReader = EasyExcel.read(file.getInputStream(), BimDto.class, new BimListener())
