@@ -1,13 +1,12 @@
 package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.config.CustomStringNumberConverter;
+import cc.mrbird.febs.business.dto.FixedTableVersionDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.listener.FixValueListener;
-import cc.mrbird.febs.business.listener.FixValueMetaListener;
 import cc.mrbird.febs.business.service.IFixedValueService;
 import cc.mrbird.febs.business.service.IFixedValueTableService;
 import cc.mrbird.febs.business.service.IFixedValueVersionService;
-import cc.mrbird.febs.common.annotation.ControllerEndpoint;
 import cc.mrbird.febs.common.controller.BaseController;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.entity.QueryRequest;
@@ -102,20 +101,23 @@ public class FixedValueController extends BaseController {
             log.error(e.getMessage());
             throw new FebsException("定值表不符合要求！");
         }
+        FixedTableVersionDto versionDto = new FixedTableVersionDto();
+        versionDto.setFixedValueVersionId(Long.parseLong(callBack.get("fixedValueVersionId").toString()));
+        versionDto.setFixedValueTableId(Long.parseLong(callBack.get("fixedValueTableId").toString()));
 
-        // 读取元数据值
-        ReadSheet fixedValueSheet = EasyExcel.readSheet(FIXED_VALUE_META_REGEXP).build();
-        ExcelReader excelReader = EasyExcel.read(file.getInputStream(), FixedValueMeta.class,
-                new FixValueMetaListener()).build();
-        try {
-            excelReader.read(fixedValueSheet);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new FebsException("元数据表不符合要求！");
-        }
+//        // 读取元数据值
+//        ReadSheet fixedValueSheet = EasyExcel.readSheet(FIXED_VALUE_META_REGEXP).build();
+//        ExcelReader excelReader = EasyExcel.read(file.getInputStream(), FixedValueMeta.class,
+//                new FixValueMetaListener()).build();
+//        try {
+//            excelReader.read(fixedValueSheet);
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//            throw new FebsException("元数据表不符合要求！");
+//        }
 
         // 文件入库操作
-        return new FebsResponse().success().data(callBack.get("fixedValueTableId"));
+        return new FebsResponse().success().data(versionDto);
     }
 
     @GetMapping("/table/list/page")

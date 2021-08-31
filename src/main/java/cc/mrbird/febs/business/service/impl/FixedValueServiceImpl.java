@@ -3,6 +3,7 @@ package cc.mrbird.febs.business.service.impl;
 import cc.mrbird.febs.business.constants.DeviceFailureConstants;
 import cc.mrbird.febs.business.constants.FixedValueConstants;
 import cc.mrbird.febs.business.dto.DeviceDataDto;
+import cc.mrbird.febs.business.dto.FixedTableVersionDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.mapper.FixedValueMapper;
 import cc.mrbird.febs.business.service.*;
@@ -44,22 +45,21 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
     @Autowired private IDeviceService deviceService;
     @Autowired private IDeviceDataService deviceDataService;
     @Autowired private IDeviceResourceService deviceResourceService;
-    public static ThreadLocal<Long> THREAD_LOCAL = new ThreadLocal<>();
 
     @Override
-    public Long analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource, Long siteId) {
+    public FixedTableVersionDto analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource, Long siteId) {
         if (null == readSheet||!readSheet.getSheetName().matches(FIXED_VALUE_REGEXP)) throw new FebsException("sheet页命名要求「定值表标识符数字」！");
         FixedValue direction = list.stream().filter(o -> DIRECTION.equals(o.getName())).findFirst().orElseThrow(()->new FebsException("定值表中确实属性「公里标方向(相减-1/相加1)」"));
-        Long fixedValueTableId = extracted(resource, readSheet.getSheetName(), siteId);
+        FixedTableVersionDto fixedValueTable = extracted(resource, readSheet.getSheetName(), siteId);
 
         if (!ObjectUtils.isEmpty(direction)) {
-            updateVersion(direction);
+            updateVersion(direction, fixedValueTable.getFixedValueVersionId());
         }
         list.remove(direction);
-        return fixedValueTableId;
+        return fixedValueTable;
     }
 
-    private Long extracted(Resource resource, String sheetName, Long siteId) {
+    private FixedTableVersionDto extracted(Resource resource, String sheetName, Long siteId) {
         QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("name", sheetName);
         final FixedValueTable temp;
@@ -88,25 +88,27 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
         fixedValueVersion.setVersion(NumberUtil.numberToChinaStr(count));
         fixedValueVersion.setFixedValueTableId(temp.getFixedValueTableId());
         fixedValueVersionService.save(fixedValueVersion);
-        THREAD_LOCAL.set(fixedValueVersion.getFixValueVersionId());
-        return temp.getFixedValueTableId();
+        FixedTableVersionDto fixedTableVersionDto = new FixedTableVersionDto();
+        fixedTableVersionDto.setFixedValueVersionId(fixedValueVersion.getFixValueVersionId());
+        fixedTableVersionDto.setFixedValueTableId(temp.getFixedValueTableId());
+        return fixedTableVersionDto;
     }
 
     /**
      * 加上存储数据库
      */
     @Override
-    public void saveData(List<FixedValue> list) {
+    public void saveData(List<FixedValue> list, Long fixedValueVersionId) {
         log.info("{}条数据，开始存储数据库！", list.size());
-        list.forEach(o->o.setFixedValueVersionId(THREAD_LOCAL.get()));
+        list.forEach(o->o.setFixedValueVersionId(fixedValueVersionId));
         saveBatch(list);
         System.out.println(list);
         log.info("存储数据库成功！");
     }
 
     @Override
-    public void updateVersion(FixedValue fixValue) {
-        final FixedValueVersion fixedValueVersion = this.fixedValueVersionService.getById(THREAD_LOCAL.get());
+    public void updateVersion(FixedValue fixValue, Long fixedValueVersionId) {
+        final FixedValueVersion fixedValueVersion = this.fixedValueVersionService.getById(fixedValueVersionId);
         fixedValueVersion.setDirection(fixValue.getSummonValue());
         this.fixedValueVersionService.updateById(fixedValueVersion);
     }

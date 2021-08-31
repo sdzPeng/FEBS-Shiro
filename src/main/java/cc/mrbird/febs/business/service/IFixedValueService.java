@@ -4,6 +4,7 @@ import cc.mrbird.febs.business.constants.DeviceFailureConstants;
 import cc.mrbird.febs.business.constants.FixedValueConstants;
 import cc.mrbird.febs.business.dto.DeviceDataDto;
 import cc.mrbird.febs.business.dto.DeviceDescDto;
+import cc.mrbird.febs.business.dto.FixedTableVersionDto;
 import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.Resource;
 import cc.mrbird.febs.common.exception.ValidaException;
@@ -23,11 +24,11 @@ import java.util.Map;
  */
 public interface IFixedValueService extends IService<FixedValue> {
 
-    Long analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource, Long siteId);
+    FixedTableVersionDto analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource, Long siteId);
 
-    void saveData(List<FixedValue> list);
+    void saveData(List<FixedValue> list, Long fixedValueVersionId);
 
-    void updateVersion(FixedValue fixValue);
+    void updateVersion(FixedValue fixValue, Long fixedValueVersionId);
 
     FixedValue getOneByDeviceIdAndFixedValueName(Long fixedValueVersionId, String fixedValueName);
 

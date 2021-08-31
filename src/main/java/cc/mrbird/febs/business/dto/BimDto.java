@@ -23,7 +23,7 @@ public class BimDto {
     /**
      *  支柱编号
      */
-    @ExcelProperty("支柱编码")
+    @ExcelProperty("支柱编号")
     private String pillarCode;
 
     /**

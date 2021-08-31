@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static cc.mrbird.febs.business.service.impl.FixedValueServiceImpl.THREAD_LOCAL;
-
 /**
  * @company: test
  * @department: 数据中心
