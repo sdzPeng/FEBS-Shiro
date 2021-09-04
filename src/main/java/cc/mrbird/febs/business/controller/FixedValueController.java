@@ -2,6 +2,7 @@ package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.config.CustomStringNumberConverter;
 import cc.mrbird.febs.business.dto.FixedTableVersionDto;
+import cc.mrbird.febs.business.dto.FixedValueTableVersionDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.listener.FixValueListener;
 import cc.mrbird.febs.business.service.IFixedValueService;
@@ -22,6 +23,8 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @company: test
@@ -175,7 +179,18 @@ public class FixedValueController extends BaseController {
     public FebsResponse fixedTableVersionList(Long siteId) {
         QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("SITE_ID", siteId);
-        return new FebsResponse().success().data(fixedValueTableService.list(queryWrapper));
+        List<FixedValueTable> list = fixedValueTableService.list(queryWrapper);
+        List<FixedValueTableVersionDto> fixedValueTableVersions = list.stream().map(o -> {
+            FixedValueTableVersionDto fixedValueTableDto = new FixedValueTableVersionDto();
+            BeanUtils.copyProperties(o, fixedValueTableDto);
+            QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
+            fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", o.getFixedValueTableId());
+            fixedValueVersionService.list(fixedValueVersionQueryWrapper).stream()
+                    .max((o1, o2) -> NumberUtils.compare(o1.getFixValueVersionId(), o2.getFixValueVersionId()))
+                    .ifPresent(fixedValueVersion -> fixedValueTableDto.setFixedValueVersionId(fixedValueVersion.getFixValueVersionId()));
+            return fixedValueTableDto;
+        }).collect(Collectors.toList());
+        return new FebsResponse().success().data(fixedValueTableVersions);
     }
 
 }
