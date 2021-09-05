@@ -1,9 +1,9 @@
-<div class="layui-fluid layui-anim febs-anim" id="febs-menu" lay-title="定值表站点管理">
+<div class="layui-fluid layui-anim febs-anim" id="febs-site" lay-title="定值表站点管理">
   <div class="layui-row layui-col-space8 febs-container">
     <div class="layui-col-md6 layui-col-sm6 layui-col-xs12">
       <div class="layui-card">
         <div class="layui-card-body febs-table-full">
-          <form class="layui-form layui-table-form" lay-filter="menu-table-form" id="menu-table-form">
+          <form class="layui-form layui-table-form" lay-filter="site-table-form" id="site-table-form">
             <div class="layui-row">
               <div class="layui-col-md8 layui-col-sm9 layui-col-xs9">
                 <div class="layui-form-item">
@@ -29,7 +29,7 @@
               </div>
             </div>
           </form>
-          <div class="eleTree menuTree" lay-filter="menuTree" style="margin-left: 1rem"></div>
+          <div class="eleTree siteTree" lay-filter="siteTree" style="margin-left: 1rem"></div>
         </div>
       </div>
     </div>
@@ -37,7 +37,7 @@
       <div class="layui-card">
         <div class="layui-card-header" id="form-header">新增站点</div>
         <div class="layui-card-body febs-table-full">
-          <form class="layui-form layui-table-form" action="" lay-filter="menu-form">
+          <form class="layui-form layui-table-form" action="" lay-filter="site-form">
             <div class="layui-form-item febs-hide">
               <label class="layui-form-label febs-form-item-require">ID：</label>
               <div class="layui-input-block">
@@ -60,8 +60,8 @@
 <!--            <div class="layui-form-item">-->
 <!--              <label class="layui-form-label febs-form-item-require">类型：</label>-->
 <!--              <div class="layui-input-block">-->
-<!--                <input type="radio" name="type" lay-filter="menu-type" value="0" title="菜单" checked="">-->
-<!--                <input type="radio" name="type" lay-filter="menu-type" value="1" title="按钮">-->
+<!--                <input type="radio" name="type" lay-filter="site-type" value="0" title="菜单" checked="">-->
+<!--                <input type="radio" name="type" lay-filter="site-type" value="1" title="按钮">-->
 <!--              </div>-->
 <!--            </div>-->
 <!--            <div class="layui-form-item">-->
@@ -93,7 +93,7 @@
               </div>
             </div>
             <button type="reset" class="layui-btn febs-hide" id="reset-form"></button>
-            <button class="layui-btn febs-hide" lay-submit="" lay-filter="menu-form-submit"
+            <button class="layui-btn febs-hide" lay-submit="" lay-filter="site-form-submit"
                     id="submit-form"></button>
           </form>
         </div>
@@ -113,11 +113,11 @@
             validate = layui.validate,
             eleTree = layui.eleTree,
             dropdown = layui.dropdown,
-            $view = $('#febs-menu'),
+            $view = $('#febs-site'),
             $query = $view.find('#query'),
             $reset = $view.find('#reset'),
             $submit = $view.find('#submit'),
-            $searchForm = $view.find('#menu-table-form'),
+            $searchForm = $view.find('#site-table-form'),
             $siteName = $searchForm.find('input[name="siteName"]'),
             $type = $view.find('input[type="radio"][name="type"]'),
             $icon = $view.find('input[name="icon"]'),
@@ -127,9 +127,9 @@
             $order = $view.find('input[name="orderNum"]'),
             $order_parent = $order.parents('.layui-form-item'),
             $header = $view.find('#form-header'),
-            _currentMenuData,
+            _currentsiteData,
             _selectNode,
-            _menuTree,
+            _siteTree,
             tableIns;
 
     form.verify(validate);
@@ -140,7 +140,7 @@
       click: function (name, elem, event) {
         if (name === 'add') {
           reset();
-          var selected = _menuTree.getChecked(false, true);
+          var selected = _siteTree.getChecked(false, true);
           if (selected.length > 1) {
             febs.alert.warn('只能选择一个节点作为父级！');
             return;
@@ -149,24 +149,24 @@
             febs.alert.warn('不能选择按钮作为父级！');
             return;
           }
-          form.val("menu-form", {
+          form.val("site-form", {
             "parentId": selected[0] ? selected[0].id : ''
           });
         }
         if (name === 'delete') {
-          var checked = _menuTree.getChecked(false, true);
+          var checked = _siteTree.getChecked(false, true);
           if (checked.length < 1) {
             febs.alert.warn('请勾选需要删除的站点');
             return;
           }
-          var menuIds = [];
+          var siteIds = [];
           layui.each(checked, function (key, item) {
-            menuIds.push(item.id)
+            siteIds.push(item.id)
           });
           febs.modal.confirm('提示', '当您点击确定按钮后，这些记录将会被彻底删除，如果其包含子记录，也将一并删除！', function () {
-            febs.get(ctx + 'site/delete/' + menuIds.join(','), null, function () {
+            febs.get(ctx + 'site/delete/' + siteIds.join(','), null, function () {
               febs.alert.success('删除成功！');
-              reloadMenuTree();
+              reloadsiteTree();
               reset();
             })
           });
@@ -192,16 +192,16 @@
       }]
     });
 
-    _menuTree = renderMenuTree();
+    _siteTree = rendersiteTree();
 
-    eleTree.on("nodeClick(menuTree)", function (d) {
+    eleTree.on("nodeClick(siteTree)", function (d) {
       var data = d.data.currentData.data;
-      _currentMenuData = data;
+      _currentsiteData = data;
       $type.attr("disabled", true);
       // var type = data.type;
       // handleTypeChange(type);
       $header.text('修改站点');
-      form.val("menu-form", {
+      form.val("site-form", {
         "icon": data.icon,
         "siteCode": data.siteCode,
         "orderNum": data.orderNum,
@@ -213,18 +213,18 @@
       });
     });
 
-    form.on("radio(menu-type)", function (data) {
+    form.on("radio(site-type)", function (data) {
       handleTypeChange(data.value);
     });
 
     $reset.on('click', function () {
       $siteName.val('');
-      reloadMenuTree();
+      reloadsiteTree();
       reset();
     });
 
     $query.on('click', function () {
-      reloadMenuTree();
+      reloadsiteTree();
       reset();
     });
 
@@ -238,11 +238,11 @@
         yes: function () {
           var icon = $('#febs-icon').find('.icon-active .icon-name').text();
           if (icon) {
-            form.val("menu-form", {
+            form.val("site-form", {
               "icon": 'layui-icon-' + icon
             });
           } else {
-            form.val("menu-form", {
+            form.val("site-form", {
               "icon": ''
             });
           }
@@ -257,9 +257,9 @@
       $type.removeAttr("disabled");
     }
 
-    function renderMenuTree() {
-      _menuTree = eleTree.render({
-        elem: '.menuTree',
+    function rendersiteTree() {
+      _siteTree = eleTree.render({
+        elem: '.siteTree',
         url: ctx + 'site/tree',
         where: {
           "siteName": $siteName.val().trim(),
@@ -283,15 +283,15 @@
           dataName: "data"
         }
       });
-      return _menuTree;
+      return _siteTree;
     }
 
-    function reloadMenuTree() {
-      _menuTree = renderMenuTree();
+    function reloadsiteTree() {
+      _siteTree = rendersiteTree();
     }
 
     var handleTypeChange = function (type) {
-      form.val("menu-form", {
+      form.val("site-form", {
         "icon": '',
         "siteCode": '',
         "orderNum": ''
@@ -309,21 +309,21 @@
       }
     };
 
-    form.on('submit(menu-form-submit)', function (data) {
+    form.on('submit(site-form-submit)', function (data) {
       if (data.field.siteId && $header.text().indexOf('修改') !== -1) {
-        if (febs.nativeEqual(data.field, _currentMenuData)) {
+        if (febs.nativeEqual(data.field, _currentsiteData)) {
           febs.alert.warn('数据未作任何修改！');
           return false;
         }
         febs.post(ctx + 'site/update', data.field, function () {
           febs.alert.success('修改成功');
-          reloadMenuTree();
+          reloadsiteTree();
           reset();
         })
       } else {
         febs.post(ctx + 'site', data.field, function () {
           febs.alert.success('新增成功');
-          reloadMenuTree();
+          reloadsiteTree();
           reset();
         })
       }
