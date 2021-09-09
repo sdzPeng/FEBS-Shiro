@@ -20,5 +20,5 @@ public interface ICalcService {
 
     List<KeyValueResult> calcData(Long deviceId) throws ValidaException;
 
-    Map<String, CurrentValue> currentDistMap(Long deviceId) throws ValidaException;
+    Map<String, Object> currentDistMap(Long deviceId) throws ValidaException;
 }

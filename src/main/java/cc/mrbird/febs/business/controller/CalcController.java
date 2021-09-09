@@ -51,7 +51,7 @@ public class CalcController {
     public FebsResponse currentDistMap(
             Long deviceId
     ) throws ValidaException {
-        Map<String, CurrentValue> result = calcService.currentDistMap(deviceId);
+        Map<String, Object> result = calcService.currentDistMap(deviceId);
         return new FebsResponse().success().data(result);
 
     }

@@ -84,7 +84,45 @@ public class DeviceFailureConstants {
                     .findFirst()
                     .get();
         }
+    }
 
+    @Getter
+    public enum SHORT_STATE {
+        第一AT段下行FR故障("第一AT段", "下行", "FR故障", 1),
+        第一AT段上行FR故障("第一AT段", "上行", "FR故障", 2),
+        第二AT段下行FR故障("第二AT段", "下行", "FR故障", 3),
+        第二AT段上行FR故障("第二AT段", "上行", "FR故障", 4),
+        第一AT段上行TR故障("第一AT段", "上行", "TR故障", 5),
+        第一AT段下行TR故障("第一AT段", "下行", "TR故障", 6),
+        第二AT段上行TR故障("第二AT段", "上行", "TR故障", 7),
+        第二AT段下行TR故障("第二AT段", "下行", "TR故障", 8),
+        第一AT段下行TF故障("第一AT段", "下行", "TF故障", 9),
+        第二AT段下行TF故障("第二AT段", "下行", "TF故障", 10),
+        第一AT段上行TF故障("第一AT段", "上行", "TF故障", 11),
+        第二AT段上行TF故障("第二AT段", "上行", "TF故障", 12),
+        ;
+        private String position;
+        private String direction;
+        private String type;
+        private Integer order;
+
+        SHORT_STATE(String position, String direction, String type, Integer order) {
+            this.position=position;
+            this.direction=direction;
+            this.type=type;
+            this.order=order;
+        }
+
+        public static Integer findState(String position, String direction, String type) {
+            for (SHORT_STATE value : SHORT_STATE.values()) {
+                if (StringUtils.equals(position, value.getPosition())
+                        &&StringUtils.equals(direction, value.getDirection())
+                        &&StringUtils.equals(type, value.getType())) {
+                    return value.getOrder();
+                }
+            }
+            return null;
+        }
 
     }
 }

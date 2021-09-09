@@ -483,13 +483,23 @@ public class CalcServiceImpl implements ICalcService {
     }
 
     @Override
-    public Map<String, CurrentValue> currentDistMap(Long deviceId) throws ValidaException {
-        Map<String, CurrentValue> currentMap = new HashMap<>();
+    public Map<String, Object> currentDistMap(Long deviceId) throws ValidaException {
+        List<KeyValueResult> keyValueResults = analysisResult(deviceId);
+        Map<String, Object> keyValueMap = keyValueResults
+                .stream()
+                .collect(Collectors.toMap(KeyValueResult::getKey, KeyValueResult::getValue));
+        Integer state = DeviceFailureConstants.SHORT_STATE.findState(String.valueOf(keyValueMap.get("故障区段")),
+                String.valueOf(keyValueMap.get("故障行别")),
+                String.valueOf(keyValueMap.get("故障类型")));
+
+        Map<String, Object> currentMap = new HashMap<>();
+        currentMap.put("type", null);
 //        I0st=上行T线电流（变电所测距数据）
         RealVector I0stVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所上行T电流);
 //        I0xt=下行T线电流（变电所测距数据）
         RealVector I0xtVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所下行T电流);
         RealVector 标准零度 = I0stVector.add(I0xtVector);
+        currentMap.put("I0xt", analysisCurrentValue(I0xtVector, 标准零度, false));
         currentMap.put("I0st", analysisCurrentValue(I0xtVector, 标准零度, false));
 //        I0sf=上行F线电流（变电所测距数据）
         RealVector I0sfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所上行F电流);
@@ -526,7 +536,7 @@ public class CalcServiceImpl implements ICalcService {
         currentMap.put("I1f", analysisCurrentValue(I1fVactor, 标准零度, true));
         // I1t=I1st+I1xt
         RealVector I1tVector = I1stVector.add(I1xtVector);
-        currentMap.put("I1tV", analysisCurrentValue(I1tVector, 标准零度, false));
+        currentMap.put("I1t", analysisCurrentValue(I1tVector, 标准零度, false));
         // I2f=I2sf+I2xf todo why wrong????
         RealVector I2fVector = I2sfVector.add(I2xfVector);
         currentMap.put("I2f", analysisCurrentValue(I2fVector, 标准零度, true));
@@ -542,6 +552,7 @@ public class CalcServiceImpl implements ICalcService {
         // I2=I2t+I2f
         RealVector I2Vector = I2tVector.add(I2fVector);
         currentMap.put("I2", analysisCurrentValue(I2Vector, 标准零度, false));
+
         // I短路 六种情况
         extracted(deviceId, new ArrayList<>());
         RealVector I短路;

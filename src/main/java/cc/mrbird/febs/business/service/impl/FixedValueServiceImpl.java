@@ -48,7 +48,7 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
 
     @Override
     public FixedTableVersionDto analysis(ReadSheet readSheet, List<FixedValue> list, Resource resource, Long siteId) {
-        if (null == readSheet||!readSheet.getSheetName().matches(FIXED_VALUE_REGEXP)) throw new FebsException("sheet页命名要求「定值表标识符数字」！");
+        if (null == readSheet) throw new FebsException("必须得有sheet页");
         FixedValue direction = list.stream().filter(o -> DIRECTION.equals(o.getName())).findFirst().orElseThrow(()->new FebsException("定值表中确实属性「公里标方向(相减-1/相加1)」"));
         FixedTableVersionDto fixedValueTable = extracted(resource, readSheet.getSheetName(), siteId);
 
