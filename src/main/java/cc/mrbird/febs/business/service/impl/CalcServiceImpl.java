@@ -487,13 +487,14 @@ public class CalcServiceImpl implements ICalcService {
         List<KeyValueResult> keyValueResults = analysisResult(deviceId);
         Map<String, Object> keyValueMap = keyValueResults
                 .stream()
+                .filter(o->"故障区段".equals(o.getKey())||"故障行别".equals(o.getKey())||"故障类型".equals(o.getKey()))
                 .collect(Collectors.toMap(KeyValueResult::getKey, KeyValueResult::getValue));
         Integer state = DeviceFailureConstants.SHORT_STATE.findState(String.valueOf(keyValueMap.get("故障区段")),
                 String.valueOf(keyValueMap.get("故障行别")),
                 String.valueOf(keyValueMap.get("故障类型")));
 
         Map<String, Object> currentMap = new HashMap<>();
-        currentMap.put("type", null);
+        currentMap.put("type", state);
 //        I0st=上行T线电流（变电所测距数据）
         RealVector I0stVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所上行T电流);
 //        I0xt=下行T线电流（变电所测距数据）
