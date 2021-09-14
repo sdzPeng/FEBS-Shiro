@@ -1,9 +1,16 @@
 package cc.mrbird.febs.business.service.impl;
 
 import cc.mrbird.febs.business.entity.*;
+import cc.mrbird.febs.business.mapper.DeviceTableMapper;
 import cc.mrbird.febs.business.service.*;
+import cc.mrbird.febs.common.entity.FebsConstant;
+import cc.mrbird.febs.common.entity.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
+import cc.mrbird.febs.common.utils.SortUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +29,7 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class DeviceFailureServiceImpl implements IDeviceFailureService {
+public class DeviceFailureServiceImpl extends ServiceImpl<DeviceTableMapper, DeviceTable> implements IDeviceFailureService {
 
     @Autowired private IDeviceService deviceService;
     @Autowired private IDeviceDataService deviceDataService;
@@ -63,5 +70,14 @@ public class DeviceFailureServiceImpl implements IDeviceFailureService {
         if (null == deviceTable) throw new FebsException(String.format("设备表表id「%s」不存在", deviceTableId));
         deviceTable.setFixedValueVersionId(fixedValueVersionId);
         deviceTableService.update(deviceTable, deviceTableQueryWrapper);
+    }
+
+    @Override
+    public IPage<DeviceTable> findTableByPage(QueryRequest request, Integer fixedValueVersionId) {
+        QueryWrapper<DeviceTable> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("FIXED_VALUE_VERSION_ID", fixedValueVersionId);
+        Page<DeviceTable> page = new Page<>(request.getPageNum(), request.getPageSize());
+        SortUtil.handlePageSort(request, page, "createTime", FebsConstant.ORDER_DESC, true);
+        return this.page(page, queryWrapper);
     }
 }

@@ -216,6 +216,7 @@
       // var type = data.type;
       // handleTypeChange(type);
       $header.text('修改站点');
+      console.log(data.versions);
       fixedTableRender(data.siteId);
       form.val("site-form", {
         "icon": data.icon,
@@ -266,6 +267,11 @@
         }
       });
     });
+
+    function selectDemo(a) {
+      console.log($(a).attr('data-id'));
+      console.log($(a).val());
+    }
 
     function reset() {
       $view.find('#reset-form').trigger('click');
@@ -347,38 +353,13 @@
       return false;
     });
 
-    // 渲染定值表版本
-    // var fixTable = layui.use('table', function(siteId){
-    //   var table = layui.table;
-    //   table.render({
-    //     elem: '#test2'
-    //     ,url:'/list/site/'+siteId
-    //     ,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
-    //     ,cols: [[
-    //       {field:'id', width:80, title: 'ID', sort: true}
-    //       ,{field:'username', width:80, title: '用户名'}
-    //       ,{field:'sex', width:80, title: '性别', sort: true}
-    //       ,{field:'city', width:80, title: '城市'}
-    //       ,{field:'sign', title: '签名', width: '30%', minWidth: 100} //minWidth：局部定义当前单元格的最小宽度，layui 2.2.1 新增
-    //       ,{field:'experience', title: '积分', sort: true}
-    //       ,{field:'score', title: '评分', sort: true}
-    //       ,{field:'classify', title: '职业'}
-    //       ,{field:'wealth', width:137, title: '财富', sort: true}
-    //     ]]
-    //   });
-    // });
-
     var fixedTableRender = function (siteId) {
-      // var dropdown2 = layui.dropdown
-      //         ,util = layui.util
-      //         ,layer = layui.layer
-      //         ,table = layui.table
-      //         ,$ = layui.jquery;
       var table = layui.table;
       table.render({
         elem: '#test-dropdown-table'
         ,url: '/fixedvalue/list/site'
         ,title: '定值表'
+        ,toolbar: '#toolbarDemo'
         ,where: {
                   "siteId": siteId
                 }
@@ -386,6 +367,7 @@
           {type: 'checkbox', fixed: 'left'}
           ,{field:'fixedValueTableId', title:'ID', width:80, fixed: 'left', unresize: true, sort: true}
           ,{field:'name', title:'名称', width:200}
+          ,{field:'versions', title:'版本选择', width:240, templet: '#select'}
           ,{field:'createTime', title:'开始创建时间', width:240}
           ,{field:'createTime', title:'最近更新时间', width:240}
           ,{fixed: 'right', title:'操作', toolbar: '#test-dropdown-toolbar-barDemo', width:160}
@@ -403,15 +385,72 @@
       table.on('tool(test-dropdown-table)', function(obj){
         var that = this
                 ,data = obj.data;
+
         if(obj.event === 'edit'){
-          layer.prompt({
-            formType: 2
-            ,value: data.email
-          }, function(value, index){
-            obj.update({
-              email: value
-            });
-            layer.close(index);
+          var category = 0;
+          var categoryName = '';
+          form.on('select(category)', function (data) {
+            category = data.value;
+            categoryName = data.elem[data.elem.selectedIndex].text;
+            console.log('catagoryName:'+categoryName);
+            form.render('select');
+          });
+          $("#selDemo").val("value")
+          form.on('select(selDemo)', function (data) {
+            console.log('hello world:'+data.value);
+          })
+          layer.open({
+            type: 1,
+            id: 'Layer',
+            title: '故障报文',
+            area: ['740px', '500px'],
+            shade: 0,
+            anim: -1,
+            content: '<table class="layui-hide" id="peng2" lay-filter="peng2"></table>',
+            success: function(layero, index) {
+              table.render({
+                elem: '#peng2',
+                id: 'Message2',
+                toolbar: '#toolbarDemo2',
+                url: '/devicefailure/table/page',
+                where: {
+                          "fixedValueVersionId": 30,
+                        },
+                cols: [[
+                  {type: 'checkbox', fixed: 'left'}
+                  ,{field:'deviceTableId', title:'ID', width:80, fixed: 'left', unresize: true, sort: true}
+                  ,{field:'name', title:'名称', width:200}
+                  ,{field:'createTime', title:'开始创建时间', width:240}
+                  ,{field:'resourceId', title:'文件id', width:240}
+                  ,{field:'fixedValueVersionId', title:'最近更新时间', width:240}
+                  ,{fixed: 'right', title:'操作', toolbar: '#test-dropdown-toolbar-barDemo2', width:160}
+                ]],
+                limit: 8,
+                page: true,
+                response: {
+                  statusName: "code",
+                  statusCode: 200,
+                  dataName: "data"
+                }
+              });
+              //头工具栏事件
+              table.on('toolbar(peng2)', function(obj){
+                var checkStatus = table.checkStatus(obj.config.id);
+                switch(obj.event){
+                  case 'getCheckData':
+                    var data = checkStatus.data;
+                    layer.alert(JSON.stringify(data));
+                    break;
+                  case 'getCheckLength':
+                    var data = checkStatus.data;
+                    layer.msg('选中了：'+ data.length + ' 个');
+                    break;
+                  case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选': '未全选');
+                    break;
+                };
+              });
+            }
           });
         } else if(obj.event === 'more'){
           console.log(obj.event);
@@ -445,11 +484,60 @@
           });
         }
       });
+
+      //头工具栏事件
+      table.on('toolbar(test-dropdown-table)', function(obj){
+        var checkStatus = table.checkStatus(obj.config.id);
+        switch(obj.event){
+          case 'deleteFixedValueTable':
+            var fixedValueTableIds = [];
+            layui.each(checkStatus.data, function (key, item) {
+              fixedValueTableIds.push(item.fixedValueTableId);
+            });
+            console.log(JSON.stringify(fixedValueTableIds));
+            febs.get(ctx + 'fixedvalue/table/batch/' + fixedValueTableIds, null, function () {
+              febs.alert.success('批量删除定值表成功');
+              $query.click();
+            });
+            break;
+        };
+      });
     }
 
   });
 </script>
 <script type="text/html" id="test-dropdown-toolbar-barDemo">
-  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit">故障报文</a>
   <a class="layui-btn layui-btn-xs" lay-event="more">更多 <i class="layui-icon layui-icon-down"></i></a>
+</script>
+<script type="text/html" id="test-dropdown-toolbar-barDemo2">
+  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit2">故障报文</a>
+  <a class="layui-btn layui-btn-xs" lay-event="more2">更多 <i class="layui-icon layui-icon-down"></i></a>
+</script>
+<script type="text/html" id="select">
+  <select id="selDemo" name="selDemo" lay-filter="selDemo" class="selectDemo" lay-ignore>
+    {{# layui.each(d.versions, function(index, item){ }}
+    <option value="{{item.fixValueVersionId}}" title="{{item.fixValueVersionId}}">{{item.createTime}}</option>
+    {{# }); }}
+  </select>
+
+  <select  class="form-control input-sm" name="category" lay-filter="category" aria-invalid="false">
+    <option value="0">请选择运维位置</option>
+  </select>
+</script>
+
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" lay-event="deleteFixedValueTable">批量删除</button>
+<!--    <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>-->
+<!--    <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>-->
+  </div>
+</script>
+
+<script type="text/html" id="toolbarDemo2">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+    <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+    <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+  </div>
 </script>

@@ -2,9 +2,10 @@ package cc.mrbird.febs.business.service;
 
 import cc.mrbird.febs.business.entity.DeviceData;
 import cc.mrbird.febs.business.entity.DeviceTable;
+import cc.mrbird.febs.common.entity.QueryRequest;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @company: test
@@ -22,4 +23,6 @@ public interface IDeviceFailureService {
     List<DeviceTable> findAllTables();
 
     void attachFixedTableVersion(Long deviceTableId, Long fixedValueVersionId);
+
+    IPage<DeviceTable> findTableByPage(QueryRequest request, Integer fixedValueVersionId);
 }

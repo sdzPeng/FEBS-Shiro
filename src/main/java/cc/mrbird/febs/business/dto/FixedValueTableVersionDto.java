@@ -25,4 +25,6 @@ public class FixedValueTableVersionDto implements Serializable {
     private Date createTime;
 
     private Long fixedValueVersionId;
+
+    private List<FixedValueVersion> versions;
 }

@@ -1,23 +1,24 @@
 package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.dto.DeviceDto;
-import cc.mrbird.febs.business.dto.FixedValueTableReturnDto;
 import cc.mrbird.febs.business.entity.DeviceData;
+import cc.mrbird.febs.business.entity.DeviceTable;
 import cc.mrbird.febs.business.entity.Resource;
 import cc.mrbird.febs.business.listener.DeviceListener;
 import cc.mrbird.febs.business.service.IDeviceFailureService;
 import cc.mrbird.febs.common.entity.FebsResponse;
+import cc.mrbird.febs.common.entity.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +105,15 @@ public class DeviceFailureController {
         return new FebsResponse().success().data(deviceFailureService.findAllTables());
     }
 
+    @GetMapping("/table/page")
+    @ApiOperation(value = "通过定值表版本id获取所有设备故障表")
+    public FebsResponse getDeviceTablePage(QueryRequest request, Integer fixedValueVersionId) {
+        IPage<DeviceTable> tableByPage = deviceFailureService.findTableByPage(request, fixedValueVersionId);
+        FebsResponse febsResponse = new FebsResponse();
+        febsResponse.put("count", tableByPage.getTotal());
+        return febsResponse.success().data(tableByPage.getRecords());
+    }
+
 
     @GetMapping("/table/devices")
     @ApiImplicitParam(name = "deviceTableId", value = "设备表id", dataTypeClass = Long.class)
@@ -122,4 +132,5 @@ public class DeviceFailureController {
         List<DeviceData> deviceDatas = deviceFailureService.getResourceData(deviceId, resourceName);
         return new FebsResponse().success().data(deviceDatas);
     }
+
 }

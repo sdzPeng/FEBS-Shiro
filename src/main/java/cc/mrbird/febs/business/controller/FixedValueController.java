@@ -157,6 +157,16 @@ public class FixedValueController extends BaseController {
         return new FebsResponse().success();
     }
 
+    @GetMapping("/table/batch/{fixedValueTableIds}")
+    @ApiOperation(value = "批量删除定值表")
+    public FebsResponse delBatchValueTable(@PathVariable String fixedValueTableIds) {
+        String[] split = fixedValueTableIds.split(",");
+        for (String s : split) {
+            this.fixedValueTableService.delValueTable(Long.parseLong(s));
+        }
+        return new FebsResponse().success();
+    }
+
     @DeleteMapping("/table/all")
     @ApiOperation(value = "删除所有定值表【删除所有数据，慎用】")
     public FebsResponse delAllValueTable() {
@@ -185,9 +195,11 @@ public class FixedValueController extends BaseController {
             BeanUtils.copyProperties(o, fixedValueTableDto);
             QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
             fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", o.getFixedValueTableId());
-            fixedValueVersionService.list(fixedValueVersionQueryWrapper).stream()
+            List<FixedValueVersion> versions = fixedValueVersionService.list(fixedValueVersionQueryWrapper);
+            versions.stream()
                     .max((o1, o2) -> NumberUtils.compare(o1.getFixValueVersionId(), o2.getFixValueVersionId()))
                     .ifPresent(fixedValueVersion -> fixedValueTableDto.setFixedValueVersionId(fixedValueVersion.getFixValueVersionId()));
+            fixedValueTableDto.setVersions(versions);
             return fixedValueTableDto;
         }).collect(Collectors.toList());
         return new FebsResponse().success().data(fixedValueTableVersions);
