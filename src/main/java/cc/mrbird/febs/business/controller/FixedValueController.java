@@ -2,6 +2,7 @@ package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.config.CustomStringNumberConverter;
 import cc.mrbird.febs.business.dto.FixedTableVersionDto;
+import cc.mrbird.febs.business.dto.FixedValueTableVersion2Dto;
 import cc.mrbird.febs.business.dto.FixedValueTableVersionDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.listener.FixValueListener;
@@ -27,6 +28,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -159,10 +161,45 @@ public class FixedValueController extends BaseController {
 
     @GetMapping("/table/batch/{fixedValueTableIds}")
     @ApiOperation(value = "批量删除定值表")
-    public FebsResponse delBatchValueTable(@PathVariable String fixedValueTableIds) {
+    public FebsResponse delBatchValueTable(
+            @PathVariable String fixedValueTableIds,
+            @RequestParam String fixedValueTableVersionIds) {
         String[] split = fixedValueTableIds.split(",");
-        for (String s : split) {
-            this.fixedValueTableService.delValueTable(Long.parseLong(s));
+        String[] fixedValueTableVersionIdArr = fixedValueTableVersionIds.split(",");
+        if (fixedValueTableVersionIdArr.length>0) {
+            List<Long> fixedValueTableVersionColl = Arrays.stream(fixedValueTableVersionIdArr)
+                    .map(Long::parseLong).collect(Collectors.toList());
+            fixedValueTableService.delFixedValueVersion(fixedValueTableVersionColl);
+        }else {
+            for (String s : split) {
+                this.fixedValueTableService.delValueTable(Long.parseLong(s));
+            }
+        }
+        return new FebsResponse().success();
+    }
+
+    @GetMapping("/table/batch/fixedValue/{fixedValueTableVersionIds}")
+    @ApiOperation(value = "批量删除定值表")
+    public FebsResponse delBatchValueTableVersion(
+            @PathVariable String fixedValueTableVersionIds) {
+        String[] fixedValueTableVersionIdArr = fixedValueTableVersionIds.split(",");
+        if (fixedValueTableVersionIdArr.length>0) {
+            List<Long> fixedValueTableVersionColl = Arrays.stream(fixedValueTableVersionIdArr)
+                    .map(Long::parseLong).collect(Collectors.toList());
+            fixedValueTableService.delFixedValueVersion(fixedValueTableVersionColl);
+        }
+        return new FebsResponse().success();
+    }
+
+    @GetMapping("/table/batch/device/failure/{deviceTableIds}")
+    @ApiOperation(value = "批量删除定值表")
+    public FebsResponse delBatchFailure(
+            @PathVariable String deviceTableIds) {
+        String[] deviceTableArr = deviceTableIds.split(",");
+        if (deviceTableArr.length>0) {
+            List<Long> deviceTableIds2 = Arrays.stream(deviceTableArr)
+                    .map(Long::parseLong).collect(Collectors.toList());
+            fixedValueTableService.batchDeleteByDeviceTableIds(deviceTableIds2);
         }
         return new FebsResponse().success();
     }
@@ -202,6 +239,32 @@ public class FixedValueController extends BaseController {
             fixedValueTableDto.setVersions(versions);
             return fixedValueTableDto;
         }).collect(Collectors.toList());
+        return new FebsResponse().success().data(fixedValueTableVersions);
+    }
+
+    @GetMapping("/v2/list/site")
+    @ApiOperation(value = "通过siteId获取定值表列表")
+    @ApiImplicitParam(name = "siteId", value = "定值版本id", dataTypeClass = Long.class, example="")
+    public FebsResponse fixedTableVersionList2(Long siteId) {
+        QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("SITE_ID", siteId);
+        List<FixedValueTable> list = fixedValueTableService.list(queryWrapper);
+        List<FixedValueTableVersion2Dto> fixedValueTableVersions = new ArrayList<>();
+        list.forEach(o -> {
+            QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
+            fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", o.getFixedValueTableId());
+            List<FixedValueVersion> versions = fixedValueVersionService.list(fixedValueVersionQueryWrapper);
+            for (FixedValueVersion version : versions) {
+                FixedValueTableVersion2Dto fixedValueTableVersionDto = new FixedValueTableVersion2Dto();
+                fixedValueTableVersionDto.setFixedValueTableId(o.getFixedValueTableId());
+                fixedValueTableVersionDto.setFirstTime(o.getCreateTime());
+                fixedValueTableVersionDto.setName(o.getName());
+                fixedValueTableVersionDto.setFixedValueVersionId(version.getFixValueVersionId());
+                fixedValueTableVersionDto.setResourceId(version.getResourceId());
+                fixedValueTableVersionDto.setCreateTime(version.getCreateTime());
+                fixedValueTableVersions.add(fixedValueTableVersionDto);
+            }
+        });
         return new FebsResponse().success().data(fixedValueTableVersions);
     }
 

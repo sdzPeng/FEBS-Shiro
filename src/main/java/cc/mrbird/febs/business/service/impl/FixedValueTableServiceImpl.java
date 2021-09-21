@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.convert.QueryMapper;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsCriteria;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
@@ -98,6 +99,11 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
             fixedValueMetaService.remove(tableMetaQueryWrapper);
         });
         if (CollectionUtils.isEmpty(fixedValueVersions)) return;
+        extracted(fixedValueVersions, resourceIds);
+        fixedValueVersionService.remove(queryWrapper);
+    }
+
+    private void extracted(List<FixedValueVersion> fixedValueVersions, List<Long> resourceIds) {
         // 删除关联的设备故障数据
         QueryWrapper<DeviceTable> deviceTableQueryWrapper = new QueryWrapper<>();
         deviceTableQueryWrapper.in("FIXED_VALUE_VERSION_ID", fixedValueVersions.stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList()));
@@ -128,7 +134,45 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
             }
             deviceTableService.remove(deviceTableQueryWrapper);
         }
-        fixedValueVersionService.remove(queryWrapper);
+    }
+
+    @Override
+    public void batchDeleteByDeviceTableIds(List<Long> deviceTableIds) {
+        // 删除关联的设备故障数据
+        QueryWrapper<DeviceTable> deviceTableQueryWrapper = new QueryWrapper<>();
+        deviceTableQueryWrapper.in("DEVICE_TABLE_ID", deviceTableIds);
+        List<DeviceTable> deviceTalbeList = deviceTableService.list(deviceTableQueryWrapper);
+        // 删除关联文件
+        List<String> uuids = resourceService.listByIds(deviceTalbeList
+                .stream()
+                .map(DeviceTable::getResourceId)
+                .distinct()
+                .collect(Collectors.toList()))
+                .stream()
+                .map(Resource::getUuid)
+                .collect(Collectors.toList());
+        Query query = Query.query(GridFsCriteria.where("metadata.uuid").in(uuids));
+        gridFsTemplate.delete(query);
+        log.info("文件[{}]删除完成！", uuids.toString());
+        if (!CollectionUtils.isEmpty(deviceTableIds)) {
+            QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
+            deviceQueryWrapper.in("DEVICE_TABLE_ID", deviceTableIds);
+            List<Device> list = deviceService.list(deviceQueryWrapper);
+            List<Long> deviceIds = list.stream().map(Device::getDeviceId).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(deviceIds)) {
+                QueryWrapper<DeviceResource> deviceResourceQueryWrapper = new QueryWrapper<>();
+                deviceResourceQueryWrapper.in("DEVICE_ID",deviceIds);
+                List<Long> deviceResourceIds = deviceResourceService.list(deviceResourceQueryWrapper).stream().map(DeviceResource::getDeviceResourceId).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(deviceResourceIds)) {
+                    QueryWrapper<DeviceData> deviceDataQueryWrapper = new QueryWrapper<>();
+                    deviceDataQueryWrapper.in("DEVICE_RESOURCE_ID", deviceResourceIds);
+                    deviceDataService.remove(deviceDataQueryWrapper);
+                }
+                deviceResourceService.remove(deviceResourceQueryWrapper);
+                deviceService.remove(deviceQueryWrapper);
+            }
+            deviceTableService.remove(deviceTableQueryWrapper);
+        }
     }
 
     @Override

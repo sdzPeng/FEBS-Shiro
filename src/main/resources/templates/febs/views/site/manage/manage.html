@@ -103,7 +103,8 @@
           </form>
         </div>
         <div class="layui-card-footer">
-          <button class="layui-btn" id="fixedValue">定值表</button>
+          <button type="button" class="layui-btn" id="fixedValue"><i class="layui-icon"></i>上传定值表</button>
+<!--          <button class="layui-btn" id="fixedValue">上传定值表</button>-->
           <button class="layui-btn" id="submit">保存</button>
         </div>
       </div>
@@ -120,11 +121,12 @@
   </div>
 </div>
 <script data-th-inline="none" type="text/javascript">
-  layui.use(['dropdown', 'jquery', 'laydate', 'febs', 'form', 'eleTree', 'validate', 'util', 'layer', 'table'], function () {
+  layui.use(['dropdown', 'jquery', 'laydate', 'febs', 'form', 'eleTree', 'validate', 'util', 'layer', 'table', 'layedit', 'upload'], function () {
     var $ = layui.jquery,
             laydate = layui.laydate,
             febs = layui.febs,
             form = layui.form,
+            upload = layui.upload,
             validate = layui.validate,
             eleTree = layui.eleTree,
             dropdown = layui.dropdown,
@@ -213,11 +215,10 @@
       var data = d.data.currentData.data;
       _currentsiteData = data;
       $type.attr("disabled", true);
-      // var type = data.type;
-      // handleTypeChange(type);
       $header.text('修改站点');
       console.log(data.versions);
       fixedTableRender(data.siteId);
+      form.render('select');
       form.val("site-form", {
         "icon": data.icon,
         "siteCode": data.siteCode,
@@ -229,6 +230,7 @@
         "siteId": data.siteId
       });
     });
+
 
     form.on("radio(site-type)", function (data) {
       handleTypeChange(data.value);
@@ -357,7 +359,7 @@
       var table = layui.table;
       table.render({
         elem: '#test-dropdown-table'
-        ,url: '/fixedvalue/list/site'
+        ,url: '/fixedvalue/v2/list/site'
         ,title: '定值表'
         ,toolbar: '#toolbarDemo'
         ,where: {
@@ -367,10 +369,23 @@
           {type: 'checkbox', fixed: 'left'}
           ,{field:'fixedValueTableId', title:'ID', width:80, fixed: 'left', unresize: true, sort: true}
           ,{field:'name', title:'名称', width:200}
-          ,{field:'versions', title:'版本选择', width:240, templet: '#select'}
+          // ,{field:'versions', title:'版本选择', width:240, templet: function (data) {
+          //     console.log(data);
+          //     var version = data.versions;
+          //     var str = '<input id="test" name="test" hidden value=""/><select lay-filter="pengtest2" id="pengtest2" textId="test" name="pengtest2" class="selectDemo" lay-ignore>';
+          //     $.each(version, function (index, item) {
+          //       if(index === 0) {
+          //         str+='<option value='+item.fixValueVersionId+' selected="selected">'+item.createTime+'</option>';
+          //       }else {
+          //         str+='<option value='+item.fixValueVersionId+'>'+item.createTime+'</option>';
+          //       }
+          //     });
+          //     str+='</select>';
+          //     return str;
+          //   }}
           ,{field:'createTime', title:'开始创建时间', width:240}
-          ,{field:'createTime', title:'最近更新时间', width:240}
-          ,{fixed: 'right', title:'操作', toolbar: '#test-dropdown-toolbar-barDemo', width:160}
+          ,{field:'firstTime', title:'初次更新时间', width:240}
+          ,{fixed: 'right', title:'操作', toolbar: '#test-dropdown-toolbar-barDemo', width:240}
         ]]
         ,limits: [999]
         ,page: false
@@ -380,25 +395,20 @@
           dataName: "data"
         }
       });
+      // form.render("select");
+      // table.on('select(pengtest2)', function(data){
+      //   console.log(this);
+      //   var elem = data.elem;
+      //   var textId = elem.getAttribute("textId");
+      //   console.log(this.innerText);
+      //   document.getElementById(textId).value = this.innerText;
+      // });
 
       //行工具事件
       table.on('tool(test-dropdown-table)', function(obj){
         var that = this
                 ,data = obj.data;
-
         if(obj.event === 'edit'){
-          var category = 0;
-          var categoryName = '';
-          form.on('select(category)', function (data) {
-            category = data.value;
-            categoryName = data.elem[data.elem.selectedIndex].text;
-            console.log('catagoryName:'+categoryName);
-            form.render('select');
-          });
-          $("#selDemo").val("value")
-          form.on('select(selDemo)', function (data) {
-            console.log('hello world:'+data.value);
-          })
           layer.open({
             type: 1,
             id: 'Layer',
@@ -414,7 +424,7 @@
                 toolbar: '#toolbarDemo2',
                 url: '/devicefailure/table/page',
                 where: {
-                          "fixedValueVersionId": 30,
+                          "fixedValueVersionId": data.fixedValueVersionId,
                         },
                 cols: [[
                   {type: 'checkbox', fixed: 'left'}
@@ -423,7 +433,7 @@
                   ,{field:'createTime', title:'开始创建时间', width:240}
                   ,{field:'resourceId', title:'文件id', width:240}
                   ,{field:'fixedValueVersionId', title:'最近更新时间', width:240}
-                  ,{fixed: 'right', title:'操作', toolbar: '#test-dropdown-toolbar-barDemo2', width:160}
+                  ,{fixed: 'right', title:'操作', toolbar: '#test-dropdown-toolbar-barDemo2', width:240}
                 ]],
                 limit: 8,
                 page: true,
@@ -437,6 +447,19 @@
               table.on('toolbar(peng2)', function(obj){
                 var checkStatus = table.checkStatus(obj.config.id);
                 switch(obj.event){
+                  case 'batchDelete':
+                    var deviceTableIds = [];
+                    layui.each(checkStatus.data, function (key, item) {
+                      if (item.deviceTableId) {
+                        deviceTableIds.push(item.deviceTableId);
+                      }
+                    });
+                    console.log(JSON.stringify(deviceTableIds));
+                    febs.get(ctx + 'fixedvalue/table/batch/device/failure/'+deviceTableIds, null, function () {
+                      febs.alert.success('批量删除故障报文成功');
+                      $query.click();
+                    });
+                    break;
                   case 'getCheckData':
                     var data = checkStatus.data;
                     layer.alert(JSON.stringify(data));
@@ -452,36 +475,10 @@
               });
             }
           });
-        } else if(obj.event === 'more'){
-          console.log(obj.event);
-          //更多下拉菜单
-          dropdown.render({
-            elem: that
-            ,show: true //外部事件触发即显示
-            ,data: [{
-              title: 'item 1'
-              ,id: 'aaa'
-            }, {
-              title: 'item 2'
-              ,id: 'bbb'
-            }, {
-              title: '删除'
-              ,id: 'del'
-            }]
-            ,click: function(data, othis){
-              //根据 id 做出不同操作
-              if(data.id === 'del'){
-                layer.confirm('真的删除行么', function(index){
-                  obj.del();
-                  layer.close(index);
-                });
-              } else {
-                layer.msg('得到表格下拉菜单 id：'+ data.id);
-              }
-            }
-            ,align: 'right' //右对齐弹出（v2.6.8 新增）
-            ,style: 'box-shadow: 1px 1px 10px rgb(0 0 0 / 12%);' //设置额外样式
-          });
+        } else if(obj.event === 'download'){
+          window.open('/resource/download?resourceId='+data.resourceId);
+        } else if(obj.even === 'preview') {
+
         }
       });
 
@@ -491,11 +488,15 @@
         switch(obj.event){
           case 'deleteFixedValueTable':
             var fixedValueTableIds = [];
+            var fixedValueTableVersionIds = [];
             layui.each(checkStatus.data, function (key, item) {
               fixedValueTableIds.push(item.fixedValueTableId);
+              if (item.fixedValueVersionId) {
+                fixedValueTableVersionIds.push(item.fixedValueVersionId);
+              }
             });
             console.log(JSON.stringify(fixedValueTableIds));
-            febs.get(ctx + 'fixedvalue/table/batch/' + fixedValueTableIds, null, function () {
+            febs.get(ctx + 'fixedvalue/table/batch/' + fixedValueTableIds+'?fixedValueTableVersionIds='+fixedValueTableVersionIds, null, function () {
               febs.alert.success('批量删除定值表成功');
               $query.click();
             });
@@ -503,22 +504,33 @@
         };
       });
     }
-
+    //指定允许上传的文件类型
+    upload.render({
+      elem: '#fixedValue'
+      ,url: '' //此处配置你自己的上传接口即可
+      ,accept: 'file' //普通文件
+      ,done: function(res){
+        layer.msg('上传成功');
+        console.log(res);
+      }
+    });
   });
 </script>
 <script type="text/html" id="test-dropdown-toolbar-barDemo">
   <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit">故障报文</a>
-  <a class="layui-btn layui-btn-xs" lay-event="more">更多 <i class="layui-icon layui-icon-down"></i></a>
+  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="download">下载</a>
+  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="preview">预览</a>
+<!--  <a class="layui-btn layui-btn-xs" lay-event="more">更多 <i class="layui-icon layui-icon-down"></i></a>-->
 </script>
 <script type="text/html" id="test-dropdown-toolbar-barDemo2">
-  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit2">故障报文</a>
-  <a class="layui-btn layui-btn-xs" lay-event="more2">更多 <i class="layui-icon layui-icon-down"></i></a>
+  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit2">下载</a>
+  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="preview">预览</a>
 </script>
 <script type="text/html" id="select">
   <select id="selDemo" name="selDemo" lay-filter="selDemo" class="selectDemo" lay-ignore>
-    {{# layui.each(d.versions, function(index, item){ }}
-    <option value="{{item.fixValueVersionId}}" title="{{item.fixValueVersionId}}">{{item.createTime}}</option>
-    {{# }); }}
+<!--    {{# layui.each(d.versions, function(index, item){ }}-->
+<!--    <option value="{{item.fixValueVersionId}}" title="{{item.fixValueVersionId}}">{{item.createTime}}</option>-->
+<!--    {{# }); }}-->
   </select>
 
   <select  class="form-control input-sm" name="category" lay-filter="category" aria-invalid="false">
@@ -536,8 +548,6 @@
 
 <script type="text/html" id="toolbarDemo2">
   <div class="layui-btn-container">
-    <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
-    <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
-    <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+    <button class="layui-btn layui-btn-sm" lay-event="batchDelete">批量删除</button>
   </div>
 </script>

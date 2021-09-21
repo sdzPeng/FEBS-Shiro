@@ -151,6 +151,26 @@ public class CalcServiceImpl implements ICalcService {
         }else {
             keyValueResults.add(new KeyValueResult("吸上电流比法T相距离（km）", null));
         }
+        电流比法(deviceId, keyValueResults);
+        // 推荐故障距离（km）
+        keyValueResults.add(new KeyValueResult("推荐故障距离（km）", THREAD_LOCAL.get().get("横联电流比法距离（km）")));
+        // 故障点公里标（km）
+        /**
+         * 变电所上网点公里标+(temp.get("上下行电流比法距离（km）")-)
+         */
+        FixedValue 起点公里标 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.起点公里标);
+        FixedValue 变电所供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.变电所供电线长度);
+        Double sxdlbf = (Double) THREAD_LOCAL.get().get("上下行电流比法距离（km）");
+        FixedValueVersion fixedValueVersionInfo = fixedValueVersionService.getById(起点公里标.getFixedValueVersionId());
+        Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
+                +(sxdlbf-Double.parseDouble(变电所供电线长度.getSummonValue()))
+                *Double.parseDouble(fixedValueVersionInfo.getDirection());
+        keyValueResults.add(new KeyValueResult("故障点公里标（km）", 故障点公里标));
+        THREAD_LOCAL.remove();
+        return keyValueResults;
+    }
+
+    private void 电流比法(Long deviceId, List<KeyValueResult> keyValueResults) throws ValidaException {
         // 吸上电流比法F相距离（km）
         if (null!=THREAD_LOCAL.get().get("故障类型")&&StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")) {
             if (StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")) {
@@ -280,22 +300,6 @@ public class CalcServiceImpl implements ICalcService {
             keyValueResults.add(new KeyValueResult("上下行电流比法距离（km）", result));
             THREAD_LOCAL.get().put("上下行电流比法距离（km）", result);
         }
-        // 推荐故障距离（km）
-        keyValueResults.add(new KeyValueResult("推荐故障距离（km）", THREAD_LOCAL.get().get("横联电流比法距离（km）")));
-        // 故障点公里标（km）
-        /**
-         * 变电所上网点公里标+(temp.get("上下行电流比法距离（km）")-)
-         */
-        FixedValue 起点公里标 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.起点公里标);
-        FixedValue 变电所供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.变电所供电线长度);
-        Double sxdlbf = (Double) THREAD_LOCAL.get().get("上下行电流比法距离（km）");
-        FixedValueVersion fixedValueVersionInfo = fixedValueVersionService.getById(起点公里标.getFixedValueVersionId());
-        Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
-                +(sxdlbf-Double.parseDouble(变电所供电线长度.getSummonValue()))
-                *Double.parseDouble(fixedValueVersionInfo.getDirection());
-        keyValueResults.add(new KeyValueResult("故障点公里标（km）", 故障点公里标));
-        THREAD_LOCAL.remove();
-        return keyValueResults;
     }
 
     private void extracted(Long deviceId, List<KeyValueResult> keyValueResults) throws ValidaException {
