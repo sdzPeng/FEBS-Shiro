@@ -505,7 +505,8 @@ public class CalcServiceImpl implements ICalcService {
         RealVector I0xtVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所下行T电流);
         RealVector 标准零度 = I0stVector.add(I0xtVector);
         currentMap.put("I0xt", analysisCurrentValue(I0xtVector, 标准零度, false));
-        currentMap.put("I0st", analysisCurrentValue(I0xtVector, 标准零度, false));
+        //        I0st=上行T线电流（变电所测距数据）
+        currentMap.put("I0st", analysisCurrentValue(I0stVector, 标准零度, false));
 //        I0sf=上行F线电流（变电所测距数据）
         RealVector I0sfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所上行F电流);
         currentMap.put("I0sf", analysisCurrentValue(I0sfVector, 标准零度, true));
@@ -582,7 +583,7 @@ public class CalcServiceImpl implements ICalcService {
 //        第一/二AT段上行FR故障：I短路=I1st+I2st-I0st
             I短路 = I1stVector.add(I2stVector).subtract(I0stVector);
         }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "上行")) {
+                &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "下行")) {
 //        第一/二AT段下行FR故障：I短路=I1xt+I2xt-I0xt
             I短路 = I1xtVector.add(I2xtVector).subtract(I0xtVector);
         }else {

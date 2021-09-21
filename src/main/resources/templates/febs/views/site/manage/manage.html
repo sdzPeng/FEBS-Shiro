@@ -367,7 +367,7 @@
                 }
         ,cols: [[
           {type: 'checkbox', fixed: 'left'}
-          ,{field:'fixedValueTableId', title:'ID', width:80, fixed: 'left', unresize: true, sort: true}
+          ,{field:'fixedValueVersionId', title:'ID', width:80, fixed: 'left', unresize: true, sort: true}
           ,{field:'name', title:'名称', width:200}
           // ,{field:'versions', title:'版本选择', width:240, templet: function (data) {
           //     console.log(data);
@@ -430,13 +430,17 @@
                   {type: 'checkbox', fixed: 'left'}
                   ,{field:'deviceTableId', title:'ID', width:80, fixed: 'left', unresize: true, sort: true}
                   ,{field:'name', title:'名称', width:200}
-                  ,{field:'createTime', title:'开始创建时间', width:240}
+                  ,{field:'createTime', title:'创建时间', width:240}
                   ,{field:'resourceId', title:'文件id', width:240}
-                  ,{field:'fixedValueVersionId', title:'最近更新时间', width:240}
+                  // ,{field:'fixedValueVersionId', title:'最近更新时间', width:240}
                   ,{fixed: 'right', title:'操作', toolbar: '#test-dropdown-toolbar-barDemo2', width:240}
                 ]],
                 limit: 8,
                 page: true,
+                request: {
+                  pageName: "pageNum",
+                  limitName: "pageSize"
+                },
                 response: {
                   statusName: "code",
                   statusCode: 200,
