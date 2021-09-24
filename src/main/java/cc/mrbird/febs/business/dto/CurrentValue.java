@@ -17,5 +17,5 @@ public class CurrentValue implements Serializable {
 
     private Double value;
 
-    private Integer direction;
+    private String direction;
 }

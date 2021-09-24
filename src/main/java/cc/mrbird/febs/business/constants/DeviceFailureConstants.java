@@ -2,6 +2,7 @@ package cc.mrbird.febs.business.constants;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -124,5 +125,70 @@ public class DeviceFailureConstants {
             return null;
         }
 
+    }
+
+    @Getter
+    public enum CURRENT_TYPE {
+        变电所下行T线电流left("left", -1, "I0xt"),
+        变电所下行T线电流right("right", 1, "I0xt"),
+        变电所上行T线电流left("left", -1, "I0st"),
+        变电所上行T线电流right("right", 1, "I0st"),
+        变电所上行F线电流left("left", -1, "I0sf"),
+        变电所上行F线电流right("right", 1, "I0sf"),
+        变电所下行F线电流left("right", -1, "I0xf"),
+        变电所下行F线电流right("left", 1, "I0xf"),
+        子站1上行T线电流left("up", 1, "I1st"),
+        子站1上行T线电流right("down", -1, "I1st"),
+        子站1下行T线电流left("up", 1, "I1xt"),
+        子站1下行T线电流right("down", -1, "I1xt"),
+        子站1上行F线电流left("up", 1, "I1sf"),
+        子站1上行F线电流right("down", -1, "I1sf"),
+        子站1下行F线电流left("up", -1, "I1xf"),
+        子站1下行F线电流right("down", 1, "I1xf"),
+        子站2上行T线电流left("up", -1, "I2st"),
+        子站2上行T线电流right("down", 1, "I2st"),
+        子站2下行T线电流left("up", 1, "I2xt"),
+        子站2下行T线电流right("down", -1, "I2xt"),
+        子站2上行F线电流left("up", -1, "I2sf"),
+        子站2上行F线电流right("down", 1, "I2sf"),
+        子站2下行F线电流left("up", 1, "I2xf"),
+        子站2下行F线电流right("down", -1, "I2xf"),
+        I1fleft("up", -1, "I1f"),
+        I1fright("down", 1, "I1f"),
+        I1tleft("up", 1, "I1t"),
+        I1tright("down", -1, "I1t"),
+        I2fleft("up", -1, "I2f"),
+        I2fright("down", 1, "I2f"),
+        I2tleft("up", -1, "I2t"),
+        I2tright("down", 1, "I2t"),
+        I0left("left", -1, "I0"),
+        I0right("right", 1, "I0"),
+        I1left("left", -1, "I1"),
+        I1right("right", 1, "I1"),
+        I2left("left", -1, "I2"),
+        I2right("right", 1, "I2"),
+        I短路left("up", -1, "I短路"),
+        I短路right("down", 1, "I短路"),
+        Ilastleft("left", 1, "Ilast"),
+        Ilastright("right", -1, "Ilast"),
+        ;
+        private String direction;
+        private String label;
+        private Integer type;
+
+        CURRENT_TYPE(String direction, Integer type, String label) {
+            this.direction = direction;
+            this.label = label;
+            this.type = type;
+        }
+
+        public static String getByTypeAndLabel(Integer type, String label) {
+            for (CURRENT_TYPE value : CURRENT_TYPE.values()) {
+                if (StringUtils.equals(value.getLabel(), label) && NumberUtils.compare(value.getType(), type) ==0) {
+                    return value.getDirection();
+                }
+            }
+            return null;
+        }
     }
 }

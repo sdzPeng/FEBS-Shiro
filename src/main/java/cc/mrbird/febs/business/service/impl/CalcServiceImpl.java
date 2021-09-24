@@ -504,60 +504,60 @@ public class CalcServiceImpl implements ICalcService {
 //        I0xt=下行T线电流（变电所测距数据）
         RealVector I0xtVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所下行T电流);
         RealVector 标准零度 = I0stVector.add(I0xtVector);
-        currentMap.put("I0xt", analysisCurrentValue(I0xtVector, 标准零度, false));
+        currentMap.put("I0xt", analysisCurrentValue("I0xt", I0xtVector, 标准零度));
         //        I0st=上行T线电流（变电所测距数据）
-        currentMap.put("I0st", analysisCurrentValue(I0stVector, 标准零度, false));
+        currentMap.put("I0st", analysisCurrentValue("I0st", I0stVector, 标准零度));
 //        I0sf=上行F线电流（变电所测距数据）
         RealVector I0sfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所上行F电流);
-        currentMap.put("I0sf", analysisCurrentValue(I0sfVector, 标准零度, true));
+        currentMap.put("I0sf", analysisCurrentValue("I0sf", I0sfVector, 标准零度));
 //        I0xf=下行F线电流（变电所测距数据）
         RealVector I0xfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所下行F电流);
-        currentMap.put("I0xf", analysisCurrentValue(I0xfVector, 标准零度, true));
+        currentMap.put("I0xf", analysisCurrentValue("I0xf",I0xfVector, 标准零度));
 //        I1st=上行T线电流（子站1测距数据）
         RealVector I1stVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.AT所上行T电流);
-        currentMap.put("I1st", analysisCurrentValue(I1stVector, 标准零度, false));
+        currentMap.put("I1st", analysisCurrentValue("I1st", I1stVector, 标准零度));
 //        I1xt=下行T线电流（子站1测距数据）
         RealVector I1xtVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.AT所下行T电流);
-        currentMap.put("I1xt", analysisCurrentValue(I1xtVector, 标准零度, false));
+        currentMap.put("I1xt", analysisCurrentValue("I1xt", I1xtVector, 标准零度));
 //        I1sf=上行F线电流（子站1测距数据）
         RealVector I1sfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.AT所上行F电流);
-        currentMap.put("I1sf", analysisCurrentValue(I1sfVector, 标准零度, true));
+        currentMap.put("I1sf", analysisCurrentValue("I1sf", I1sfVector, 标准零度));
 //        I1xf=下行F线电流（子站1测距数据）
         RealVector I1xfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.AT所下行F电流);
-        currentMap.put("I1xf", analysisCurrentValue(I1xfVector, 标准零度, true));
+        currentMap.put("I1xf", analysisCurrentValue("I1xf", I1xfVector, 标准零度));
 //        I2st=上行T线电流（子站2测距数据）
         RealVector I2stVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.分区所上行T电流);
-        currentMap.put("I2st", analysisCurrentValue(I2stVector, 标准零度, false));
+        currentMap.put("I2st", analysisCurrentValue("I2st", I2stVector, 标准零度));
 //        I2xt=下行T线电流（子站2测距数据）
         RealVector I2xtVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.分区所下行T电流);
-        currentMap.put("I2xt", analysisCurrentValue(I2xtVector, 标准零度, false));
+        currentMap.put("I2xt", analysisCurrentValue("I2xt", I2xtVector, 标准零度));
 //        I2sf=上行F线电流（子站2测距数据）
         RealVector I2sfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.分区所上行F电流);
-        currentMap.put("I2sf", analysisCurrentValue(I2sfVector, 标准零度, true));
+        currentMap.put("I2sf", analysisCurrentValue("I2sf", I2sfVector, 标准零度));
 //        I2xf=下行F线电流（子站2测距数据）
         RealVector I2xfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.分区所下行F电流);
-        currentMap.put("I2xf", analysisCurrentValue(I2xfVector, 标准零度, true));
+        currentMap.put("I2xf", analysisCurrentValue("I2xf", I2xfVector, 标准零度));
         // I1f=I1sf+I1xf
         RealVector I1fVactor = I1sfVector.add(I1xfVector);
-        currentMap.put("I1f", analysisCurrentValue(I1fVactor, 标准零度, true));
+        currentMap.put("I1f", analysisCurrentValue("I1f", I1fVactor, 标准零度));
         // I1t=I1st+I1xt
         RealVector I1tVector = I1stVector.add(I1xtVector);
-        currentMap.put("I1t", analysisCurrentValue(I1tVector, 标准零度, false));
+        currentMap.put("I1t", analysisCurrentValue("I1t", I1tVector, 标准零度));
         // I2f=I2sf+I2xf todo why wrong????
         RealVector I2fVector = I2sfVector.add(I2xfVector);
-        currentMap.put("I2f", analysisCurrentValue(I2fVector, 标准零度, true));
+        currentMap.put("I2f", analysisCurrentValue("I2f", I2fVector, 标准零度));
         // I2t=I2st+I2xt
         RealVector I2tVector = I2stVector.add(I2xtVector);
-        currentMap.put("I2t", analysisCurrentValue(I2tVector, 标准零度, false));
+        currentMap.put("I2t", analysisCurrentValue("I2t", I2tVector, 标准零度));
         // I0=I0st+I0xt+I0sf+I0xf
         RealVector I0Vector = I0stVector.add(I0xtVector).add(I0sfVector).add(I0xfVector);
-        currentMap.put("I0", analysisCurrentValue(I0Vector, 标准零度, false));
+        currentMap.put("I0", analysisCurrentValue("I0", I0Vector, 标准零度));
         // I1=I1st+I1xt+I1sf+I1xf
         RealVector I1Vector = I1stVector.add(I1xtVector).add(I1sfVector).add(I1xfVector);
-        currentMap.put("I1", analysisCurrentValue(I1Vector, 标准零度, false));
+        currentMap.put("I1", analysisCurrentValue("I1", I1Vector, 标准零度));
         // I2=I2t+I2f
         RealVector I2Vector = I2tVector.add(I2fVector);
-        currentMap.put("I2", analysisCurrentValue(I2Vector, 标准零度, false));
+        currentMap.put("I2", analysisCurrentValue("I2", I2Vector, 标准零度));
 
         // I短路 六种情况
         extracted(deviceId, new ArrayList<>());
@@ -581,15 +581,15 @@ public class CalcServiceImpl implements ICalcService {
         }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
                 &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "上行")) {
 //        第一/二AT段上行FR故障：I短路=I1st+I2st-I0st
-            I短路 = I1stVector.add(I2stVector).subtract(I0stVector);
+            I短路 = I1sfVector.add(I2sfVector).subtract(I0sfVector);
         }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
                 &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "下行")) {
-//        第一/二AT段下行FR故障：I短路=I1xt+I2xt-I0xt
-            I短路 = I1xtVector.add(I2xtVector).subtract(I0xtVector);
+//        第一/二AT段下行FR故障：I短路=I1xt+I2xt-I0xt todo
+            I短路 = I1xfVector.add(I2xfVector).subtract(I0xfVector);
         }else {
             I短路 = MathUtils.toRealVector(0d,0d);
         }
-        currentMap.put("I短路", analysisCurrentValue(I短路, 标准零度, false));
+        currentMap.put("I短路", analysisCurrentValue("I短路", I短路, 标准零度));
         // Ilast 四种情况
         RealVector IlastVector = null;
 //        第一AT段上/下行FR故障：Ilast=I短路+I0
@@ -609,15 +609,15 @@ public class CalcServiceImpl implements ICalcService {
 //        第二AT段上/下行TR故障：Ilast=I2+I短路
             IlastVector = I2Vector.add(I短路);
         }
-        currentMap.put("Ilast", analysisCurrentValue(IlastVector, 标准零度, false));
+        currentMap.put("Ilast", analysisCurrentValue("Ilast", IlastVector, 标准零度));
         return currentMap;
     }
 
-    private CurrentValue analysisCurrentValue(RealVector vector, RealVector base, Boolean adjust) {
+    private CurrentValue analysisCurrentValue(String label, RealVector vector, RealVector base) {
         CurrentValue currentValue = new CurrentValue();
         Double sub = MathUtils.toAngle(vector) - MathUtils.toAngle(base);
         currentValue.setValue(vector.getNorm());
-        currentValue.setDirection(Math.cos(sub+(adjust?0:180))>0?1:-1);
+        currentValue.setDirection(DeviceFailureConstants.CURRENT_TYPE.getByTypeAndLabel(Math.cos(sub)>0?1:-1, label));
         return currentValue;
     }
 
