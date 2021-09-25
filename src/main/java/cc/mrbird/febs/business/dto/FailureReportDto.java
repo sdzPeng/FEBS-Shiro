@@ -80,4 +80,9 @@ public class FailureReportDto implements Serializable {
      * 接触网安装信息
      */
     private TableRenderData touchNetInfo;
+
+    /**
+     * 计算数据源
+     */
+    private TableRenderData calcData;
 }

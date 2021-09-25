@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Comparator;
@@ -87,9 +88,25 @@ public class CalcController {
 
     }
 
-    @GetMapping("/download")
-    @ApiOperation(value = "生成故障报文")
+
+
+    @GetMapping("/generate/download")
+    @ApiOperation(value = "生成并下载故障报文报告（不入库）")
     public void download(Long deviceId, HttpServletResponse response) throws IOException, ValidaException {
+        XWPFTemplate template = generateWordReport(deviceId);
+        // 下载文件
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        // chrome浏览器下载文件可能出现：ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION，
+        // 产生原因：可能是因为文件名中带有英文半角逗号,
+        // 解决办法：确保 filename 参数使用双引号包裹[1]
+        response.setHeader("Content-Disposition", "attachment; filename=test.docx");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
+        response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+        template.writeAndClose(response.getOutputStream());
+    }
+
+    private XWPFTemplate generateWordReport(Long deviceId) throws ValidaException, FileNotFoundException {
         DecimalFormat df2  = new DecimalFormat("###.000");
         FailureReportDto failureReport = new FailureReportDto();
         List<KeyValueResult> dataTable = calcService.analysisResult(deviceId);
@@ -146,18 +163,35 @@ public class CalcController {
         failureReport.setClosedFacilities(extractedSecondTable(故障点公里标.getValue().toString()));
         // 生成第三张表
         failureReport.setTouchNetInfo(extractedThirdTable(故障点公里标.getValue().toString()));
+        // 生成第四张表
+        failureReport.setCalcData(extractedForthTable(keyValueResults));
         File file = ResourceUtils.getFile("classpath:word/test.docx");
         XWPFTemplate template = XWPFTemplate.compile(file).render(failureReport);
-        // 下载文件
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        // chrome浏览器下载文件可能出现：ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION，
-        // 产生原因：可能是因为文件名中带有英文半角逗号,
-        // 解决办法：确保 filename 参数使用双引号包裹[1]
-        response.setHeader("Content-Disposition", "attachment; filename=test.docx");
-        response.setHeader("Pragma", "no-cache");
-        response.setHeader("Expires", "0");
-        response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-        template.writeAndClose(response.getOutputStream());
+        return template;
+    }
+
+    private TableRenderData extractedForthTable(List<KeyValueResult> keyValueResults) {
+        // 创建表格
+        RowRenderData header = Rows.of("序号", "名称", "内容").bgColor("F2F2F2").center()
+                .textColor("7F7f7F").textFontFamily("Hei").textFontSize(6).create();
+        Tables.TableBuilder tableBuilder = Tables.ofA4MediumWidth().addRow(header);
+        int i = 0;
+        for (KeyValueResult keyValueResult : keyValueResults) {
+            RowRenderData row = Rows.of(String.valueOf(i++),
+                    keyValueResult.getKey(),
+                    null==keyValueResult.getValue()?"":keyValueResult.getValue().toString())
+                    .textFontSize(10)
+                    .center()
+                    .create();
+            tableBuilder.addRow(row);
+        }
+
+        BorderStyle borderStyle = new BorderStyle();
+        borderStyle.setColor("A6A6A6");
+        borderStyle.setSize(4);
+        borderStyle.setType(XWPFTable.XWPFBorderType.SINGLE);
+        return tableBuilder.border(borderStyle).center()
+                .create();
     }
 
     private TableRenderData extractedThirdTable(String glb) {
