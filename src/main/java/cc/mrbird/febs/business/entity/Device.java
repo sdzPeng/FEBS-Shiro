@@ -55,4 +55,7 @@ public class Device implements Serializable {
     @TableField(value = "DEVICE_TABLE_ID")
     private Long deviceTableId;
 
+    @TableField(value = "REPORT_RESOURCE_ID")
+    private Long reportResourceId;
+
 }

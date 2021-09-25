@@ -6,10 +6,9 @@ import cc.mrbird.febs.business.dto.KeyValueResult;
 import cc.mrbird.febs.business.entity.Bim;
 import cc.mrbird.febs.business.entity.Device;
 import cc.mrbird.febs.business.entity.Label;
-import cc.mrbird.febs.business.service.IBimService;
-import cc.mrbird.febs.business.service.ICalcService;
-import cc.mrbird.febs.business.service.IDeviceService;
-import cc.mrbird.febs.business.service.ILabelService;
+import cc.mrbird.febs.business.entity.Resource;
+import cc.mrbird.febs.business.service.*;
+import cc.mrbird.febs.business.util.ContextPathUtil;
 import cc.mrbird.febs.business.util.MathUtils;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.exception.ValidaException;
@@ -20,25 +19,27 @@ import com.deepoove.poi.data.Rows;
 import com.deepoove.poi.data.TableRenderData;
 import com.deepoove.poi.data.Tables;
 import com.deepoove.poi.data.style.BorderStyle;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,9 +60,14 @@ public class CalcController {
 
     @Autowired private IDeviceService deviceService;
 
+    @Autowired private IResourceService resourceService;
+
     @Autowired private ILabelService labelService;
 
     @Autowired private IBimService bimService;
+
+    @Autowired
+    private GridFsTemplate gridFsTemplate;
 
     @GetMapping("/analysis/result")
 //    @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = String.class)
@@ -88,7 +94,43 @@ public class CalcController {
 
     }
 
+    @GetMapping("/generate/report")
+    @ApiOperation(value = "生成并下载故障报文报告（入库）")
+    public FebsResponse generateReport(Long deviceId, HttpServletRequest request) throws IOException, ValidaException {
+        XWPFTemplate template = generateWordReport(deviceId);
+        String dataStr = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String uuidName = UUID.randomUUID().toString();
+        String contextPath = ContextPathUtil.getContextPath(dataStr +
+                File.separator + uuidName, request);
+        new File(contextPath).mkdirs();
+        String filePath = contextPath+File.separator+ UUID.randomUUID() +".docx";
 
+        // 文件入库操作
+        String uuid;
+        File file = new File(filePath);
+        try(InputStream is = new FileInputStream(filePath)) {
+            uuid = UUID.randomUUID().toString();
+            DBObject metadata = new BasicDBObject();
+            metadata.put("uuid", uuid);
+            gridFsTemplate.store(is, file.getName(),
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", metadata);
+        }
+        Resource resource = new Resource();
+        resource.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        resource.setFileName(file.getName());
+        resource.setUuid(uuid);
+        resource.setFileLength(file.length());
+        resource.setSuffix(".docx");
+        resourceService.save(resource);
+        Device device = deviceService.getById(deviceId);
+        QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
+        deviceQueryWrapper.eq("DEVICE_ID", device.getDeviceId());
+        device.setReportResourceId(resource.getResourceId());
+        deviceService.update(device, deviceQueryWrapper);
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(filePath));
+        template.writeAndClose(os);
+        return new FebsResponse().success().data(ContextPathUtil.getURLByFilePath(filePath, request));
+    }
 
     @GetMapping("/generate/download")
     @ApiOperation(value = "生成并下载故障报文报告（不入库）")

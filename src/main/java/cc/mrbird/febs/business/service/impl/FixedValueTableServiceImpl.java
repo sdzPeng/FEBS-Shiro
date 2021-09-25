@@ -108,18 +108,15 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
         QueryWrapper<DeviceTable> deviceTableQueryWrapper = new QueryWrapper<>();
         deviceTableQueryWrapper.in("FIXED_VALUE_VERSION_ID", fixedValueVersions.stream().map(FixedValueVersion::getFixValueVersionId).collect(Collectors.toList()));
         List<DeviceTable> deviceTalbeList = deviceTableService.list(deviceTableQueryWrapper);
-        // 删除关联文件
-        resourceIds.addAll(deviceTalbeList.stream().map(DeviceTable::getResourceId).distinct().collect(Collectors.toList()));
-        List<String> uuids = resourceService.listByIds(resourceIds).stream().map(Resource::getUuid).collect(Collectors.toList());
-        Query query = Query.query(GridFsCriteria.where("metadata.uuid").in(uuids));
-        gridFsTemplate.delete(query);
-        log.info("文件[{}]删除完成！", uuids.toString());
+
+
         QueryWrapper<DeviceResource> deviceResourceQueryWrapper = new QueryWrapper<>();
         List<Long> deviceTableIds = deviceTalbeList.stream().map(DeviceTable::getDeviceTableId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(deviceTableIds)) {
             QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
             deviceQueryWrapper.in("DEVICE_TABLE_ID", deviceTableIds);
             List<Device> list = deviceService.list(deviceQueryWrapper);
+            resourceIds.addAll(list.stream().map(Device::getReportResourceId).collect(Collectors.toList()));
             List<Long> deviceIds = list.stream().map(Device::getDeviceId).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(deviceIds)) {
                 deviceResourceQueryWrapper.in("DEVICE_ID",deviceIds);
@@ -134,6 +131,12 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
             }
             deviceTableService.remove(deviceTableQueryWrapper);
         }
+        // 删除关联文件
+        resourceIds.addAll(deviceTalbeList.stream().map(DeviceTable::getResourceId).distinct().collect(Collectors.toList()));
+        List<String> uuids = resourceService.listByIds(resourceIds).stream().map(Resource::getUuid).collect(Collectors.toList());
+        Query query = Query.query(GridFsCriteria.where("metadata.uuid").in(uuids));
+        gridFsTemplate.delete(query);
+        log.info("文件[{}]删除完成！", uuids.toString());
     }
 
     @Override
@@ -151,13 +154,18 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
                 .stream()
                 .map(Resource::getUuid)
                 .collect(Collectors.toList());
-        Query query = Query.query(GridFsCriteria.where("metadata.uuid").in(uuids));
-        gridFsTemplate.delete(query);
+
         log.info("文件[{}]删除完成！", uuids.toString());
         if (!CollectionUtils.isEmpty(deviceTableIds)) {
             QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
             deviceQueryWrapper.in("DEVICE_TABLE_ID", deviceTableIds);
             List<Device> list = deviceService.list(deviceQueryWrapper);
+            uuids.addAll(resourceService.listByIds(list.stream()
+                    .map(Device::getReportResourceId)
+                    .collect(Collectors.toList()))
+                    .stream()
+                    .map(Resource::getUuid)
+                    .collect(Collectors.toList()));
             List<Long> deviceIds = list.stream().map(Device::getDeviceId).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(deviceIds)) {
                 QueryWrapper<DeviceResource> deviceResourceQueryWrapper = new QueryWrapper<>();
@@ -173,6 +181,8 @@ public class FixedValueTableServiceImpl extends ServiceImpl<FixedValueTableMappe
             }
             deviceTableService.remove(deviceTableQueryWrapper);
         }
+        Query query = Query.query(GridFsCriteria.where("metadata.uuid").in(uuids));
+        gridFsTemplate.delete(query);
     }
 
     @Override
