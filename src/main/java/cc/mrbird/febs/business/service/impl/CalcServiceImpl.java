@@ -617,6 +617,7 @@ public class CalcServiceImpl implements ICalcService {
         CurrentValue currentValue = new CurrentValue();
         Double sub = MathUtils.toAngle(vector) - MathUtils.toAngle(base);
         currentValue.setValue(vector.getNorm());
+        sub = Math.toRadians(sub);
         currentValue.setDirection(DeviceFailureConstants.CURRENT_TYPE.getByTypeAndLabel(Math.cos(sub)>0?1:-1, label));
         return currentValue;
     }
