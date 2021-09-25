@@ -1,5 +1,6 @@
 package cc.mrbird.febs.business.dto;
 
+import com.deepoove.poi.data.TableRenderData;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,7 +14,7 @@ import java.io.Serializable;
  * @desc：
  */
 @Data
-public class FailureReport implements Serializable {
+public class FailureReportDto implements Serializable {
 
     private String createTime;
 
@@ -64,4 +65,19 @@ public class FailureReport implements Serializable {
      * 公里标
      */
     private String glb;
+
+    /**
+     * 接触网关键设施信息
+     */
+    private TableRenderData keyFacilities;
+
+    /**
+     * 前后两端最近上道口
+     */
+    private TableRenderData closedFacilities;
+
+    /**
+     * 接触网安装信息
+     */
+    private TableRenderData touchNetInfo;
 }

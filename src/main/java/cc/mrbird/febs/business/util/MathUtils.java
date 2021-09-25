@@ -3,6 +3,8 @@ package cc.mrbird.febs.business.util;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
+import java.text.DecimalFormat;
+
 /**
  * @company: test
  * @department: 数据中心
@@ -12,6 +14,8 @@ import org.apache.commons.math3.linear.RealVector;
  * @desc：
  */
 public final class MathUtils {
+
+    private static final DecimalFormat FORMAT  = new DecimalFormat("###.000");
 
     public static RealVector toRealVector(Double value, Double angle) {
         double radians = Math.toRadians(angle);
@@ -40,5 +44,14 @@ public final class MathUtils {
 //                .subtract(toRealVector(381.431, 295.615))
 //                .add(toRealVector(6097.024, 111.239));
 //        System.out.println(add.getNorm());
+    }
+
+    public static String base2scientific(Double mileage) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("K")
+                .append((int)Math.floor(mileage))
+                .append("+")
+                .append(FORMAT.format((mileage-Math.floor(mileage))*1000));
+        return sb.toString();
     }
 }
