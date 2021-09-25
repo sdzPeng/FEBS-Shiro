@@ -104,7 +104,8 @@ public class CalcController {
                 File.separator + uuidName, request);
         new File(contextPath).mkdirs();
         String filePath = contextPath+File.separator+ UUID.randomUUID() +".docx";
-
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(filePath));
+        template.writeAndClose(os);
         // 文件入库操作
         String uuid;
         File file = new File(filePath);
@@ -127,8 +128,6 @@ public class CalcController {
         deviceQueryWrapper.eq("DEVICE_ID", device.getDeviceId());
         device.setReportResourceId(resource.getResourceId());
         deviceService.update(device, deviceQueryWrapper);
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(filePath));
-        template.writeAndClose(os);
         return new FebsResponse().success().data(ContextPathUtil.getURLByFilePath(filePath, request));
     }
 
