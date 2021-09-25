@@ -105,15 +105,15 @@ public class CalcController {
         // 横联电流比法
         dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "横联电流比法距离（km）"))
                 .findFirst()
-                .ifPresent(横联电流比法 -> failureReport.setHldlbjl(MathUtils.base2scientific(Double.parseDouble(横联电流比法.getValue().toString()))));
+                .ifPresent(横联电流比法 -> failureReport.setHldlbjl(df2.format(Double.parseDouble(横联电流比法.getValue().toString()))));
         // 上下行电流比法
         dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "上下行电流比法距离（km）"))
                 .findFirst()
-                .ifPresent(上下行电流比法距离 -> failureReport.setSxxdlbfcj(MathUtils.base2scientific(Double.parseDouble(上下行电流比法距离.getValue().toString()))));
+                .ifPresent(上下行电流比法距离 -> failureReport.setSxxdlbfcj(df2.format(Double.parseDouble(上下行电流比法距离.getValue().toString()))));
         // 吸上电流比法
         dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）"))
                 .findFirst()
-                .ifPresent(吸上电流比法F相距离 -> failureReport.setXsdlbfjl(MathUtils.base2scientific(Double.parseDouble(吸上电流比法F相距离.getValue().toString()))));
+                .ifPresent(吸上电流比法F相距离 -> failureReport.setXsdlbfjl(df2.format(Double.parseDouble(吸上电流比法F相距离.getValue().toString()))));
         KeyValueResult 电流比法 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "横联电流比法距离（km）") ||
                 StringUtils.equals(o.getKey(), "上下行电流比法距离（km）") ||
                 StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）"))
@@ -121,8 +121,8 @@ public class CalcController {
                         Double.parseDouble(o1.getValue().toString()) >
                                 Double.parseDouble(o2.getValue().toString()) ? 1 : -1)
                 .orElse(null);
-        failureReport.setDlbf(电流比法.getValue().toString());
-        failureReport.setTjgzjl(电流比法.getValue().toString());
+        failureReport.setDlbf(电流比法.getKey());
+        failureReport.setTjgzjl(df2.format(Double.parseDouble(电流比法.getValue().toString())));
         KeyValueResult 故障点公里标 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "故障点公里标（km）"))
                 .findFirst()
                 .orElse(null);
@@ -209,45 +209,57 @@ public class CalcController {
         // 故障点最近的 上行
         Label labelUpLeft = list
                 .stream()
-                .filter(o -> StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) < glbDouble*1000)
+                .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
+                        StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) < glbDouble*1000)
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
                     return abs1 >= abs2 ? 1 : -1;
                 }).orElse(null);
-        tableBuilder.addRow(extracted(labelUpLeft));
+        if (null!=labelUpLeft) {
+            tableBuilder.addRow(extracted(labelUpLeft));
+        }
 
         // 故障点最近的 上行
         Label labelUpRight = list
                 .stream()
-                .filter(o -> StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) > glbDouble*1000)
+                .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
+                        StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) > glbDouble*1000)
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
                     return abs1 >= abs2 ? -1 : 1;
                 }).orElse(null);
-        tableBuilder.addRow(extracted(labelUpRight));
+        if (null!=labelUpRight) {
+            tableBuilder.addRow(extracted(labelUpRight));
+        }
         // 故障点最近的 上行
         Label labelDownloadLeft = list
                 .stream()
-                .filter(o -> StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) < glbDouble*1000)
+                .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
+                        StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) < glbDouble*1000)
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
                     return abs1 >= abs2 ? 1 : -1;
                 }).orElse(null);
-        tableBuilder.addRow(extracted(labelDownloadLeft));
+        if (null!=labelDownloadLeft) {
+            tableBuilder.addRow(extracted(labelDownloadLeft));
+        }
 
         // 故障点最近的 上行
         Label labelDownRight = list
                 .stream()
-                .filter(o -> StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) > glbDouble*1000)
+                .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
+                        StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) > glbDouble*1000)
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
                     return abs1 >= abs2 ? -1 : 1;
                 }).orElse(null);
-        tableBuilder.addRow(extracted(labelDownRight));
+        if (null!=labelDownRight) {
+            tableBuilder.addRow(extracted(labelDownRight));
+        }
 
         BorderStyle borderStyle = new BorderStyle();
         borderStyle.setColor("A6A6A6");
