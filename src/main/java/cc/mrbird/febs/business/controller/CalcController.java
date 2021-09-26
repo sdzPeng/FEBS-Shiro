@@ -14,29 +14,33 @@ import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.exception.ValidaException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.deepoove.poi.XWPFTemplate;
-import com.deepoove.poi.data.RowRenderData;
-import com.deepoove.poi.data.Rows;
-import com.deepoove.poi.data.TableRenderData;
-import com.deepoove.poi.data.Tables;
+import com.deepoove.poi.data.*;
 import com.deepoove.poi.data.style.BorderStyle;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.client.gridfs.model.GridFSFile;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsCriteria;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.ResourceUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -69,6 +73,9 @@ public class CalcController {
     @Autowired
     private GridFsTemplate gridFsTemplate;
 
+    @Value("${gaotie.temp.dir}")
+    private String tempDir;
+
     @GetMapping("/analysis/result")
 //    @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = String.class)
     @ApiOperation(value = "分析计算结果")
@@ -92,6 +99,28 @@ public class CalcController {
         Map<String, Object> result = calcService.currentDistMap(deviceId);
         return new FebsResponse().success().data(result);
 
+    }
+
+    @PostMapping("/image")
+    @ApiOperation(value = "保存图片")
+    public FebsResponse snapshot(
+            Long deviceId, MultipartFile file
+    ) throws IOException {
+        Device device = deviceService.getById(deviceId);
+        // 文件入库操作
+        String uuid;
+        try(InputStream is = file.getInputStream();) {
+            uuid = UUID.randomUUID().toString();
+            DBObject metadata = new BasicDBObject();
+            metadata.put("uuid", uuid);
+            gridFsTemplate.store(is, file.getName(),
+                    "", metadata);
+        }
+        device.setSnapshot(uuid);
+        QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
+        deviceQueryWrapper.eq("DEVICE_ID", deviceId);
+        deviceService.update(device, deviceQueryWrapper);
+        return new FebsResponse().success();
     }
 
     @GetMapping("/generate/report")
@@ -147,7 +176,7 @@ public class CalcController {
         template.writeAndClose(response.getOutputStream());
     }
 
-    private XWPFTemplate generateWordReport(Long deviceId) throws ValidaException, FileNotFoundException {
+    private XWPFTemplate generateWordReport(Long deviceId) throws ValidaException, IOException {
         DecimalFormat df2  = new DecimalFormat("###.000");
         FailureReportDto failureReport = new FailureReportDto();
         List<KeyValueResult> dataTable = calcService.analysisResult(deviceId);
@@ -171,13 +200,13 @@ public class CalcController {
         // 吸上电流比法
         dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）"))
                 .findFirst()
-                .ifPresent(吸上电流比法F相距离 -> failureReport.setXsdlbfjl(df2.format(Double.parseDouble(吸上电流比法F相距离.getValue().toString()))));
+                .ifPresent(吸上电流比法F相距离 -> failureReport.setXsdlbfjl(df2.format(Double.parseDouble(null==吸上电流比法F相距离.getValue()?"0":吸上电流比法F相距离.getValue().toString()))));
         KeyValueResult 电流比法 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "横联电流比法距离（km）") ||
                 StringUtils.equals(o.getKey(), "上下行电流比法距离（km）") ||
                 StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）"))
                 .max((o1, o2) ->
-                        Double.parseDouble(o1.getValue().toString()) >
-                                Double.parseDouble(o2.getValue().toString()) ? 1 : -1)
+                        Double.parseDouble((null==o1.getValue()?0:o1.getValue()).toString()) >
+                                Double.parseDouble((null==o2.getValue()?0:o2.getValue()).toString()) ? 1 : -1)
                 .orElse(null);
         failureReport.setDlbf(电流比法.getKey());
         failureReport.setTjgzjl(df2.format(Double.parseDouble(电流比法.getValue().toString())));
@@ -188,7 +217,15 @@ public class CalcController {
         Map<String, Object> result = calcService.currentDistMap(deviceId);
 
         failureReport.setI0(df2.format(Double.parseDouble(((CurrentValue)result.get("I0")).getValue().toString())));
-        failureReport.setImage("test");
+        if (null != device.getSnapshot()) {
+            Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(device.getSnapshot()));
+            GridFSFile one = gridFsTemplate.findOne(query);
+            GridFsResource resource = gridFsTemplate.getResource(one);
+            try (InputStream inputStream = resource.getInputStream();) {
+                PictureRenderData pictureRenderData = Pictures.ofStream(inputStream).size(100, 120).create();
+                failureReport.setSnapshot(pictureRenderData);
+            }
+        }
         failureReport.setI1(df2.format(Double.parseDouble(((CurrentValue)result.get("I1")).getValue().toString())));
         // 故障区段
         dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "故障区段"))
@@ -206,7 +243,14 @@ public class CalcController {
         failureReport.setTouchNetInfo(extractedThirdTable(故障点公里标.getValue().toString()));
         // 生成第四张表
         failureReport.setCalcData(extractedForthTable(keyValueResults));
-        File file = ResourceUtils.getFile("classpath:word/test.docx");
+        File file;
+        String path = URLDecoder.decode(Objects.requireNonNull(CalcController.class.getClassLoader().getResource("word"))
+                .getPath());
+        if (StringUtils.isEmpty(tempDir)) {
+            file = ResourceUtils.getFile("classpath:word/test.docx");
+        }else {
+            file = new File(tempDir);
+        }
         XWPFTemplate template = XWPFTemplate.compile(file).render(failureReport);
         return template;
     }

@@ -56,3 +56,7 @@ spring:
       port: 27017
 swagger:
   host: 121.36.253.95:8081
+
+gaotie:
+  temp:
+    dir: C:/app/backend/BOOT-INF/classes/word/test.docx

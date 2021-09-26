@@ -1,5 +1,6 @@
 package cc.mrbird.febs.business.dto;
 
+import com.deepoove.poi.data.PictureRenderData;
 import com.deepoove.poi.data.TableRenderData;
 import lombok.Data;
 
@@ -22,7 +23,7 @@ public class FailureReportDto implements Serializable {
 
     private String deviceName;
 
-    private String image;
+    private String PictureRenderData;
 
     private String i0;
 
@@ -65,6 +66,11 @@ public class FailureReportDto implements Serializable {
      * 公里标
      */
     private String glb;
+
+    /**
+     * 截图
+     */
+    private com.deepoove.poi.data.PictureRenderData snapshot;
 
     /**
      * 接触网关键设施信息

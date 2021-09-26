@@ -68,3 +68,6 @@ spring:
       port: 27017
 swagger:
   host:
+gaotie:
+  temp:
+    dir:

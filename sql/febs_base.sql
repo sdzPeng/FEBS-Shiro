@@ -702,3 +702,5 @@ CREATE TABLE `t_label_info`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'LABEL信息表' ROW_FORMAT = Dynamic;
 
 ALTER TABLE t_device add REPORT_RESOURCE_ID bigint(20) COMMENT '资源id';
+
+ALTER TABLE t_device add SNAPSHOT TEXT COMMENT '截图';

@@ -615,10 +615,10 @@ public class CalcServiceImpl implements ICalcService {
 
     private CurrentValue analysisCurrentValue(String label, RealVector vector, RealVector base) {
         CurrentValue currentValue = new CurrentValue();
-        Double sub = MathUtils.toAngle(vector) - MathUtils.toAngle(base);
+        double sub = MathUtils.toAngle(vector) - MathUtils.toAngle(base);
         currentValue.setValue(vector.getNorm());
-        sub = Math.toRadians(sub);
-        currentValue.setDirection(DeviceFailureConstants.CURRENT_TYPE.getByTypeAndLabel(Math.cos(sub)>0?1:-1, label));
+//        sub = Math.toRadians(sub);
+        currentValue.setDirection(DeviceFailureConstants.CURRENT_TYPE.getByTypeAndLabel(Math.cos(Math.toRadians(Math.abs(sub)))>0?1:-1, label));
         return currentValue;
     }
 

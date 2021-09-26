@@ -26,7 +26,20 @@ public final class MathUtils {
 
     public static Double toAngle(RealVector realVector) {
         double[] values = realVector.toArray();
-        return Math.toDegrees(Math.atan(values[1] / values[0]));
+        double degree = Math.toDegrees(Math.atan(values[1] / values[0]));
+        if (values[0]<0) {
+            // 第二、三象限
+            return degree+180;
+        }else {
+            // 第四象限
+            if (values[1]<0) {
+                return degree<0?degree+360:degree;
+            }
+            // 第一象限
+            else {
+                return degree;
+            }
+        }
     }
 
     public static void main(String[] args) {
