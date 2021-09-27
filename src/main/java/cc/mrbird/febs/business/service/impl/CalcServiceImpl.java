@@ -609,7 +609,9 @@ public class CalcServiceImpl implements ICalcService {
 //        第二AT段上/下行TR故障：Ilast=I2+I短路
             IlastVector = I2Vector.add(I短路);
         }
-        currentMap.put("Ilast", analysisCurrentValue("Ilast", IlastVector, 标准零度));
+        if (null != IlastVector) {
+            currentMap.put("Ilast", analysisCurrentValue("Ilast", IlastVector, 标准零度));
+        }
         return currentMap;
     }
 
