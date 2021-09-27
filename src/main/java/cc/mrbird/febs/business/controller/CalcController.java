@@ -20,6 +20,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -107,6 +109,11 @@ public class CalcController {
             Long deviceId, MultipartFile file
     ) throws IOException {
         Device device = deviceService.getById(deviceId);
+        // 删除原始文件
+        if (null!=device.getSnapshot()) {
+            Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(device.getSnapshot()));
+            gridFsTemplate.delete(query);
+        }
         // 文件入库操作
         String uuid;
         try(InputStream is = file.getInputStream();) {
@@ -125,7 +132,12 @@ public class CalcController {
 
     @GetMapping("/generate/report")
     @ApiOperation(value = "生成并下载故障报文报告（入库）")
-    public FebsResponse generateReport(Long deviceId, HttpServletRequest request) throws IOException, ValidaException {
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = Long.class),
+            @ApiImplicitParam(name = "isDownload", value = "是否需要下载", dataTypeClass = String.class, example="false")
+    })
+    public void generateReport(Long deviceId, HttpServletRequest request,
+                                       HttpServletResponse response, Boolean isDownload) throws IOException, ValidaException {
         XWPFTemplate template = generateWordReport(deviceId);
         String dataStr = new SimpleDateFormat("yyyyMMdd").format(new Date());
         String uuidName = UUID.randomUUID().toString();
@@ -157,7 +169,25 @@ public class CalcController {
         deviceQueryWrapper.eq("DEVICE_ID", device.getDeviceId());
         device.setReportResourceId(resource.getResourceId());
         deviceService.update(device, deviceQueryWrapper);
-        return new FebsResponse().success().data(ContextPathUtil.getURLByFilePath(filePath, request));
+        if (isDownload) {
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            // chrome浏览器下载文件可能出现：ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION，
+            // 产生原因：可能是因为文件名中带有英文半角逗号,
+            // 解决办法：确保 filename 参数使用双引号包裹[1]
+            response.setHeader("Content-Disposition", "attachment; filename=" + new File(filePath).getName());
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Expires", "0");
+            response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            try (InputStream is = new FileInputStream(new File(filePath));
+                 OutputStream outputStream = response.getOutputStream()) {
+                // 下载文件
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = is.read(buffer)) > 0) {
+                    outputStream.write(buffer, 0, len);
+                }
+            }
+        }
     }
 
     @GetMapping("/generate/download")
@@ -244,8 +274,9 @@ public class CalcController {
         // 生成第四张表
         failureReport.setCalcData(extractedForthTable(keyValueResults));
         File file;
-        String path = URLDecoder.decode(Objects.requireNonNull(CalcController.class.getClassLoader().getResource("word"))
-                .getPath());
+//        String path = URLDecoder.decode(Objects.requireNonNull(CalcController.class.getClassLoader().getResource("word"))
+//                .getPath());
+//        file = new File(path);
         if (StringUtils.isEmpty(tempDir)) {
             file = ResourceUtils.getFile("classpath:word/test.docx");
         }else {
