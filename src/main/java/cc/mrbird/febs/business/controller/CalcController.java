@@ -89,7 +89,7 @@ public class CalcController {
     @GetMapping("/calc/data")
     @ApiOperation(value = "计算源数据")
     public FebsResponse calcData(Long deviceId) throws ValidaException {
-        List<KeyValueResult> keyValueResults = calcService.calcData(deviceId);
+        List<KeyValueResult> keyValueResults = calcService.calcData2(deviceId);
         return new FebsResponse().success().data(keyValueResults);
     }
 
@@ -215,7 +215,7 @@ public class CalcController {
             failureReport.setFailuretype(故障类型.getValue().toString());
         }
         Device device = deviceService.getById(deviceId);
-        List<KeyValueResult> keyValueResults = calcService.calcData(deviceId);
+        List<KeyValueResult> keyValueResults = calcService.calcData2(deviceId);
         failureReport.setSiteName(device.getSiteName());
         failureReport.setDeviceName(device.getDeviceName());
         failureReport.setCreateTime(device.getFailureTime());
