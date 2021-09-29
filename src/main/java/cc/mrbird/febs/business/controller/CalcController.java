@@ -91,7 +91,7 @@ public class CalcController {
             @ApiImplicitParam(name = "algorithmType", value = "算法类型", dataTypeClass = Integer.class)
     })
     @ApiOperation(value = "分析计算结果")
-    public FebsResponse analysisResult(Long deviceId, Integer algorithmType) throws ValidaException {
+    public FebsResponse analysisResult(Long deviceId, @RequestParam(defaultValue = "1")Integer algorithmType) throws ValidaException {
         List<KeyValueResult> dataTable = calcService.analysisResult(deviceId, algorithmType);
         return new FebsResponse().success().data(dataTable);
     }
@@ -147,7 +147,7 @@ public class CalcController {
             @ApiImplicitParam(name = "algorithmType", value = "算法类型", dataTypeClass = Integer.class),
             @ApiImplicitParam(name = "isDownload", value = "是否需要下载", dataTypeClass = String.class, example = "false")
     })
-    public void generateReport(Long deviceId, HttpServletRequest request, Integer algorithmType,
+    public void generateReport(Long deviceId, HttpServletRequest request, @RequestParam(defaultValue = "1") Integer algorithmType,
                                HttpServletResponse response, Boolean isDownload) throws IOException, ValidaException {
         XWPFTemplate template = generateWordReport(deviceId, algorithmType);
         String dataStr = new SimpleDateFormat("yyyyMMdd").format(new Date());
@@ -203,7 +203,7 @@ public class CalcController {
 
     @GetMapping("/generate/download")
     @ApiOperation(value = "生成并下载故障报文报告（不入库）")
-    public void download(Long deviceId, Integer algorithmType, HttpServletResponse response) throws IOException, ValidaException {
+    public void download(Long deviceId, @RequestParam(defaultValue = "1")Integer algorithmType, HttpServletResponse response) throws IOException, ValidaException {
         XWPFTemplate template = generateWordReport(deviceId, algorithmType);
         // 下载文件
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -270,7 +270,7 @@ public class CalcController {
             GridFSFile one = gridFsTemplate.findOne(query);
             GridFsResource resource = gridFsTemplate.getResource(one);
             try (InputStream inputStream = resource.getInputStream();) {
-                PictureRenderData pictureRenderData = Pictures.ofStream(inputStream).size(100, 120).create();
+                PictureRenderData pictureRenderData = Pictures.ofStream(inputStream).fitSize().center().create();
                 failureReport.setSnapshot(pictureRenderData);
             }
         }
