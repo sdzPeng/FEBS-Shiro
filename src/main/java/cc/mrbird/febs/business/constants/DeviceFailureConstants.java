@@ -191,4 +191,27 @@ public class DeviceFailureConstants {
             return null;
         }
     }
+
+    @Getter
+    public enum ALGORITHM_TYPE {
+        横联电流比法距离(1, "横联电流比法距离（km）"),
+        吸上电流比法距离(2, "吸上电流比法F相距离（km）"),
+        上下行电流比法距离(3, "上下行电流比法距离（km）"),
+        ;
+        private Integer num;
+        private String desc;
+        ALGORITHM_TYPE(Integer num, String desc) {
+            this.desc = desc;
+            this.num = num;
+        }
+
+        public static ALGORITHM_TYPE getNameByNum(Integer num) {
+            for (ALGORITHM_TYPE value : ALGORITHM_TYPE.values()) {
+                if (NumberUtils.compare(value.getNum(), num)==0) {
+                    return value;
+                }
+            }
+            return null;
+        }
+    }
 }

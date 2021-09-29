@@ -1,5 +1,6 @@
 package cc.mrbird.febs.business.controller;
 
+import cc.mrbird.febs.business.constants.DeviceFailureConstants;
 import cc.mrbird.febs.business.dto.CurrentValue;
 import cc.mrbird.febs.business.dto.FailureReportDto;
 import cc.mrbird.febs.business.dto.KeyValueResult;
@@ -26,6 +27,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,15 +64,20 @@ import java.util.stream.Collectors;
 @Api(tags = "设备故障计算服务")
 public class CalcController {
 
-    @Autowired ICalcService calcService;
+    @Autowired
+    ICalcService calcService;
 
-    @Autowired private IDeviceService deviceService;
+    @Autowired
+    private IDeviceService deviceService;
 
-    @Autowired private IResourceService resourceService;
+    @Autowired
+    private IResourceService resourceService;
 
-    @Autowired private ILabelService labelService;
+    @Autowired
+    private ILabelService labelService;
 
-    @Autowired private IBimService bimService;
+    @Autowired
+    private IBimService bimService;
 
     @Autowired
     private GridFsTemplate gridFsTemplate;
@@ -79,10 +86,13 @@ public class CalcController {
     private String tempDir;
 
     @GetMapping("/analysis/result")
-//    @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = String.class)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = String.class),
+            @ApiImplicitParam(name = "algorithmType", value = "算法类型", dataTypeClass = Integer.class)
+    })
     @ApiOperation(value = "分析计算结果")
-    public FebsResponse analysisResult(Long deviceId) throws ValidaException {
-        List<KeyValueResult> dataTable = calcService.analysisResult(deviceId);
+    public FebsResponse analysisResult(Long deviceId, Integer algorithmType) throws ValidaException {
+        List<KeyValueResult> dataTable = calcService.analysisResult(deviceId, algorithmType);
         return new FebsResponse().success().data(dataTable);
     }
 
@@ -98,7 +108,7 @@ public class CalcController {
     public FebsResponse currentDistMap(
             Long deviceId
     ) throws ValidaException {
-        Map<String, Object> result = calcService.currentDistMap(deviceId);
+        Map<String, Object> result = calcService.currentDistMap(deviceId, DeviceFailureConstants.ALGORITHM_TYPE.横联电流比法距离.getNum());
         return new FebsResponse().success().data(result);
 
     }
@@ -110,13 +120,13 @@ public class CalcController {
     ) throws IOException {
         Device device = deviceService.getById(deviceId);
         // 删除原始文件
-        if (null!=device.getSnapshot()) {
+        if (null != device.getSnapshot()) {
             Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(device.getSnapshot()));
             gridFsTemplate.delete(query);
         }
         // 文件入库操作
         String uuid;
-        try(InputStream is = file.getInputStream();) {
+        try (InputStream is = file.getInputStream();) {
             uuid = UUID.randomUUID().toString();
             DBObject metadata = new BasicDBObject();
             metadata.put("uuid", uuid);
@@ -134,23 +144,24 @@ public class CalcController {
     @ApiOperation(value = "生成并下载故障报文报告（入库）")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = Long.class),
-            @ApiImplicitParam(name = "isDownload", value = "是否需要下载", dataTypeClass = String.class, example="false")
+            @ApiImplicitParam(name = "algorithmType", value = "算法类型", dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "isDownload", value = "是否需要下载", dataTypeClass = String.class, example = "false")
     })
-    public void generateReport(Long deviceId, HttpServletRequest request,
-                                       HttpServletResponse response, Boolean isDownload) throws IOException, ValidaException {
-        XWPFTemplate template = generateWordReport(deviceId);
+    public void generateReport(Long deviceId, HttpServletRequest request, Integer algorithmType,
+                               HttpServletResponse response, Boolean isDownload) throws IOException, ValidaException {
+        XWPFTemplate template = generateWordReport(deviceId, algorithmType);
         String dataStr = new SimpleDateFormat("yyyyMMdd").format(new Date());
         String uuidName = UUID.randomUUID().toString();
         String contextPath = ContextPathUtil.getContextPath(dataStr +
                 File.separator + uuidName, request);
         new File(contextPath).mkdirs();
-        String filePath = contextPath+File.separator+ UUID.randomUUID() +".docx";
+        String filePath = contextPath + File.separator + UUID.randomUUID() + ".docx";
         OutputStream os = new BufferedOutputStream(new FileOutputStream(filePath));
         template.writeAndClose(os);
         // 文件入库操作
         String uuid;
         File file = new File(filePath);
-        try(InputStream is = new FileInputStream(filePath)) {
+        try (InputStream is = new FileInputStream(filePath)) {
             uuid = UUID.randomUUID().toString();
             DBObject metadata = new BasicDBObject();
             metadata.put("uuid", uuid);
@@ -192,8 +203,8 @@ public class CalcController {
 
     @GetMapping("/generate/download")
     @ApiOperation(value = "生成并下载故障报文报告（不入库）")
-    public void download(Long deviceId, HttpServletResponse response) throws IOException, ValidaException {
-        XWPFTemplate template = generateWordReport(deviceId);
+    public void download(Long deviceId, Integer algorithmType, HttpServletResponse response) throws IOException, ValidaException {
+        XWPFTemplate template = generateWordReport(deviceId, algorithmType);
         // 下载文件
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         // chrome浏览器下载文件可能出现：ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION，
@@ -206,10 +217,10 @@ public class CalcController {
         template.writeAndClose(response.getOutputStream());
     }
 
-    private XWPFTemplate generateWordReport(Long deviceId) throws ValidaException, IOException {
-        DecimalFormat df2  = new DecimalFormat("###.000");
+    private XWPFTemplate generateWordReport(Long deviceId, Integer algorithmType) throws ValidaException, IOException {
+        DecimalFormat df2 = new DecimalFormat("###.000");
         FailureReportDto failureReport = new FailureReportDto();
-        List<KeyValueResult> dataTable = calcService.analysisResult(deviceId);
+        List<KeyValueResult> dataTable = calcService.analysisResult(deviceId, algorithmType);
         KeyValueResult 故障类型 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "故障类型")).findFirst().orElse(null);
         if (null != 故障类型) {
             failureReport.setFailuretype(故障类型.getValue().toString());
@@ -228,25 +239,32 @@ public class CalcController {
                 .findFirst()
                 .ifPresent(上下行电流比法距离 -> failureReport.setSxxdlbfcj(df2.format(Double.parseDouble(上下行电流比法距离.getValue().toString()))));
         // 吸上电流比法
-        dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）"))
-                .findFirst()
-                .ifPresent(吸上电流比法F相距离 -> failureReport.setXsdlbfjl(df2.format(Double.parseDouble(null==吸上电流比法F相距离.getValue()?"0":吸上电流比法F相距离.getValue().toString()))));
-        KeyValueResult 电流比法 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "横联电流比法距离（km）") ||
-                StringUtils.equals(o.getKey(), "上下行电流比法距离（km）") ||
-                StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）"))
-                .max((o1, o2) ->
-                        Double.parseDouble((null==o1.getValue()?0:o1.getValue()).toString()) >
-                                Double.parseDouble((null==o2.getValue()?0:o2.getValue()).toString()) ? 1 : -1)
-                .orElse(null);
-        failureReport.setDlbf(电流比法.getKey());
-        failureReport.setTjgzjl(df2.format(Double.parseDouble(电流比法.getValue().toString())));
+        if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) != 0) {
+            dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）") ||
+                    StringUtils.equals(o.getKey(), "吸上电流比法T相距离（km）"))
+                    .max((o1, o2) ->
+                            Double.parseDouble((null == o1.getValue() ? 0 : o1.getValue()).toString()) >
+                                    Double.parseDouble((null == o2.getValue() ? 0 : o2.getValue()).toString()) ? 1 : -1)
+                    .filter(o -> null != o.getValue() && StringUtils.isNotEmpty(o.getValue().toString()))
+                    .ifPresent(吸上电流比法F相距离 -> failureReport.setXsdlbfjl(df2.format(Double.parseDouble(null == 吸上电流比法F相距离.getValue() ? "0" : 吸上电流比法F相距离.getValue().toString()))));
+        }
+        if (null != DeviceFailureConstants.ALGORITHM_TYPE.getNameByNum(algorithmType)) {
+            KeyValueResult 电流比法 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), DeviceFailureConstants.ALGORITHM_TYPE.getNameByNum(algorithmType).getDesc()))
+                    .filter(o -> null != o.getValue() && StringUtils.isNotEmpty(o.getValue().toString()))
+                    .min((o1, o2) ->
+                            Double.parseDouble((null == o1.getValue() ? 0 : o1.getValue()).toString()) >
+                                    Double.parseDouble((null == o2.getValue() ? 0 : o2.getValue()).toString()) ? 1 : -1)
+                    .orElse(null);
+            failureReport.setDlbf(电流比法.getKey());
+            failureReport.setTjgzjl(df2.format(Double.parseDouble(null == 电流比法.getValue() ? "0" : 电流比法.getValue().toString())));
+        }
         KeyValueResult 故障点公里标 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "故障点公里标（km）"))
                 .findFirst()
                 .orElse(null);
         failureReport.setGlb(MathUtils.base2scientific((Double.parseDouble(故障点公里标.getValue().toString()))));
-        Map<String, Object> result = calcService.currentDistMap(deviceId);
+        Map<String, Object> result = calcService.currentDistMap(deviceId, DeviceFailureConstants.ALGORITHM_TYPE.横联电流比法距离.getNum());
 
-        failureReport.setI0(df2.format(Double.parseDouble(((CurrentValue)result.get("I0")).getValue().toString())));
+        failureReport.setI0(df2.format(Double.parseDouble(((CurrentValue) result.get("I0")).getValue().toString())));
         if (null != device.getSnapshot()) {
             Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(device.getSnapshot()));
             GridFSFile one = gridFsTemplate.findOne(query);
@@ -256,12 +274,12 @@ public class CalcController {
                 failureReport.setSnapshot(pictureRenderData);
             }
         }
-        failureReport.setI1(df2.format(Double.parseDouble(((CurrentValue)result.get("I1")).getValue().toString())));
+        failureReport.setI1(df2.format(Double.parseDouble(((CurrentValue) result.get("I1")).getValue().toString())));
         // 故障区段
         dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "故障区段"))
                 .findFirst()
                 .ifPresent(故障区段 -> failureReport.setOnetwo(故障区段.getValue().toString()));
-        failureReport.setI2(df2.format(Double.parseDouble(((CurrentValue)result.get("I2")).getValue().toString())));
+        failureReport.setI2(df2.format(Double.parseDouble(((CurrentValue) result.get("I2")).getValue().toString())));
         dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "故障行别"))
                 .findFirst()
                 .ifPresent(故障行别 -> failureReport.setUpdown(故障行别.getValue().toString()));
@@ -279,7 +297,7 @@ public class CalcController {
 //        file = new File(path);
         if (StringUtils.isEmpty(tempDir)) {
             file = ResourceUtils.getFile("classpath:word/test.docx");
-        }else {
+        } else {
             file = new File(tempDir);
         }
         XWPFTemplate template = XWPFTemplate.compile(file).render(failureReport);
@@ -295,7 +313,7 @@ public class CalcController {
         for (KeyValueResult keyValueResult : keyValueResults) {
             RowRenderData row = Rows.of(String.valueOf(i++),
                     keyValueResult.getKey(),
-                    null==keyValueResult.getValue()?"":keyValueResult.getValue().toString())
+                    null == keyValueResult.getValue() ? "" : keyValueResult.getValue().toString())
                     .textFontSize(10)
                     .center()
                     .create();
@@ -319,12 +337,12 @@ public class CalcController {
         List<Bim> bims = bimService.list()
                 .stream()
                 .filter(o -> Math.abs(Double.parseDouble(o.getMileage())
-                        - Double.parseDouble(glb)*1000) < 500)
+                        - Double.parseDouble(glb) * 1000) < 500)
                 .collect(Collectors.toList());
         Tables.TableBuilder tableBuilder = Tables.ofPercentWidth("100%").addRow(header);
         for (Bim bim : bims) {
             RowRenderData row = Rows.of(bim.getPillarCode(),
-                    MathUtils.base2scientific(Double.parseDouble(bim.getMileage())/1000),
+                    MathUtils.base2scientific(Double.parseDouble(bim.getMileage()) / 1000),
                     bim.getLine(),
                     bim.getPillarModel(),
                     bim.getBaseModel(),
@@ -353,20 +371,20 @@ public class CalcController {
         List<Label> list = labelService.list();
         Double glbDouble = Double.parseDouble(glb);
         // 创建表格
-        RowRenderData header = Rows.of("行别",  "里程", "类别", "附加信息", "区间/车站").bgColor("F2F2F2").center()
+        RowRenderData header = Rows.of("行别", "里程", "类别", "附加信息", "区间/车站").bgColor("F2F2F2").center()
                 .textColor("7F7f7F").textFontFamily("Hei").textFontSize(9).create();
         Tables.TableBuilder tableBuilder = Tables.ofPercentWidth("100%").addRow(header);
         // 故障点最近的 上行
         Label labelUpLeft = list
                 .stream()
                 .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
-                        StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) < glbDouble*1000)
+                        StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) < glbDouble * 1000)
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
                     return abs1 >= abs2 ? 1 : -1;
                 }).orElse(null);
-        if (null!=labelUpLeft) {
+        if (null != labelUpLeft) {
             tableBuilder.addRow(extracted(labelUpLeft));
         }
 
@@ -374,26 +392,26 @@ public class CalcController {
         Label labelUpRight = list
                 .stream()
                 .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
-                        StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) > glbDouble*1000)
+                        StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) > glbDouble * 1000)
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
                     return abs1 >= abs2 ? -1 : 1;
                 }).orElse(null);
-        if (null!=labelUpRight) {
+        if (null != labelUpRight) {
             tableBuilder.addRow(extracted(labelUpRight));
         }
         // 故障点最近的 上行
         Label labelDownloadLeft = list
                 .stream()
                 .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
-                        StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) < glbDouble*1000)
+                        StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) < glbDouble * 1000)
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
                     return abs1 >= abs2 ? 1 : -1;
                 }).orElse(null);
-        if (null!=labelDownloadLeft) {
+        if (null != labelDownloadLeft) {
             tableBuilder.addRow(extracted(labelDownloadLeft));
         }
 
@@ -401,13 +419,13 @@ public class CalcController {
         Label labelDownRight = list
                 .stream()
                 .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
-                        StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) > glbDouble*1000)
+                        StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) > glbDouble * 1000)
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
                     return abs1 >= abs2 ? -1 : 1;
                 }).orElse(null);
-        if (null!=labelDownRight) {
+        if (null != labelDownRight) {
             tableBuilder.addRow(extracted(labelDownRight));
         }
 
@@ -420,12 +438,12 @@ public class CalcController {
     }
 
     private RowRenderData extracted(Label label) {
-         return Rows.of(label.getLine(),
-                MathUtils.base2scientific(Double.parseDouble(label.getMileage())/1000),
+        return Rows.of(label.getLine(),
+                MathUtils.base2scientific(Double.parseDouble(label.getMileage()) / 1000),
                 label.getLabel(),
                 label.getAddition(),
                 label.getRegion())
-                 .textFontSize(8)
+                .textFontSize(8)
                 .center()
                 .create();
     }
@@ -438,12 +456,12 @@ public class CalcController {
         List<Label> labels = labelService.list()
                 .stream()
                 .filter(o -> Math.abs(Double.parseDouble(o.getMileage())
-                        - Double.parseDouble(glb)*1000) < 500)
+                        - Double.parseDouble(glb) * 1000) < 500)
                 .collect(Collectors.toList());
         Tables.TableBuilder tableBuilder = Tables.ofPercentWidth("100%").addRow(header);
         for (Label label : labels) {
             RowRenderData row = Rows.of(label.getLine(), label.getPillarNum(),
-                    MathUtils.base2scientific(Double.parseDouble(label.getMileage())/1000),
+                    MathUtils.base2scientific(Double.parseDouble(label.getMileage()) / 1000),
                     label.getLabel(),
                     label.getAddition(),
                     label.getRegion())

@@ -15,7 +15,7 @@ import java.text.DecimalFormat;
  */
 public final class MathUtils {
 
-    private static final DecimalFormat FORMAT  = new DecimalFormat("###.000");
+    public static final DecimalFormat FORMAT  = new DecimalFormat("###.000");
 
     public static RealVector toRealVector(Double value, Double angle) {
         double radians = Math.toRadians(angle);

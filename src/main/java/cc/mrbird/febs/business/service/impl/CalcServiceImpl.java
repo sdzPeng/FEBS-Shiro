@@ -14,6 +14,7 @@ import cc.mrbird.febs.business.util.MathUtils;
 import cc.mrbird.febs.common.exception.ValidaException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.math3.linear.RealVector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,12 +37,12 @@ import java.util.stream.Collectors;
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
 public class CalcServiceImpl implements ICalcService {
 
-    @Autowired private IFixedValueService fixedValueService;
-    @Autowired private IFixedValueVersionService fixedValueVersionService;
+    @Autowired
+    private IFixedValueService fixedValueService;
+    @Autowired
+    private IFixedValueVersionService fixedValueVersionService;
 
     public static ThreadLocal<Map<String, Object>> THREAD_LOCAL = new ThreadLocal<>();
-
-
 
 
     private static int compare(DeviceDataDto o1, DeviceDataDto o2) {
@@ -49,7 +50,7 @@ public class CalcServiceImpl implements ICalcService {
     }
 
     @Override
-    public List<KeyValueResult> analysisResult(Long deviceId) throws ValidaException {
+    public List<KeyValueResult> analysisResult(Long deviceId, Integer algorithmType) throws ValidaException {
         Map<String, Object> paramsMap = new HashMap<>();
         THREAD_LOCAL.set(paramsMap);
         List<KeyValueResult> keyValueResults = new ArrayList<>();
@@ -72,21 +73,48 @@ public class CalcServiceImpl implements ICalcService {
         //  分区所下行T电流：FR故障
         //  分区所下行F电流：TR故障
         extracted(deviceId, keyValueResults);
+        if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TF故障")
+                && NumberUtils.compare(algorithmType, DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum()) == 0) {
+            throw new ValidaException("TF故障，请选择其他算法");
+        }
         // 变电所吸上电流(A)
         List<DeviceDataDto> bdDeviceData = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
                 Collections.singletonList(DeviceFailureConstants.DIMENSION.变电所吸上电流));
         keyValueResults.add(new KeyValueResult("变电所吸上电流（A）", Double.parseDouble(bdDeviceData.get(0).getDeviceValue())));
         // AT所吸上电流(A)
         List<DeviceDataDto> atDeviceData = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
-               Collections.singletonList(DeviceFailureConstants.DIMENSION.AT所吸上电流));
+                Collections.singletonList(DeviceFailureConstants.DIMENSION.AT所吸上电流));
         keyValueResults.add(new KeyValueResult("AT所吸上电流（A）", Double.parseDouble(atDeviceData.get(0).getDeviceValue())));
         // 分区所吸上电流(A)
         List<DeviceDataDto> fqDeviceData = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
                 Collections.singletonList(DeviceFailureConstants.DIMENSION.分区所吸上电流));
         keyValueResults.add(new KeyValueResult("分区所吸上电流（A）", Double.parseDouble(fqDeviceData.get(0).getDeviceValue())));
+        Double 推荐故障距离 = 电流比法(deviceId, keyValueResults, algorithmType);
+        // 推荐故障距离（km）
+        keyValueResults.add(new KeyValueResult("推荐故障距离（km）", 推荐故障距离));
+        // 故障点公里标（km）
+        /**
+         * 变电所上网点公里标+(temp.get("上下行电流比法距离（km）")-)
+         */
+        FixedValue 起点公里标 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.起点公里标);
+        FixedValue 变电所供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.变电所供电线长度);
+//        Double sxdlbf = (Double) THREAD_LOCAL.get().get("上下行电流比法距离（km）");
+        FixedValueVersion fixedValueVersionInfo = fixedValueVersionService.getById(起点公里标.getFixedValueVersionId());
+        if (null != 推荐故障距离) {
+            Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
+                    + (推荐故障距离 - Double.parseDouble(变电所供电线长度.getSummonValue()))
+                    * Double.parseDouble(fixedValueVersionInfo.getDirection());
+            keyValueResults.add(new KeyValueResult("故障点公里标（km）", 故障点公里标));
+        }
+        THREAD_LOCAL.remove();
+        return keyValueResults;
+    }
 
+    private Double 电流比法(Long deviceId, List<KeyValueResult> keyValueResults, Integer algorithmType) throws ValidaException {
         // 吸上电流比法T相距离（km）
-        if (null!=THREAD_LOCAL.get().get("故障类型")&&StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")) {
+        Double targetResult = null;
+
+        if (null != THREAD_LOCAL.get().get("故障类型") && StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")) {
             if (StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")) {
                 // 吸上电流比法（第一AT段故障）T相
                 /**
@@ -112,9 +140,12 @@ public class CalcServiceImpl implements ICalcService {
                         Collections.singletonList(DeviceFailureConstants.DIMENSION.变电所吸上电流));
                 String xsdlbdDeviceDataValue = xsdlbdDeviceData.get(0).getDeviceValue();
                 Double d2 = Double.parseDouble(xsdlbdDeviceDataValue);
-                Double xsdlResult = b7 /(100-b9-b10) *(100*d7 /(d7 +d2)-b9);
+                Double xsdlResult = b7 / (100 - b9 - b10) * (100 * d7 / (d7 + d2) - b9);
                 keyValueResults.add(new KeyValueResult("吸上电流比法T相距离（km）", xsdlResult));
-            }else {
+                if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) == 0) {
+                    targetResult = xsdlResult;
+                }
+            } else {
                 // 吸上电流比法（第二AT段故障）T相
                 /**
                  *  第一AT段长度+第二AT段长度/(100-AT所QT2-分区所QT1)*(100*分区所吸上电流(子站2)/(分区所吸上电流(子站2)+AT所吸上电流)-AT所QT2)-2*AT所供电线、电缆长度
@@ -145,34 +176,17 @@ public class CalcServiceImpl implements ICalcService {
                 // AT所供电线、电缆长度
                 FixedValue AT1供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.AT1供电线长度);
                 Double B4 = Double.parseDouble(AT1供电线长度.getSummonValue());
-                Double xsdlResult = B7+B8/(100-B11-B12)*(100*D12/(D12+D7)-B11)-2*B4;
+                Double xsdlResult = B7 + B8 / (100 - B11 - B12) * (100 * D12 / (D12 + D7) - B11) - 2 * B4;
                 keyValueResults.add(new KeyValueResult("吸上电流比法T相距离（km）", xsdlResult));
+                if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) == 0) {
+                    targetResult = xsdlResult;
+                }
             }
-        }else {
+        } else {
             keyValueResults.add(new KeyValueResult("吸上电流比法T相距离（km）", null));
         }
-        电流比法(deviceId, keyValueResults);
-        // 推荐故障距离（km）
-        keyValueResults.add(new KeyValueResult("推荐故障距离（km）", THREAD_LOCAL.get().get("横联电流比法距离（km）")));
-        // 故障点公里标（km）
-        /**
-         * 变电所上网点公里标+(temp.get("上下行电流比法距离（km）")-)
-         */
-        FixedValue 起点公里标 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.起点公里标);
-        FixedValue 变电所供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.变电所供电线长度);
-        Double sxdlbf = (Double) THREAD_LOCAL.get().get("上下行电流比法距离（km）");
-        FixedValueVersion fixedValueVersionInfo = fixedValueVersionService.getById(起点公里标.getFixedValueVersionId());
-        Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
-                +(sxdlbf-Double.parseDouble(变电所供电线长度.getSummonValue()))
-                *Double.parseDouble(fixedValueVersionInfo.getDirection());
-        keyValueResults.add(new KeyValueResult("故障点公里标（km）", 故障点公里标));
-        THREAD_LOCAL.remove();
-        return keyValueResults;
-    }
-
-    private void 电流比法(Long deviceId, List<KeyValueResult> keyValueResults) throws ValidaException {
         // 吸上电流比法F相距离（km）
-        if (null!=THREAD_LOCAL.get().get("故障类型")&&StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")) {
+        if (null != THREAD_LOCAL.get().get("故障类型") && StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")) {
             if (StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")) {
                 // 吸上电流比法（第一AT段故障）F相
                 /**
@@ -193,10 +207,13 @@ public class CalcServiceImpl implements ICalcService {
                         Collections.singletonList(DeviceFailureConstants.DIMENSION.变电所吸上电流));
                 String xsdlbdDeviceDataValue = xsdlbdDeviceData.get(0).getDeviceValue();
 
-                Double result = Double.parseDouble(第一AT段长度.getSummonValue())/(100-Double.parseDouble(变电所的QT值.getSummonValue())-Double.parseDouble(AT1的QF1值.getSummonValue()))
-                        *(100*Double.parseDouble(atsDeviceDataValue)/(Double.parseDouble(atsDeviceDataValue)+Double.parseDouble(xsdlbdDeviceDataValue))-Double.parseDouble(变电所的QT值.getSummonValue()));
+                Double result = Double.parseDouble(第一AT段长度.getSummonValue()) / (100 - Double.parseDouble(变电所的QT值.getSummonValue()) - Double.parseDouble(AT1的QF1值.getSummonValue()))
+                        * (100 * Double.parseDouble(atsDeviceDataValue) / (Double.parseDouble(atsDeviceDataValue) + Double.parseDouble(xsdlbdDeviceDataValue)) - Double.parseDouble(变电所的QT值.getSummonValue()));
                 keyValueResults.add(new KeyValueResult("吸上电流比法F相距离（km）", result));
-            }else {
+                if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) == 0) {
+                    targetResult = result;
+                }
+            } else {
                 // 吸上电流比法（第二AT段故障）F
                 // =B7+(B8/(100-B15-B16)*(100*D12/(D12+D7)-B15))-2*B4
                 /**
@@ -227,10 +244,13 @@ public class CalcServiceImpl implements ICalcService {
                 // AT所供电线、电缆长度
                 FixedValue AT1供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.AT1供电线长度);
                 Double AT所供电线电缆长度 = Double.parseDouble(AT1供电线长度.getSummonValue());
-                Double result = B7 +(B8 / (100-AT所QF2-分区所QF1) * (100*分区所吸上电流子站2 / (分区所吸上电流子站2 +AT所吸上电流子站1) -AT所QF2)) -2*AT所供电线电缆长度;
+                Double result = B7 + (B8 / (100 - AT所QF2 - 分区所QF1) * (100 * 分区所吸上电流子站2 / (分区所吸上电流子站2 + AT所吸上电流子站1) - AT所QF2)) - 2 * AT所供电线电缆长度;
                 keyValueResults.add(new KeyValueResult("吸上电流比法F相距离（km）", result));
+                if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) == 0) {
+                    targetResult = result;
+                }
             }
-        }else {
+        } else {
             keyValueResults.add(new KeyValueResult("吸上电流比法F相距离（km）", null));
         }
         // 横联电流比法距离（km）
@@ -242,11 +262,14 @@ public class CalcServiceImpl implements ICalcService {
             FixedValue 第一AT段长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.区间1长度);
             KeyValueResult keyValueResult = AT所横联电流Ihl1(deviceId);
             KeyValueResult bdsKeyValueResult = 变电所横联电流Ihl0(deviceId);
-            Double result = Double.parseDouble(第一AT段长度.getSummonValue())*Double.parseDouble(keyValueResult.getValue().toString())
-                    /(Double.parseDouble(keyValueResult.getValue().toString())+Double.parseDouble(bdsKeyValueResult.getValue().toString()));
+            Double result = Double.parseDouble(第一AT段长度.getSummonValue()) * Double.parseDouble(keyValueResult.getValue().toString())
+                    / (Double.parseDouble(keyValueResult.getValue().toString()) + Double.parseDouble(bdsKeyValueResult.getValue().toString()));
             keyValueResults.add(new KeyValueResult("横联电流比法距离（km）", result));
             THREAD_LOCAL.get().put("横联电流比法距离（km）", result);
-        }else {
+            if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.横联电流比法距离.getNum(), algorithmType) == 0) {
+                targetResult = result;
+            }
+        } else {
             // 横联电流比法（第二AT段故障）
             /**
              * 第一AT段长度-AT所供电线、电缆长度*2+第二AT段长度*分区所横联电流Ihl2/AT所横联电流Ihl1+分区所横联电流Ihl2
@@ -262,11 +285,14 @@ public class CalcServiceImpl implements ICalcService {
             // AT所供电线、电缆长度
             FixedValue AT1供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.AT1供电线长度);
             Double B4 = Double.parseDouble(AT1供电线长度.getSummonValue());
-            Double result = B7-B4*2
-                    +B8*Double.parseDouble(fqsKeyValueResult.getValue().toString())
-                    /(Double.parseDouble(keyValueResult.getValue().toString())+Double.parseDouble(fqsKeyValueResult.getValue().toString()));
+            Double result = B7 - B4 * 2
+                    + B8 * Double.parseDouble(fqsKeyValueResult.getValue().toString())
+                    / (Double.parseDouble(keyValueResult.getValue().toString()) + Double.parseDouble(fqsKeyValueResult.getValue().toString()));
             keyValueResults.add(new KeyValueResult("横联电流比法距离（km）", result));
             THREAD_LOCAL.get().put("横联电流比法距离（km）", result);
+            if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.横联电流比法距离.getNum(), algorithmType) == 0) {
+                targetResult = result;
+            }
         }
         // 上下行电流比法距离（km）
         if (StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")) {
@@ -278,13 +304,16 @@ public class CalcServiceImpl implements ICalcService {
             FixedValue 第一AT段长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.区间1长度);
             KeyValueResult keyValueResult = 变电所上行电流Ihl0(deviceId, null);
             KeyValueResult fqsKeyValueResult = 变电所下行电流Ihl0(deviceId, null);
-            Double result = 2*Double.parseDouble(第一AT段长度.getSummonValue())
-                    *Math.min(Double.parseDouble(keyValueResult.getValue().toString()),
-                    Double.parseDouble(fqsKeyValueResult.getValue().toString()))/(Double.parseDouble(keyValueResult.getValue().toString())+
-            Double.parseDouble(fqsKeyValueResult.getValue().toString()));
+            Double result = 2 * Double.parseDouble(第一AT段长度.getSummonValue())
+                    * Math.min(Double.parseDouble(keyValueResult.getValue().toString()),
+                    Double.parseDouble(fqsKeyValueResult.getValue().toString())) / (Double.parseDouble(keyValueResult.getValue().toString()) +
+                    Double.parseDouble(fqsKeyValueResult.getValue().toString()));
             keyValueResults.add(new KeyValueResult("上下行电流比法距离（km）", result));
             THREAD_LOCAL.get().put("上下行电流比法距离（km）", result);
-        }else {
+            if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.上下行电流比法距离.getNum(), algorithmType) == 0) {
+                targetResult = result;
+            }
+        } else {
             // 上下行电流比法（第二AT段）
             /**
              * 第一AT段长度+2*第二AT段长度*min(上行, 下行)/(上行+下行)-2*AT所供电线、电缆长度
@@ -294,12 +323,16 @@ public class CalcServiceImpl implements ICalcService {
             // AT所供电线、电缆长度
             FixedValue AT1供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.AT1供电线长度);
             Double result = Double.parseDouble(第一AT段长度.getSummonValue())
-                    +2*Double.parseDouble(第二AT段长度.getSummonValue())
-                    *Math.min(上行(deviceId),下行(deviceId))/(上行(deviceId)+下行(deviceId))
-                    -2*Double.parseDouble(AT1供电线长度.getSummonValue());
+                    + 2 * Double.parseDouble(第二AT段长度.getSummonValue())
+                    * Math.min(上行(deviceId), 下行(deviceId)) / (上行(deviceId) + 下行(deviceId))
+                    - 2 * Double.parseDouble(AT1供电线长度.getSummonValue());
             keyValueResults.add(new KeyValueResult("上下行电流比法距离（km）", result));
             THREAD_LOCAL.get().put("上下行电流比法距离（km）", result);
+            if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.上下行电流比法距离.getNum(), algorithmType) == 0) {
+                targetResult = result;
+            }
         }
+        return targetResult;
     }
 
     private void extracted(Long deviceId, List<KeyValueResult> keyValueResults) throws ValidaException {
@@ -307,7 +340,7 @@ public class CalcServiceImpl implements ICalcService {
         params.add(DeviceFailureConstants.DIMENSION.变电所吸上电流);
         params.add(DeviceFailureConstants.DIMENSION.AT所吸上电流);
         params.add(DeviceFailureConstants.DIMENSION.分区所吸上电流);
-        List<DeviceDataDto> deviceDataGroups = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,params);
+        List<DeviceDataDto> deviceDataGroups = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId, params);
         DeviceDataDto minDevice = deviceDataGroups
                 .stream()
                 .min(Comparator.comparing(DeviceDataDto::getDeviceValue))
@@ -324,24 +357,24 @@ public class CalcServiceImpl implements ICalcService {
         KeyValueResult keyValueResult3 = 分区所横联电流Ihl2(deviceId);
         DeviceDataDto otherMaxDevice;
         // 故障区段
-        if (Double.parseDouble(keyValueResult3.getValue().toString())<Double.parseDouble(keyValueResult2.getValue().toString())
-                &&Double.parseDouble(keyValueResult3.getValue().toString())<Double.parseDouble(keyValueResult1.getValue().toString())) {
+        if (Double.parseDouble(keyValueResult3.getValue().toString()) < Double.parseDouble(keyValueResult2.getValue().toString())
+                && Double.parseDouble(keyValueResult3.getValue().toString()) < Double.parseDouble(keyValueResult1.getValue().toString())) {
             keyValueResults.add(new KeyValueResult("故障区段", "第一AT区段"));
             if (null == THREAD_LOCAL.get()) {
                 Map<String, Object> result = new HashMap<>();
                 result.put("故障区段", "第一AT区段");
                 THREAD_LOCAL.set(result);
-            }else {
+            } else {
                 THREAD_LOCAL.get().put("故障区段", "第一AT区段");
             }
 
-        }else {
+        } else {
             keyValueResults.add(new KeyValueResult("故障区段", "第二AT区段"));
             if (null == THREAD_LOCAL.get()) {
                 Map<String, Object> result = new HashMap<>();
                 result.put("故障区段", "第二AT区段");
                 THREAD_LOCAL.set(result);
-            }else {
+            } else {
                 THREAD_LOCAL.get().put("故障区段", "第二AT区段");
             }
         }
@@ -367,12 +400,12 @@ public class CalcServiceImpl implements ICalcService {
         // 故障行别
         THREAD_LOCAL.get().put("故障行别", otherMaxDevice.getDirection());
         keyValueResults.add(new KeyValueResult("故障行别", otherMaxDevice.getDirection()));
-        if (Double.parseDouble(minDevice.getDeviceValue().replaceAll("[a-zA-Z]*", ""))-
-                Double.parseDouble(TF短路故障判别.getSummonValue())*Double.parseDouble(吸上电流流互变比.getSummonValue())<0) {
+        if (Double.parseDouble(minDevice.getDeviceValue().replaceAll("[a-zA-Z]*", "")) -
+                Double.parseDouble(TF短路故障判别.getSummonValue()) * Double.parseDouble(吸上电流流互变比.getSummonValue()) < 0) {
             THREAD_LOCAL.get().put("故障类型", "TF故障");
             keyValueResults.add(new KeyValueResult("故障类型", "TF故障"));
-        }else {
-            THREAD_LOCAL.get().put("故障类型",otherMaxDevice.getDesc());
+        } else {
+            THREAD_LOCAL.get().put("故障类型", otherMaxDevice.getDesc());
             keyValueResults.add(new KeyValueResult("故障类型", otherMaxDevice.getDesc()));
         }
         keyValueResults.add(keyValueResult1);
@@ -466,11 +499,12 @@ public class CalcServiceImpl implements ICalcService {
         otherParams.add(DeviceFailureConstants.DIMENSION.分区所上行F电流角度);
         List<DeviceDataDto> otherDeviceDataGroups = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
                 otherParams);
-        Map<String, List<DeviceDataDto>> deviceDataMap = otherDeviceDataGroups.stream().collect(Collectors.groupingBy(o->o.getDeviceResourceName()+"_"+o.getDeviceKey()));
+        Map<String, List<DeviceDataDto>> deviceDataMap = otherDeviceDataGroups.stream().collect(Collectors.groupingBy(o -> o.getDeviceResourceName() + "_" + o.getDeviceKey()));
         List<KeyValueResult> 电流 = otherDeviceDataGroups.stream()
                 .filter(o -> o.getDeviceKey().endsWith("电流"))
                 .map(o -> {
-                    if (o.getDeviceKey().contains("吸上电流")) return new KeyValueResult(o.getDeviceKey(), o.getDeviceValue()+"安");
+                    if (o.getDeviceKey().contains("吸上电流"))
+                        return new KeyValueResult(o.getDeviceKey(), o.getDeviceValue() + "安");
                     List<DeviceDataDto> deviceDataDtos = deviceDataMap.get(o.getDeviceResourceName() + "_" + o.getDeviceKey() + "角度");
                     if (null == deviceDataDtos) {
                         return new KeyValueResult(o.getDeviceKey(), null);
@@ -572,11 +606,12 @@ public class CalcServiceImpl implements ICalcService {
         otherParams.add(DeviceFailureConstants.DIMENSION.分区所上行F电流角度);
         List<DeviceDataDto> otherDeviceDataGroups = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
                 otherParams);
-        Map<String, List<DeviceDataDto>> deviceDataMap = otherDeviceDataGroups.stream().collect(Collectors.groupingBy(o->o.getDeviceResourceName()+"_"+o.getDeviceKey()));
+        Map<String, List<DeviceDataDto>> deviceDataMap = otherDeviceDataGroups.stream().collect(Collectors.groupingBy(o -> o.getDeviceResourceName() + "_" + o.getDeviceKey()));
         List<KeyValueResult> 电流 = otherDeviceDataGroups.stream()
                 .filter(o -> o.getDeviceKey().endsWith("电流"))
                 .map(o -> {
-                    if (o.getDeviceKey().contains("吸上电流")) return new KeyValueResult(o.getDeviceKey(), o.getDeviceValue()+"安");
+                    if (o.getDeviceKey().contains("吸上电流"))
+                        return new KeyValueResult(o.getDeviceKey(), o.getDeviceValue() + "安");
                     List<DeviceDataDto> deviceDataDtos = deviceDataMap.get(o.getDeviceResourceName() + "_" + o.getDeviceKey() + "角度");
                     if (null == deviceDataDtos) {
                         return new KeyValueResult(o.getDeviceKey(), null);
@@ -585,7 +620,7 @@ public class CalcServiceImpl implements ICalcService {
                     RealVector realVector = MathUtils.toRealVector(Double.parseDouble(o.getDeviceValue()), Double.parseDouble(deviceDataDto.getDeviceValue()));
                     double[] values = realVector.toArray();
 //                    return new KeyValueResult(o.getDeviceKey(), o.getDeviceValue() + "安," + deviceDataDto.getDeviceValue() + "度");
-                    return new KeyValueResult(o.getDeviceKey(), values[0] + "," + values[1] + "i");
+                    return new KeyValueResult(o.getDeviceKey(), MathUtils.FORMAT.format(values[0]) + "," + MathUtils.FORMAT.format(values[1]) + "i");
                 }).collect(Collectors.toList());
         keyValueResults.addAll(电流);
         FixedValue 吸上电流流互变比 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.吸上电流流互变比);
@@ -596,11 +631,11 @@ public class CalcServiceImpl implements ICalcService {
     }
 
     @Override
-    public Map<String, Object> currentDistMap(Long deviceId) throws ValidaException {
-        List<KeyValueResult> keyValueResults = analysisResult(deviceId);
+    public Map<String, Object> currentDistMap(Long deviceId, Integer num) throws ValidaException {
+        List<KeyValueResult> keyValueResults = analysisResult(deviceId, num);
         Map<String, Object> keyValueMap = keyValueResults
                 .stream()
-                .filter(o->"故障区段".equals(o.getKey())||"故障行别".equals(o.getKey())||"故障类型".equals(o.getKey()))
+                .filter(o -> "故障区段".equals(o.getKey()) || "故障行别".equals(o.getKey()) || "故障类型".equals(o.getKey()))
                 .collect(Collectors.toMap(KeyValueResult::getKey, KeyValueResult::getValue));
         Integer state = DeviceFailureConstants.SHORT_STATE.findState(String.valueOf(keyValueMap.get("故障区段")),
                 String.valueOf(keyValueMap.get("故障行别")),
@@ -621,7 +656,7 @@ public class CalcServiceImpl implements ICalcService {
         currentMap.put("I0sf", analysisCurrentValue("I0sf", I0sfVector, 标准零度));
 //        I0xf=下行F线电流（变电所测距数据）
         RealVector I0xfVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.变电所下行F电流);
-        currentMap.put("I0xf", analysisCurrentValue("I0xf",I0xfVector, 标准零度));
+        currentMap.put("I0xf", analysisCurrentValue("I0xf", I0xfVector, 标准零度));
 //        I1st=上行T线电流（子站1测距数据）
         RealVector I1stVector = buildDimension(deviceId, DeviceFailureConstants.DIMENSION.AT所上行T电流);
         currentMap.put("I1st", analysisCurrentValue("I1st", I1stVector, 标准零度));
@@ -672,49 +707,49 @@ public class CalcServiceImpl implements ICalcService {
         extracted(deviceId, new ArrayList<>());
         RealVector I短路;
         if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TF故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "上行")) {
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "上行")) {
 //        第一/二AT段上行TF故障：I短路=I0st-I1st-I2st
             I短路 = I0stVector.subtract(I1stVector).subtract(I2stVector);
-        }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TF故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "下行")) {
+        } else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TF故障")
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "下行")) {
 //        第一/二AT段下行TF故障：I短路=I0xt-I1xt-I2xt
             I短路 = I0xtVector.subtract(I1xtVector).subtract(I2xtVector);
-        }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "上行")) {
+        } else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "上行")) {
 //        第一/二AT段上行TR故障：I短路=I0st-I1st-I2st
             I短路 = I0stVector.subtract(I1stVector).subtract(I2stVector);
-        }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "下行")) {
+        } else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "下行")) {
 //        第一/二AT段下行TR故障：I短路=I0xt-I1xt-I2xt
             I短路 = I0xtVector.subtract(I1xtVector).subtract(I2xtVector);
-        }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "上行")) {
+        } else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "上行")) {
 //        第一/二AT段上行FR故障：I短路=I1st+I2st-I0st
             I短路 = I1sfVector.add(I2sfVector).subtract(I0sfVector);
-        }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "下行")) {
+        } else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障行别").toString(), "下行")) {
 //        第一/二AT段下行FR故障：I短路=I1xt+I2xt-I0xt todo
             I短路 = I1xfVector.add(I2xfVector).subtract(I0xfVector);
-        }else {
-            I短路 = MathUtils.toRealVector(0d,0d);
+        } else {
+            I短路 = MathUtils.toRealVector(0d, 0d);
         }
         currentMap.put("I短路", analysisCurrentValue("I短路", I短路, 标准零度));
         // Ilast 四种情况
         RealVector IlastVector = null;
 //        第一AT段上/下行FR故障：Ilast=I短路+I0
         if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")) {
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")) {
             IlastVector = I短路.add(I0Vector);
-        }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第二AT区段")) {
+        } else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "FR故障")
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第二AT区段")) {
 //        第二AT段上/下行FR故障：Ilast=I2-I短路
             IlastVector = I2Vector.subtract(I短路);
-        }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")){
+        } else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")) {
 //        第一AT段上/下行TR故障：Ilast=I短路-I0
             IlastVector = I短路.subtract(I0Vector);
-        }else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")
-                &&StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第二AT区段")) {
+        } else if (StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")
+                && StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第二AT区段")) {
 //        第二AT段上/下行TR故障：Ilast=I2+I短路
             IlastVector = I2Vector.add(I短路);
         }
@@ -729,14 +764,14 @@ public class CalcServiceImpl implements ICalcService {
         double sub = MathUtils.toAngle(vector) - MathUtils.toAngle(base);
         currentValue.setValue(vector.getNorm());
 //        sub = Math.toRadians(sub);
-        currentValue.setDirection(DeviceFailureConstants.CURRENT_TYPE.getByTypeAndLabel(Math.cos(Math.toRadians(Math.abs(sub)))>0?1:-1, label));
+        currentValue.setDirection(DeviceFailureConstants.CURRENT_TYPE.getByTypeAndLabel(Math.cos(Math.toRadians(Math.abs(sub))) > 0 ? 1 : -1, label));
         return currentValue;
     }
 
     private RealVector buildDimension(Long deviceId, DeviceFailureConstants.DIMENSION dimension) throws ValidaException {
         List<DeviceFailureConstants.DIMENSION> bdsdlxl = new ArrayList<>();
         bdsdlxl.add(dimension);
-        bdsdlxl.add(DeviceFailureConstants.DIMENSION.getByNameAndResource(dimension.getName()+"角度", dimension.getResource()));
+        bdsdlxl.add(DeviceFailureConstants.DIMENSION.getByNameAndResource(dimension.getName() + "角度", dimension.getResource()));
         List<DeviceDataDto> bdsdlxlDeviceData = this.fixedValueService.findByFixedValueVersionIdAndDimension(deviceId,
                 bdsdlxl);
         return MathUtils.toRealVector(Double.parseDouble(bdsdlxlDeviceData.get(0).getDeviceValue()),

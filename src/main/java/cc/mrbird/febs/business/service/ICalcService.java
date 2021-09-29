@@ -16,11 +16,11 @@ import java.util.Map;
  * @desc：
  */
 public interface ICalcService {
-    List<KeyValueResult> analysisResult(Long deviceId) throws ValidaException;
+    List<KeyValueResult> analysisResult(Long deviceId, Integer algorithmType) throws ValidaException;
 
     List<KeyValueResult> calcData(Long deviceId) throws ValidaException;
 
     List<KeyValueResult> calcData2(Long deviceId) throws ValidaException;
 
-    Map<String, Object> currentDistMap(Long deviceId) throws ValidaException;
+    Map<String, Object> currentDistMap(Long deviceId, Integer num) throws ValidaException;
 }
