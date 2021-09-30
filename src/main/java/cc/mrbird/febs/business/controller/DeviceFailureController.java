@@ -1,17 +1,21 @@
 package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.dto.DeviceDto;
+import cc.mrbird.febs.business.dto.DeviceTableDto;
+import cc.mrbird.febs.business.entity.Device;
 import cc.mrbird.febs.business.entity.DeviceData;
 import cc.mrbird.febs.business.entity.DeviceTable;
 import cc.mrbird.febs.business.entity.Resource;
 import cc.mrbird.febs.business.listener.DeviceListener;
 import cc.mrbird.febs.business.service.IDeviceFailureService;
+import cc.mrbird.febs.business.service.IDeviceService;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.entity.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -21,6 +25,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +36,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * @company: test
  * @department: 数据中心
@@ -47,6 +54,9 @@ public class DeviceFailureController {
 
     @Autowired
     private IDeviceFailureService deviceFailureService;
+
+    @Autowired
+    private IDeviceService deviceService;
 
     @Autowired
     private GridFsTemplate gridFsTemplate;
@@ -107,11 +117,25 @@ public class DeviceFailureController {
 
     @GetMapping("/table/page")
     @ApiOperation(value = "通过定值表版本id获取所有设备故障表")
+    // todo bug,设计有问题
     public FebsResponse getDeviceTablePage(QueryRequest request, Integer fixedValueVersionId) {
         IPage<DeviceTable> tableByPage = deviceFailureService.findTableByPage(request, fixedValueVersionId);
+        List<DeviceTable> tables = tableByPage.getRecords();
+        List<DeviceTableDto> collect = null;
+        for (DeviceTable table : tables) {
+            QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("DEVICE_TABLE_ID", table.getDeviceTableId());
+            List<Device> list = deviceService.list(queryWrapper);
+            collect = list.stream().map(o -> {
+                DeviceTableDto deviceTableDto = new DeviceTableDto();
+                BeanUtils.copyProperties(table, deviceTableDto);
+                BeanUtils.copyProperties(o, deviceTableDto);
+                return deviceTableDto;
+            }).collect(Collectors.toList());
+        }
         FebsResponse febsResponse = new FebsResponse();
         febsResponse.put("count", tableByPage.getTotal());
-        return febsResponse.success().data(tableByPage.getRecords());
+        return febsResponse.success().data(collect);
     }
 
 
