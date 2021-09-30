@@ -121,7 +121,7 @@
   </div>
 </div>
 <script data-th-inline="none" type="text/javascript">
-  layui.use(['dropdown', 'jquery', 'laydate', 'febs', 'form', 'eleTree', 'validate', 'util', 'layer', 'table', 'layedit', 'upload'], function () {
+  layui.use(['dropdown', 'jquery', 'laydate', 'febs', 'form', 'eleTree', 'validate', 'util', 'layer', 'table', 'layedit', 'upload', 'layer'], function () {
     var $ = layui.jquery,
             laydate = layui.laydate,
             febs = layui.febs,
@@ -130,6 +130,7 @@
             validate = layui.validate,
             eleTree = layui.eleTree,
             dropdown = layui.dropdown,
+            layer = layui.layer,
             $view = $('#febs-site'),
             $query = $view.find('#query'),
             $reset = $view.find('#reset'),
@@ -449,6 +450,8 @@
               });
               //头工具栏事件
               table.on('toolbar(peng2)', function(obj){
+                var that = this
+                        ,data = obj.data;
                 var checkStatus = table.checkStatus(obj.config.id);
                 switch(obj.event){
                   case 'batchDelete':
@@ -464,25 +467,37 @@
                       $query.click();
                     });
                     break;
-                  case 'getCheckData':
-                    var data = checkStatus.data;
-                    layer.alert(JSON.stringify(data));
-                    break;
-                  case 'getCheckLength':
-                    var data = checkStatus.data;
-                    layer.msg('选中了：'+ data.length + ' 个');
-                    break;
                   case 'isAll':
                     layer.msg(checkStatus.isAll ? '全选': '未全选');
                     break;
                 };
               });
+              table.on('tool(peng2)', function(subobj){
+                if (subobj.event === 'download') {
+                  window.open('/resource/download?resourceId='+subobj.data.resourceId);
+                }else if (subobj.event === 'preview') {
+                  layer.open({
+                    type:2,
+                    area: ['900px', '700px'],
+                    fixed: false,
+                    maxmin: true,
+                    // content: '/resource/preview?resourceId='+data.resourceId
+                    content: '/resource/preview?resourceId='+subobj.data.resourceId
+                  })
+                }});
             }
           });
         } else if(obj.event === 'download'){
           window.open('/resource/download?resourceId='+data.resourceId);
-        } else if(obj.even === 'preview') {
-
+        } else if(obj.event === 'preview') {
+          layer.open({
+            type:2,
+            area: ['900px', '700px'],
+            fixed: false,
+            maxmin: true,
+            // content: '/resource/preview?resourceId='+data.resourceId
+            content: '/resource/preview?resourceId='+data.resourceId
+          })
         }
       });
 
@@ -527,7 +542,7 @@
 <!--  <a class="layui-btn layui-btn-xs" lay-event="more">更多 <i class="layui-icon layui-icon-down"></i></a>-->
 </script>
 <script type="text/html" id="test-dropdown-toolbar-barDemo2">
-  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit2">下载</a>
+  <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="download">下载</a>
   <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="preview">预览</a>
 </script>
 <script type="text/html" id="select">

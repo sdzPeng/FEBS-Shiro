@@ -24,6 +24,13 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>e-iceblue</groupId>
+            <artifactId>spire.xls</artifactId>
+            <version>4.9.0</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.owasp.encoder/encoder -->
         <dependency>
             <groupId>org.owasp.encoder</groupId>
@@ -54,11 +61,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>cn.hutool</groupId>-->
-<!--            <artifactId>hutool-all</artifactId>-->
-<!--            <version>5.5.8</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>cn.hutool</groupId>-->
+        <!--            <artifactId>hutool-all</artifactId>-->
+        <!--            <version>5.5.8</version>-->
+        <!--        </dependency>-->
 
         <!-- Spring系列 -->
         <dependency>
@@ -277,6 +284,12 @@
             <version>1.10.0</version>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>com.e-iceblue</id>
+            <url>http://repo.e-iceblue.cn/repository/maven-public/</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
