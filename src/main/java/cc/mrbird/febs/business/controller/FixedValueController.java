@@ -17,6 +17,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import io.swagger.annotations.Api;
@@ -233,12 +234,15 @@ public class FixedValueController extends BaseController {
             QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
             fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", o.getFixedValueTableId());
             List<FixedValueVersion> versions = fixedValueVersionService.list(fixedValueVersionQueryWrapper);
+            if (CollectionUtils.isEmpty(versions)) {
+                return null;
+            }
             versions.stream()
                     .max((o1, o2) -> NumberUtils.compare(o1.getFixValueVersionId(), o2.getFixValueVersionId()))
                     .ifPresent(fixedValueVersion -> fixedValueTableDto.setFixedValueVersionId(fixedValueVersion.getFixValueVersionId()));
             fixedValueTableDto.setVersions(versions);
             return fixedValueTableDto;
-        }).collect(Collectors.toList());
+        }).filter(ObjectUtils::isNotNull).collect(Collectors.toList());
         return new FebsResponse().success().data(fixedValueTableVersions);
     }
 

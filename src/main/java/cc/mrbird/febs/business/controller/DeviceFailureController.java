@@ -121,17 +121,17 @@ public class DeviceFailureController {
     public FebsResponse getDeviceTablePage(QueryRequest request, Integer fixedValueVersionId) {
         IPage<DeviceTable> tableByPage = deviceFailureService.findTableByPage(request, fixedValueVersionId);
         List<DeviceTable> tables = tableByPage.getRecords();
-        List<DeviceTableDto> collect = null;
+        List<DeviceTableDto> collect = new ArrayList<>();
         for (DeviceTable table : tables) {
             QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("DEVICE_TABLE_ID", table.getDeviceTableId());
             List<Device> list = deviceService.list(queryWrapper);
-            collect = list.stream().map(o -> {
+            collect.addAll(list.stream().map(o -> {
                 DeviceTableDto deviceTableDto = new DeviceTableDto();
                 BeanUtils.copyProperties(table, deviceTableDto);
                 BeanUtils.copyProperties(o, deviceTableDto);
                 return deviceTableDto;
-            }).collect(Collectors.toList());
+            }).collect(Collectors.toList()));
         }
         FebsResponse febsResponse = new FebsResponse();
         febsResponse.put("count", tableByPage.getTotal());
