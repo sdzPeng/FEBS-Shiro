@@ -538,6 +538,24 @@ layui.extend({
         );
     };
 
+    self.table.init2 = function (params) {
+        var defaultSetting = {
+            cellMinWidth: 80,
+            page: false,
+            skin: 'line',
+            autoSort: false,
+            parseData: function (res) {
+                return {
+                    "code": res.code === 200 ? 0 : res.code,
+                    "data": res.data
+                }
+            }
+        };
+        return layuiTable.render(
+            $.extend({}, defaultSetting, params)
+        );
+    };
+
     // ajax get请求
     self.get = function (url, params, success) {
         if (params) {

@@ -9,6 +9,7 @@ import cc.mrbird.febs.business.listener.FixValueListener;
 import cc.mrbird.febs.business.service.IFixedValueService;
 import cc.mrbird.febs.business.service.IFixedValueTableService;
 import cc.mrbird.febs.business.service.IFixedValueVersionService;
+import cc.mrbird.febs.business.service.IResourceService;
 import cc.mrbird.febs.common.controller.BaseController;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.entity.QueryRequest;
@@ -59,6 +60,9 @@ public class FixedValueController extends BaseController {
 
     @Autowired
     IFixedValueService fixedValueService;
+
+    @Autowired
+    IResourceService resourceService;
 
     private final String FIXED_VALUE_META_REGEXP = "元数据";
 
@@ -266,6 +270,8 @@ public class FixedValueController extends BaseController {
                 fixedValueTableVersionDto.setFixedValueVersionId(version.getFixValueVersionId());
                 fixedValueTableVersionDto.setResourceId(version.getResourceId());
                 fixedValueTableVersionDto.setCreateTime(version.getCreateTime());
+                Resource resource = resourceService.getById(version.getResourceId());
+                fixedValueTableVersionDto.setResourceName(resource.getFileName());
                 fixedValueTableVersions.add(fixedValueTableVersionDto);
             }
         });

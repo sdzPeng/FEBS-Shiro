@@ -15,10 +15,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsCriteria;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -50,7 +47,40 @@ public class ResourceController extends BaseController {
 
     @GetMapping("download")
     @ApiOperation(value = "资源下载")
-    public void download(Long resourceId, HttpServletResponse response) throws IOException {
+    public void download(Long resourceId, HttpServletResponse response) throws IOException, ValidaException {
+        if (null == resourceId) {
+            throw new ValidaException("资源未生成！");
+        }
+        Resource origin = resourceService.getById(resourceId);
+        Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(origin.getUuid()));
+        GridFSFile one = gridFsTemplate.findOne(query);
+        GridFsResource resource = gridFsTemplate.getResource(one);
+        try (InputStream inputStream = resource.getInputStream();
+             OutputStream outputStream = response.getOutputStream();) {
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            // chrome浏览器下载文件可能出现：ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION，
+            // 产生原因：可能是因为文件名中带有英文半角逗号,
+            // 解决办法：确保 filename 参数使用双引号包裹[1]
+            response.setHeader("Content-Disposition", "attachment; filename=" +
+                    URLEncoder.encode(origin.getFileName(), "UTF-8"));
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            response.setHeader("Expires", "0");
+            byte[] arr = new byte[10];
+            int len;
+            while (( len=inputStream.read(arr) ) != -1 ) {
+                outputStream.write(arr, 0, len);
+            }
+        }
+    }
+
+    @GetMapping("download/{name}")
+    @ApiOperation(value = "资源下载")
+    public void downloadPreview(Long resourceId, HttpServletResponse response,
+                                @PathVariable String name) throws IOException, ValidaException {
+        if (null == resourceId) {
+            throw new ValidaException("资源未生成！");
+        }
         Resource origin = resourceService.getById(resourceId);
         Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(origin.getUuid()));
         GridFSFile one = gridFsTemplate.findOne(query);

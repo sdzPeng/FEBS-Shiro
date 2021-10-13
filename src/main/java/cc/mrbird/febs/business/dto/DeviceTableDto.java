@@ -41,4 +41,8 @@ public class DeviceTableDto implements Serializable {
     @TableField(value = "DEVICE_NAME")
     @ExcelProperty("设备名称")
     private String deviceName;
+
+    @TableField(value = "SNAPSHOT")
+    @ExcelProperty("报告文件索引")
+    private Long reportResourceId;
 }

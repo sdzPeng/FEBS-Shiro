@@ -136,6 +136,18 @@ public class ViewController extends BaseController {
         return FebsUtil.view("site/manage/manage");
     }
 
+    @GetMapping(FebsConstant.VIEW_PREFIX + "site/label")
+    @RequiresPermissions("label:view")
+    public String label() {
+        return FebsUtil.view("site/label/label");
+    }
+
+    @GetMapping(FebsConstant.VIEW_PREFIX + "site/model")
+    @RequiresPermissions("model:view")
+    public String model() {
+        return FebsUtil.view("site/model/model");
+    }
+
     @GetMapping(FebsConstant.VIEW_PREFIX + "system/dept")
     @RequiresPermissions("dept:view")
     public String systemDept() {

@@ -26,6 +26,8 @@ public class FixedValueTableVersion2Dto implements Serializable {
 
     private String name;
 
+    private String resourceName;
+
     private Date createTime;
 
     private Long resourceId;
