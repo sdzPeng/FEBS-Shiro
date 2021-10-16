@@ -6,6 +6,7 @@
                     <form class="layui-form layui-table-form" lay-filter="log-table-form">
                         <div style="padding-left: 50px;margin-bottom: 25px;">
                             <button type="button" class="layui-btn layui-btn-primary" id="test4"><i class="layui-icon"></i>资源上传</button>
+                            <button id="downLoad" class="layui-btn layui-btn-primary" onclick="window.open(ctx+'resource/download/uuid/label')">标签数据下载</button>
                         </div>
                     </form>
                     <table lay-filter="labelTable" lay-data="{id: 'labelTable'}"></table>
@@ -119,7 +120,7 @@
                     {field: 'label', title: '标签'},
                     {field: 'addition', title: '附加信息'},
                     {field: 'region', title: '区间/车站'},
-                    {field: 'offsetNum', title: '偏移量', minWidth: 180, sort: true}
+                    {field: 'offsetNum', title: '偏移量'}
                 ]]
             });
         }

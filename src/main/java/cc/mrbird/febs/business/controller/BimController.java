@@ -11,18 +11,24 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsCriteria;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +57,15 @@ public class BimController {
     public FebsResponse bimImport(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new FebsException("导入数据为空");
+        }
+        // 尝试删除mongo已有文件
+        Query query = Query.query(GridFsCriteria.where("metadata.uuid").is("bim"));
+        gridFsTemplate.delete(query);
+        // 文件入库操作
+        try(InputStream is = file.getInputStream();) {
+            DBObject metadata = new BasicDBObject();
+            metadata.put("uuid", "bim");
+            gridFsTemplate.store(is, file.getOriginalFilename(), file.getContentType(), metadata);
         }
         String filename = file.getOriginalFilename();
         if (!StringUtils.endsWith(filename, ".xlsx")&&!StringUtils.endsWith(filename, ".xls")) {

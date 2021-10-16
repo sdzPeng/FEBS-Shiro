@@ -6,6 +6,7 @@
                     <form class="layui-form layui-table-form" lay-filter="log-table-form">
                         <div style="padding-left: 50px;margin-bottom: 25px;">
                             <button type="button" class="layui-btn layui-btn-primary" id="test4"><i class="layui-icon"></i>资源上传</button>
+                            <button id="downLoad" class="layui-btn layui-btn-primary" onclick="window.open(ctx+'resource/download/uuid/bim')">模型数据下载</button>
                         </div>
                     </form>
                     <table lay-filter="modelTable" lay-data="{id: 'modelTable'}"></table>
@@ -98,14 +99,14 @@
         //     });
         // });
 
-        $query.on('click', function () {
-            tableIns.reload();
-        });
-
-        $reset.on('click', function () {
-            $searchForm[0].reset();
-            tableIns.reload();
-        });
+        // $query.on('click', function () {
+        //     tableIns.reload();
+        // });
+        //
+        // $reset.on('click', function () {
+        //     $searchForm[0].reset();
+        //     tableIns.reload();
+        // });
 
         function initTable() {
             tableIns = febs.table.init2({
@@ -125,7 +126,7 @@
                     {field: 'jcwxm', title: '接触网下锚'},
                     {field: 'zxmj', title: '中心锚结'},
                     {field: 'region', title: '区间/车站'},
-                    {field: 'other', title: '其他', minWidth: 180, sort: true}
+                    {field: 'other', title: '其他'}
                 ]]
             });
         }
@@ -175,4 +176,5 @@
             }
         });
     })
+
 </script>

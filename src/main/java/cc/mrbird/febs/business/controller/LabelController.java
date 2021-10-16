@@ -14,11 +14,16 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsCriteria;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,6 +51,8 @@ import java.util.stream.Collectors;
 public class LabelController {
 
     @Autowired private ILabelService labelService;
+    @Autowired
+    private GridFsTemplate gridFsTemplate;
     // BIM 里程导入数据
     @PostMapping("import")
     @ApiOperation(value = "LABEL数据导入")
@@ -57,6 +65,15 @@ public class LabelController {
         String filename = file.getOriginalFilename();
         if (!StringUtils.endsWith(filename, ".xlsx")&&!StringUtils.endsWith(filename, ".xls")) {
             throw new FebsException("只支持.xlsx、.xls类型文件导入");
+        }
+        // 尝试删除mongo已有文件
+        Query query = Query.query(GridFsCriteria.where("metadata.uuid").is("label"));
+        gridFsTemplate.delete(query);
+        // 文件入库操作
+        try(InputStream is = file.getInputStream();) {
+            DBObject metadata = new BasicDBObject();
+            metadata.put("uuid", "label");
+            gridFsTemplate.store(is, filename, file.getContentType(), metadata);
         }
 
         // 删除已有数据

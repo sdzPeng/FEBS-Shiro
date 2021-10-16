@@ -74,6 +74,34 @@ public class ResourceController extends BaseController {
         }
     }
 
+    @GetMapping("download/uuid/{uuid}")
+    @ApiOperation(value = "资源下载")
+    public void downloadByUuid(@PathVariable String uuid, HttpServletResponse response) throws IOException, ValidaException {
+        if (null == uuid) {
+            throw new ValidaException("UUID不得为null");
+        }
+        Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(uuid));
+        GridFSFile one = gridFsTemplate.findOne(query);
+        GridFsResource resource = gridFsTemplate.getResource(one);
+        try (InputStream inputStream = resource.getInputStream();
+             OutputStream outputStream = response.getOutputStream();) {
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            // chrome浏览器下载文件可能出现：ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION，
+            // 产生原因：可能是因为文件名中带有英文半角逗号,
+            // 解决办法：确保 filename 参数使用双引号包裹[1]
+            response.setHeader("Content-Disposition", "attachment; filename=" +
+                    URLEncoder.encode(one.getFilename(), "UTF-8"));
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            response.setHeader("Expires", "0");
+            byte[] arr = new byte[10];
+            int len;
+            while (( len=inputStream.read(arr) ) != -1 ) {
+                outputStream.write(arr, 0, len);
+            }
+        }
+    }
+
     @GetMapping("download/{name}")
     @ApiOperation(value = "资源下载")
     public void downloadPreview(Long resourceId, HttpServletResponse response,
