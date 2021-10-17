@@ -754,7 +754,12 @@ public class CalcServiceImpl implements ICalcService {
             IlastVector = I2Vector.add(I短路);
         }
         if (null != IlastVector) {
-            currentMap.put("Ilast", analysisCurrentValue("Ilast", IlastVector, 标准零度));
+            CurrentValue currentValue = analysisCurrentValue("Ilast", IlastVector, 标准零度);
+            if (StringUtils.equals(THREAD_LOCAL.get().get("故障区段").toString(), "第一AT区段")&&
+                    StringUtils.equals(THREAD_LOCAL.get().get("故障类型").toString(), "TR故障")) {
+                currentValue.setDirection("right");
+            }
+            currentMap.put("Ilast", currentValue);
         }
         return currentMap;
     }
