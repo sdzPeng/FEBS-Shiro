@@ -364,7 +364,7 @@ public class CalcController {
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
-                    return abs1 >= abs2 ? 1 : -1;
+                    return abs1 >= abs2 ? -1 : 1;
                 }).orElse(null);
         if (null != labelUpLeft) {
             tableBuilder.addRow(extracted(labelUpLeft));
@@ -378,7 +378,7 @@ public class CalcController {
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
-                    return abs1 >= abs2 ? -1 : 1;
+                    return abs1 >= abs2 ? 1 : -1;
                 }).orElse(null);
         if (null != labelUpRight) {
             tableBuilder.addRow(extracted(labelUpRight));
@@ -391,7 +391,7 @@ public class CalcController {
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
-                    return abs1 >= abs2 ? 1 : -1;
+                    return abs1 >= abs2 ? -1 : 1;
                 }).orElse(null);
         if (null != labelDownloadLeft) {
             tableBuilder.addRow(extracted(labelDownloadLeft));
@@ -405,7 +405,7 @@ public class CalcController {
                 .min((o1, o2) -> {
                     double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble);
                     double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble);
-                    return abs1 >= abs2 ? -1 : 1;
+                    return abs1 >= abs2 ? 1 : -1;
                 }).orElse(null);
         if (null != labelDownRight) {
             tableBuilder.addRow(extracted(labelDownRight));
