@@ -4,6 +4,7 @@ import cc.mrbird.febs.business.constants.DeviceFailureConstants;
 import cc.mrbird.febs.business.constants.FixedValueConstants;
 import cc.mrbird.febs.business.dto.CurrentValue;
 import cc.mrbird.febs.business.dto.DeviceDataDto;
+import cc.mrbird.febs.business.dto.FailureReportDto;
 import cc.mrbird.febs.business.dto.KeyValueResult;
 import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.FixedValueVersion;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -925,5 +927,50 @@ public class CalcServiceImpl implements ICalcService {
                 Double.parseDouble(bdsdlxlDeviceData.get(3).getDeviceValue()));
         RealVector bdsResult = number1.subtract(number2);
         return new KeyValueResult("AT所横联电流Ihl1(A)", bdsResult.getNorm());
+    }
+
+    @Override
+    public void extracted(Long deviceId, Integer algorithmType, DecimalFormat df2, FailureReportDto failureReport, List<KeyValueResult> dataTable) {
+        FixedValue 起点公里标 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.起点公里标);
+        FixedValue 变电所供电线长度 = fixedValueService.findByDeviceIdAndFixedName(deviceId, FixedValueConstants.DIMENSION.变电所供电线长度);
+//        Double sxdlbf = (Double) THREAD_LOCAL.get().get("上下行电流比法距离（km）");
+        FixedValueVersion fixedValueVersionInfo = fixedValueVersionService.getById(起点公里标.getFixedValueVersionId());
+
+        // 横联电流比法
+        KeyValueResult 横联电流比法 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "横联电流比法距离（km）"))
+                .findFirst().orElse(null);
+        if (null != 横联电流比法) {
+            failureReport.setHldlbjl(df2.format(Double.parseDouble(横联电流比法.getValue().toString())));
+            Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
+                    + (Double.parseDouble(横联电流比法.getValue().toString()) - Double.parseDouble(变电所供电线长度.getSummonValue()))
+                    * Double.parseDouble(fixedValueVersionInfo.getDirection());
+            failureReport.setHldlbglb(MathUtils.base2scientific(故障点公里标));
+        }
+        // 上下行电流比法
+        KeyValueResult 上下行电流比法距离 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "上下行电流比法距离（km）"))
+                .findFirst().orElse(null);
+        if(null != 上下行电流比法距离) {
+            failureReport.setSxxdlbfcj(df2.format(Double.parseDouble(上下行电流比法距离.getValue().toString())));
+            Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
+                    + (Double.parseDouble(上下行电流比法距离.getValue().toString()) - Double.parseDouble(变电所供电线长度.getSummonValue()))
+                    * Double.parseDouble(fixedValueVersionInfo.getDirection());
+            failureReport.setSxxdlbfglb(MathUtils.base2scientific(故障点公里标));
+        }
+        // 吸上电流比法
+        if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) != 0) {
+            KeyValueResult 吸上电流比法F相距离 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）") ||
+                    StringUtils.equals(o.getKey(), "吸上电流比法T相距离（km）"))
+                    .max((o1, o2) ->
+                            Double.parseDouble((null == o1.getValue() ? 0 : o1.getValue()).toString()) >
+                                    Double.parseDouble((null == o2.getValue() ? 0 : o2.getValue()).toString()) ? 1 : -1)
+                    .filter(o -> null != o.getValue() && StringUtils.isNotEmpty(o.getValue().toString())).orElse(null);
+            if (null != 吸上电流比法F相距离) {
+                failureReport.setXsdlbfjl(df2.format(Double.parseDouble(null == 吸上电流比法F相距离.getValue() ? "0" : 吸上电流比法F相距离.getValue().toString())));
+                Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
+                        + (Double.parseDouble(吸上电流比法F相距离.getValue().toString()) - Double.parseDouble(变电所供电线长度.getSummonValue()))
+                        * Double.parseDouble(fixedValueVersionInfo.getDirection());
+                failureReport.setDlbfglb(MathUtils.base2scientific(故障点公里标));
+            }
+        }
     }
 }

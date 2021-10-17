@@ -1,9 +1,11 @@
 package cc.mrbird.febs.business.service;
 
 import cc.mrbird.febs.business.dto.CurrentValue;
+import cc.mrbird.febs.business.dto.FailureReportDto;
 import cc.mrbird.febs.business.dto.KeyValueResult;
 import cc.mrbird.febs.common.exception.ValidaException;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -23,4 +25,6 @@ public interface ICalcService {
     List<KeyValueResult> calcData2(Long deviceId) throws ValidaException;
 
     Map<String, Object> currentDistMap(Long deviceId, Integer num) throws ValidaException;
+
+    void extracted(Long deviceId, Integer algorithmType, DecimalFormat df2, FailureReportDto failureReport, List<KeyValueResult> dataTable);
 }

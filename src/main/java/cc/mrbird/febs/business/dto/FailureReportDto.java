@@ -48,14 +48,29 @@ public class FailureReportDto implements Serializable {
     private String hldlbjl;
 
     /**
+     * 横联电流比法公里标
+     */
+    private String hldlbglb;
+
+    /**
      * 上下行电流比法
      */
     private String sxxdlbfcj;
 
     /**
+     * 上下行电流比法公里标
+     */
+    private String sxxdlbfglb;
+
+    /**
      * 电流比法
      */
     private String dlbf;
+
+    /**
+     * 电流比法公里标
+     */
+    private String dlbfglb;
 
     /**
      * 推荐故障距离

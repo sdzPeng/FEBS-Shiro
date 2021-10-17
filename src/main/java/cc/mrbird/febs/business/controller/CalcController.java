@@ -1,13 +1,11 @@
 package cc.mrbird.febs.business.controller;
 
 import cc.mrbird.febs.business.constants.DeviceFailureConstants;
+import cc.mrbird.febs.business.constants.FixedValueConstants;
 import cc.mrbird.febs.business.dto.CurrentValue;
 import cc.mrbird.febs.business.dto.FailureReportDto;
 import cc.mrbird.febs.business.dto.KeyValueResult;
-import cc.mrbird.febs.business.entity.Bim;
-import cc.mrbird.febs.business.entity.Device;
-import cc.mrbird.febs.business.entity.Label;
-import cc.mrbird.febs.business.entity.Resource;
+import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.service.*;
 import cc.mrbird.febs.business.util.ContextPathUtil;
 import cc.mrbird.febs.business.util.MathUtils;
@@ -230,24 +228,8 @@ public class CalcController {
         failureReport.setSiteName(device.getSiteName());
         failureReport.setDeviceName(device.getDeviceName());
         failureReport.setCreateTime(device.getFailureTime());
-        // 横联电流比法
-        dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "横联电流比法距离（km）"))
-                .findFirst()
-                .ifPresent(横联电流比法 -> failureReport.setHldlbjl(df2.format(Double.parseDouble(横联电流比法.getValue().toString()))));
-        // 上下行电流比法
-        dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "上下行电流比法距离（km）"))
-                .findFirst()
-                .ifPresent(上下行电流比法距离 -> failureReport.setSxxdlbfcj(df2.format(Double.parseDouble(上下行电流比法距离.getValue().toString()))));
-        // 吸上电流比法
-        if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) != 0) {
-            dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）") ||
-                    StringUtils.equals(o.getKey(), "吸上电流比法T相距离（km）"))
-                    .max((o1, o2) ->
-                            Double.parseDouble((null == o1.getValue() ? 0 : o1.getValue()).toString()) >
-                                    Double.parseDouble((null == o2.getValue() ? 0 : o2.getValue()).toString()) ? 1 : -1)
-                    .filter(o -> null != o.getValue() && StringUtils.isNotEmpty(o.getValue().toString()))
-                    .ifPresent(吸上电流比法F相距离 -> failureReport.setXsdlbfjl(df2.format(Double.parseDouble(null == 吸上电流比法F相距离.getValue() ? "0" : 吸上电流比法F相距离.getValue().toString()))));
-        }
+
+        calcService.extracted(deviceId, algorithmType, df2, failureReport, dataTable);
         if (null != DeviceFailureConstants.ALGORITHM_TYPE.getNameByNum(algorithmType)) {
             KeyValueResult 电流比法 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), DeviceFailureConstants.ALGORITHM_TYPE.getNameByNum(algorithmType).getDesc()))
                     .filter(o -> null != o.getValue() && StringUtils.isNotEmpty(o.getValue().toString()))
