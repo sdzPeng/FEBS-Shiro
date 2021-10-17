@@ -486,8 +486,9 @@
                   let timestamp = new Date().getTime();
                   layer.open({
                     type:2,
-                    area: ['900px', '700px'],
-                    fixed: false,
+                    // area: ['900px', '700px'],
+                    area: ['80%', '70%'],
+                    fixed: true,
                     maxmin: true,
                     // content: '/resource/preview?resourceId='+data.resourceId
                     // content: '/resource/preview?resourceId='+subobj.data.resourceId
@@ -513,8 +514,9 @@
           let timestamp = new Date().getTime();
           layer.open({
             type:2,
-            area: ['900px', '700px'],
-            fixed: false,
+            // area: ['900px', '700px'],
+            area: ['80%', '70%'],
+            fixed: true,
             maxmin: true,
             // content: '/resource/preview?resourceId='+data.resourceId
             content: 'http://121.36.253.95:8012/onlinePreview?url='+encodeURIComponent(Base64.encode('http://121.36.253.95:8081/resource/download/'+timestamp+filesuffix+'?resourceId='+data.resourceId))
@@ -592,39 +594,3 @@
     <button class="layui-btn layui-btn-sm" lay-event="batchDelete">批量删除</button>
   </div>
 </script>
-
-<style>
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  ::-webkit-scrollbar-button,
-  ::-webkit-scrollbar-button:vertical {
-    display: none;
-  }
-  ::-webkit-scrollbar-track,
-  ::-webkit-scrollbar-track:vertical {
-    background-color: black;
-  }
-  ::-webkit-scrollbar-track-piece {
-    background-color: #f5f5f5;
-  }
-  ::-webkit-scrollbar-thumb,
-  ::-webkit-scrollbar-thumb:vertical {
-    margin-right: 10px;
-    background-color: #a6a6a6;
-  }
-  ::-webkit-scrollbar-thumb:hover,
-  ::-webkit-scrollbar-thumb:vertical:hover {
-    background-color: #aaa;
-  }
-  ::-webkit-scrollbar-corner,
-  ::-webkit-scrollbar-corner:vertical {
-    background-color: #535353;
-  }
-  /*::-webkit-scrollbar-resizer,*/
-  /*::-webkit-scrollbar-resizer:vertical {*/
-  /*  background-color: #ff6e00;*/
-  /*}*/
-</style>
-

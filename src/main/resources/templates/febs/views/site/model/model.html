@@ -1,4 +1,4 @@
-<div class="layui-fluid layui-anim febs-anim" id="febs-model" lay-title="导入导出">
+<div class="layui-fluid layui-anim febs-anim" id="febs-model" lay-title="模型管理">
     <div class="layui-row febs-container">
         <div class="layui-col-md12">
             <div class="layui-card">
@@ -60,7 +60,7 @@
         });
 
         $view.on('click', '#template-download', function () {
-            febs.download(ctx + 'resource/download/uuid/model', null, 'Excel导入模板.xlsx');
+            febs.download(ctx + 'resource/download/uuid/bim', null, 'Excel导入模板.xlsx');
         });
 
         $view.on('click', '#export', function () {
@@ -76,13 +76,19 @@
                 id: 'modelTable',
                 url: ctx + 'bim/all',
                 cols: [[
-                    {field: 'line', title: '行别'},
-                    {field: 'pillarNum', title: '支柱号'},
+                    {field: 'bimCode', title: 'BIM编码'},
+                    {field: 'pillarCode', title: '支柱编码'},
                     {field: 'mileage', title: '里程'},
-                    {field: 'model', title: '标签'},
-                    {field: 'addition', title: '附加信息'},
+                    {field: 'line', title: '行别'},
+                    {field: 'pillarModel', title: '支柱型号'},
+                    {field: 'baseModel', title: '基础型号'},
+                    {field: 'stayWire', title: '拉线'},
+                    {field: 'stayWireBase', title: '拉线基础'},
+                    {field: 'wbazth', title: '腕臂安装图号'},
+                    {field: 'jcwxm', title: '接触网下锚'},
+                    {field: 'zxmj', title: '中心锚结'},
                     {field: 'region', title: '区间/车站'},
-                    {field: 'offsetNum', title: '偏移量'}
+                    {field: 'other', title: '其他'}
                 ]]
             });
         }

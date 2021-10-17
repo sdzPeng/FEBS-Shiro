@@ -59,4 +59,4 @@ swagger:
 
 gaotie:
   temp:
-    dir: C:/app/backend/BOOT-INF/classes/word/test.docx
+    dir: C:/app/backend/test.docx
