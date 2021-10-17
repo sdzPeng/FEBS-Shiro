@@ -1,14 +1,18 @@
-<div class="layui-fluid layui-anim febs-anim" id="febs-log" lay-title="模型管理">
+<div class="layui-fluid layui-anim febs-anim" id="febs-model" lay-title="导入导出">
     <div class="layui-row febs-container">
         <div class="layui-col-md12">
             <div class="layui-card">
                 <div class="layui-card-body febs-table-full">
-                    <form class="layui-form layui-table-form" lay-filter="log-table-form">
-                        <div style="padding-left: 50px;margin-bottom: 25px;">
-                            <button type="button" class="layui-btn layui-btn-primary" id="test4"><i class="layui-icon"></i>资源上传</button>
-                            <button id="downLoad" class="layui-btn layui-btn-primary" onclick="window.open(ctx+'resource/download/uuid/bim')"><i class="layui-icon">&#xe82a;</i>模版下载</button>
-                        </div>
-                    </form>
+                    <button class="layui-btn  layui-btn-sm layui-btn-primary" id="template-download">
+                        <i class="layui-icon">&#xe82a;</i> 模板下载
+                    </button>
+                    <!--                    <button class="layui-btn  layui-btn-sm layui-btn-primary" id="export"-->
+                    <!--                            shiro:hasPermission="label:export">-->
+                    <!--                        <i class="layui-icon">&#xe7a8;</i> 导出Excel-->
+                    <!--                    </button>-->
+                    <button class="layui-btn  layui-btn-sm layui-btn-success" id="import">
+                        <i class="layui-icon">&#xe7aa;</i> 导入Excel
+                    </button>
                     <table lay-filter="modelTable" lay-data="{id: 'modelTable'}"></table>
                 </div>
             </div>
@@ -16,97 +20,55 @@
     </div>
 </div>
 <script data-th-inline="none" type="text/javascript">
-    layui.use(['jquery', 'laydate', 'form', 'table', 'febs', 'dropdown', 'upload'], function () {
+    layui.use(['jquery', 'table', 'febs', 'upload'], function () {
         var $ = layui.jquery,
-            laydate = layui.laydate,
             febs = layui.febs,
-            form = layui.form,
-            table = layui.table,
-            dropdown = layui.dropdown,
-            $view = $('#febs-log'),
-            $query = $view.find('#query'),
-            $reset = $view.find('#reset'),
-            $delete = $view.find('#delete'),
-            $searchForm = $view.find('form'),
-            sortObject = {field: 'time', type: null},
-            tableIns,
-            createTimeFrom,
             upload = layui.upload,
-            createTimeTo;
+            table = layui.table,
+            $view = $('#febs-model'),
+            tableIns;
 
-        laydate.render({
-            elem: '#label-createTime',
-            range: true,
-            trigger: 'click'
-        });
-
-        form.render();
         initTable();
 
-        dropdown.render({
-            elem: $view.find('.action-more'),
-            click: function (name, elem, event) {
-                if (name === 'delete') {
-                    var checkStatus = table.checkStatus('modelTable');
-                    if (!checkStatus.data.length) {
-                        febs.alert.warn('请勾选需要删除的日志');
-                    } else {
-                        febs.modal.confirm('删除日志', '确定删除所选日志？', function () {
-                            var logIds = [];
-                            layui.each(checkStatus.data, function (key, item) {
-                                logIds.push(item.id)
-                            });
-                            deleteLogs(logIds.join(','))
-                        });
-                    }
-                }
-                if (name === 'export') {
-                    var params = $.extend(getQueryParams(), {field: sortObject.field, order: sortObject.type});
-                    params.pageSize = $view.find(".layui-laypage-limits option:selected").val();
-                    params.pageNum = $view.find(".layui-laypage-em").next().html();
-                    febs.download(ctx + 'log/excel', params, '系统日志表.xlsx');
-                }
+        upload.render({
+            elem: '#import',
+            url: ctx + 'bim/import',
+            accept: 'file',
+            exts: 'xlsx', // 只能上传 .xlsx格式
+            size: 5 * 1024, // kb
+            before: function () {
+                febs.view.loadBar.start();
             },
-            options: [{
-                name: 'delete',
-                title: '删除日志',
-                perms: 'log:delete'
-            }, {
-                name: 'export',
-                title: '导出Excel',
-                perms: 'log:export'
-            }]
-        });
-
-        table.on('tool(modelTable)', function (obj) {
-            var data = obj.data,
-                layEvent = obj.event;
-            if (layEvent === 'del') {
-                febs.modal.confirm('删除日志', '确定删除该条系统日志？', function () {
-                    deleteLogs(data.id);
-                });
+            done: function (res) {
+                febs.view.loadBar.finish();
+                if (res.code === 200) {
+                    // 刷新 table
+                    tableIns.reload({page: {curr: 1}});
+                    var data = res.data;
+                    // 弹出导入结果
+                    // febs.modal.open('导入结果', 'model/import', {
+                    //     area: $(window).width() <= 750 ? '95%' : '1000px',
+                    //     data: data
+                    // });
+                }
+            }, error: function (res) {
+                //请求异常回调
+                console.error(res);
+                febs.view.loadBar.error();
+                febs.alert.error('导入失败！');
             }
         });
 
-        // table.on('sort(modelTable)', function (obj) {
-        //     sortObject = obj;
-        //     tableIns.reload({
-        //         initSort: obj//,
-        //         // where: $.extend(getQueryParams(), {
-        //         //     field: obj.field,
-        //         //     order: obj.type
-        //         // })
-        //     });
-        // });
+        $view.on('click', '#template-download', function () {
+            febs.download(ctx + 'resource/download/uuid/model', null, 'Excel导入模板.xlsx');
+        });
 
-        // $query.on('click', function () {
-        //     tableIns.reload();
-        // });
-        //
-        // $reset.on('click', function () {
-        //     $searchForm[0].reset();
-        //     tableIns.reload();
-        // });
+        $view.on('click', '#export', function () {
+            var params = {};
+            params.pageSize = $view.find(".layui-laypage-limits option:selected").val();
+            params.pageNum = $view.find(".layui-laypage-em").next().html();
+            febs.download(ctx + 'resource/download/uuid/model', params, 'Excel导出结果.xlsx');
+        });
 
         function initTable() {
             tableIns = febs.table.init2({
@@ -114,67 +76,16 @@
                 id: 'modelTable',
                 url: ctx + 'bim/all',
                 cols: [[
-                    {field: 'bimCode', title: 'BIM编码'},
-                    {field: 'pillarCode', title: '支柱编码'},
-                    {field: 'mileage', title: '里程'},
                     {field: 'line', title: '行别'},
-                    {field: 'pillarModel', title: '支柱型号'},
-                    {field: 'baseModel', title: '基础型号'},
-                    {field: 'stayWire', title: '拉线'},
-                    {field: 'stayWireBase', title: '拉线基础'},
-                    {field: 'wbazth', title: '腕臂安装图号'},
-                    {field: 'jcwxm', title: '接触网下锚'},
-                    {field: 'zxmj', title: '中心锚结'},
+                    {field: 'pillarNum', title: '支柱号'},
+                    {field: 'mileage', title: '里程'},
+                    {field: 'model', title: '标签'},
+                    {field: 'addition', title: '附加信息'},
                     {field: 'region', title: '区间/车站'},
-                    {field: 'other', title: '其他'}
+                    {field: 'offsetNum', title: '偏移量'}
                 ]]
             });
         }
 
-        function deleteLogs(logIds) {
-            febs.get(ctx + 'log/delete/' + logIds, null, function () {
-                febs.alert.success('删除系统日志成功');
-                $query.click();
-            });
-        }
-
-        function getQueryParams() {
-            var createTime = $searchForm.find('input[name="createTime"]').val();
-            if (createTime) {
-                createTimeFrom = createTime.split(' - ')[0];
-                createTimeTo = createTime.split(' - ')[1];
-            }
-            return {
-                createTimeFrom: createTimeFrom,
-                createTimeTo: createTimeTo,
-                username: $searchForm.find('input[name="username"]').val().trim(),
-                operation: $searchForm.find('input[name="operation"]').val().trim(),
-                invalidate_ie_cache: new Date()
-            };
-        }
-
-        upload.render({
-            elem: '#test4', //绑定元素
-            accept: 'file',
-            size: 307200,
-            url: '/bim/import', //上传接口
-            method: 'POST',
-            done: function(res){
-                //上传完毕回调
-                layer.alert("更新成功！", {
-                    icon: 6,
-                    title: "提示"
-                });
-                tableIns.reload();
-            }
-            ,error: function(res){
-                //请求异常回调
-                layer.alert("后台出错", {
-                    icon: 5,
-                    title: "提示"
-                });
-            }
-        });
     })
-
 </script>
