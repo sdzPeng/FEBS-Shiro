@@ -477,7 +477,10 @@
               });
               table.on('tool(peng2)', function(subobj){
                 if (subobj.event === 'download') {
-                  window.open('/resource/download?resourceId='+subobj.data.resourceId);
+                  var param = {};
+                  param.resourceId = subobj.data.resourceId;
+                  febs.download('/resource/download', param, subobj.data.name);
+                  // window.open('/resource/download?resourceId='+subobj.data.resourceId);
                 }else if (subobj.event === 'preview') {
                   var fileName = subobj.data.name;
                   var first = fileName.lastIndexOf(".");//取到文件名开始到最后一个点的长度
@@ -497,7 +500,10 @@
                   })
                 }else if (subobj.event === 'failurepreview') {
                   if(subobj.data.reportResourceId){
-                    window.open('/resource/download?resourceId='+subobj.data.reportResourceId);
+                    var param = {};
+                    param.resourceId = subobj.data.reportResourceId;
+                    febs.download('/resource/download', param, '故障报文分析报告.docx');
+                    // window.open('/resource/download?resourceId='+subobj.data.reportResourceId);
                   }else {
                     alert("未生成报告！")
                   }
@@ -505,7 +511,10 @@
             }
           });
         } else if(obj.event === 'download'){
-          window.open('/resource/download?resourceId='+data.resourceId);
+          var param = {};
+          param.resourceId = data.resourceId;
+          febs.download('/resource/download', param, data.resourceName);
+          // window.open('/resource/download?resourceId='+data.resourceId);
         } else if(obj.event === 'preview') {
           var fileName = data.resourceName;
           var first = fileName.lastIndexOf(".");//取到文件名开始到最后一个点的长度
