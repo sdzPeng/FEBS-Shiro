@@ -7,6 +7,7 @@ import cc.mrbird.febs.business.listener.BimListener;
 import cc.mrbird.febs.business.service.IBimService;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.exception.FebsException;
+import cc.mrbird.febs.common.exception.ValidaException;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
@@ -54,9 +55,9 @@ public class BimController {
     @PostMapping("import")
     @ApiOperation(value = "BIM数据导入")
 //    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
-    public FebsResponse bimImport(MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
-            throw new FebsException("导入数据为空");
+    public FebsResponse bimImport(MultipartFile file) throws IOException, ValidaException {
+        if (null == file || file.isEmpty()) {
+            throw new ValidaException("导入数据为空");
         }
         // 尝试删除mongo已有文件
         Query query = Query.query(GridFsCriteria.where("metadata.uuid").is("bim"));
@@ -69,7 +70,7 @@ public class BimController {
         }
         String filename = file.getOriginalFilename();
         if (!StringUtils.endsWith(filename, ".xlsx")&&!StringUtils.endsWith(filename, ".xls")) {
-            throw new FebsException("只支持.xlsx、.xls类型文件导入");
+            throw new ValidaException("只支持.xlsx、.xls类型文件导入");
         }
 
         // 删除已有数据
@@ -136,4 +137,7 @@ public class BimController {
         queryWrapper.eq("BIM_CODE", bimCode);
         return new FebsResponse().success().data(bimService.getOne(queryWrapper));
     }
+
+    // todo 如果故障点位置不在K218+300到K244+900范围内，则显示暂无相关信息。
+
 }

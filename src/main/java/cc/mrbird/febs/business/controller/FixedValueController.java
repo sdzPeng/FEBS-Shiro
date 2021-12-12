@@ -6,14 +6,12 @@ import cc.mrbird.febs.business.dto.FixedValueTableVersion2Dto;
 import cc.mrbird.febs.business.dto.FixedValueTableVersionDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.listener.FixValueListener;
-import cc.mrbird.febs.business.service.IFixedValueService;
-import cc.mrbird.febs.business.service.IFixedValueTableService;
-import cc.mrbird.febs.business.service.IFixedValueVersionService;
-import cc.mrbird.febs.business.service.IResourceService;
+import cc.mrbird.febs.business.service.*;
 import cc.mrbird.febs.common.controller.BaseController;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.entity.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
+import cc.mrbird.febs.common.exception.ValidaException;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
@@ -33,6 +31,8 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -64,6 +64,9 @@ public class FixedValueController extends BaseController {
     @Autowired
     IResourceService resourceService;
 
+    @Autowired
+    private ISiteDicService siteDicService;
+
     private final String FIXED_VALUE_META_REGEXP = "元数据";
 
     @Autowired
@@ -72,14 +75,19 @@ public class FixedValueController extends BaseController {
     // 定值入库 入库
     @PostMapping("import")
     @ApiOperation(value = "定值表导入")
-//    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
-    public FebsResponse fixedValueImport(MultipartFile file, @RequestParam String siteId) throws IOException {
-        if (file.isEmpty()) {
-            throw new FebsException("导入数据为空");
+    public FebsResponse fixedValueImport(@NotNull MultipartFile file, @RequestParam String siteId) throws IOException, ValidaException {
+        if (null == file || file.isEmpty()) {
+            throw new ValidaException("导入文件不得为空！");
         }
         String filename = file.getOriginalFilename();
         if (!StringUtils.endsWith(filename, ".xlsx")&&!StringUtils.endsWith(filename, ".xls")) {
-            throw new FebsException("只支持.xlsx、.xls类型文件导入");
+            throw new ValidaException("只支持.xlsx、.xls类型文件导入！");
+        }
+
+        // 校验站点是否存在
+        SiteDic siteDic = siteDicService.getById(siteId);
+        if(null == siteDic) {
+            throw new ValidaException("录入的站点不存在！");
         }
 
         // 文件入库操作

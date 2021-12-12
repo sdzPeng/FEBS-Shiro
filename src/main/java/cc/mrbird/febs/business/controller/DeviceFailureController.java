@@ -12,6 +12,7 @@ import cc.mrbird.febs.business.service.IDeviceService;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.entity.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
+import cc.mrbird.febs.common.exception.ValidaException;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
@@ -33,6 +34,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -75,9 +78,9 @@ public class DeviceFailureController {
     @PostMapping("import")
     @ApiOperation(value = "设备故障表导入")
 //    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
-    public FebsResponse fixedValueImport(MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
-            throw new FebsException("导入数据为空");
+    public FebsResponse fixedValueImport(@NotNull MultipartFile file) throws IOException, ValidaException {
+        if (null == file || file.isEmpty()) {
+            throw new ValidaException("导入文件不得为空！");
         }
         String filename = file.getOriginalFilename();
         // 文件入库操作

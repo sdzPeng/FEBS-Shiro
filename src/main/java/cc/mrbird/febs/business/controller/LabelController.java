@@ -10,6 +10,7 @@ import cc.mrbird.febs.business.listener.LabelListener;
 import cc.mrbird.febs.business.service.ILabelService;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.exception.FebsException;
+import cc.mrbird.febs.common.exception.ValidaException;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
@@ -57,10 +58,10 @@ public class LabelController {
     @PostMapping("import")
     @ApiOperation(value = "LABEL数据导入")
 //    @ControllerEndpoint(exceptionMessage = "导入Excel数据失败")
-    public FebsResponse labelImport(MultipartFile file) throws IOException {
+    public FebsResponse labelImport(MultipartFile file) throws IOException, ValidaException {
 
-        if (file.isEmpty()) {
-            throw new FebsException("导入数据为空");
+        if (null == file || file.isEmpty()) {
+            throw new ValidaException("导入数据为空");
         }
         String filename = file.getOriginalFilename();
         if (!StringUtils.endsWith(filename, ".xlsx")&&!StringUtils.endsWith(filename, ".xls")) {

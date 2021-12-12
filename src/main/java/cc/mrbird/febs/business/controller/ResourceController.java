@@ -52,6 +52,9 @@ public class ResourceController extends BaseController {
             throw new ValidaException("资源未生成！");
         }
         Resource origin = resourceService.getById(resourceId);
+        if (null == origin) {
+            throw new ValidaException("资源不存在！");
+        }
         Query query = Query.query(GridFsCriteria.where("metadata.uuid").is(origin.getUuid()));
         GridFSFile one = gridFsTemplate.findOne(query);
         GridFsResource resource = gridFsTemplate.getResource(one);

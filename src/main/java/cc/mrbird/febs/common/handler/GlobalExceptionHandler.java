@@ -34,11 +34,11 @@ import java.util.Set;
 @Order(value = Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = Exception.class)
-    public FebsResponse handleException(Exception e) {
-        log.error("系统内部异常，异常信息", e);
-        return new FebsResponse().code(HttpStatus.INTERNAL_SERVER_ERROR).message("系统内部异常");
-    }
+//    @ExceptionHandler(value = Exception.class)
+//    public FebsResponse handleException(Exception e) {
+//        log.error("系统内部异常，异常信息", e);
+//        return new FebsResponse().code(HttpStatus.INTERNAL_SERVER_ERROR).message("系统内部异常");
+//    }
 
     @ExceptionHandler(value = FebsException.class)
     public FebsResponse handleFebsException(FebsException e) {
@@ -48,8 +48,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = ValidaException.class)
     public FebsResponse handleValidateException(ValidaException e) {
-        log.error("系统错误", e);
-        return new FebsResponse().code(HttpStatus.INTERNAL_SERVER_ERROR).message(e.getMessage());
+        log.error("请求错误", e);
+        return new FebsResponse().code(HttpStatus.BAD_REQUEST).message(e.getMessage());
     }
 
     /**
