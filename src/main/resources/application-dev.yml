@@ -71,3 +71,5 @@ swagger:
 gaotie:
   temp:
     dir:
+  lowest: K218+300
+  hignest: K244+900

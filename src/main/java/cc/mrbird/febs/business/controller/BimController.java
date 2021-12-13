@@ -19,13 +19,16 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsCriteria;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.Pattern;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -50,6 +53,12 @@ public class BimController {
 
     @Autowired
     private GridFsTemplate gridFsTemplate;
+
+    @Value("${gaotie.lowest}")
+    private String lowest;
+
+    @Value("${gaotie.hignest}")
+    private String hignest;
 
     // BIM 里程导入数据
     @PostMapping("import")
@@ -139,5 +148,21 @@ public class BimController {
     }
 
     // todo 如果故障点位置不在K218+300到K244+900范围内，则显示暂无相关信息。
+    @GetMapping("/exist")
+    @ApiOperation(value = "通过BIM code 获取bim信息")
+    public FebsResponse exist(@RequestParam("mileage") @Validated @Pattern(regexp="K[\\d]+\\+[\\d]+(\\.[\\d]+)*",
+            message = "[K218+300.000]") String mileage) throws ValidaException {
+        if (StringUtils.isEmpty(mileage) || !mileage.matches("K[\\d]+\\+[\\d]+(\\.[\\d]+)*")){
+            throw new ValidaException("样例【K218+300.000】");
+        }
+        Double target = extracted(mileage);
+        Double lowestDouble = extracted(lowest);
+        Double hignestDouble = extracted(hignest);
+        return new FebsResponse().success().data(target>=lowestDouble&&target<=hignestDouble);
+    }
 
+    private Double extracted(String mileage) {
+        String[] ks = mileage.replace("K", "").split("\\+");
+        return Double.parseDouble(ks[0])*1000+Double.parseDouble(ks[1]);
+    }
 }
