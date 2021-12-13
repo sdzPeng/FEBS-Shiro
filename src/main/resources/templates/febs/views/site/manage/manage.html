@@ -50,6 +50,7 @@
                 <input type="text" value="" name="parentId" readonly class="layui-input">
               </div>
             </div>
+            <input class="febs-hide" name="siteId" id="siteIdHiden">
             <div class="layui-form-item">
               <label class="layui-form-label febs-form-item-require">名称：</label>
               <div class="layui-input-block">
@@ -57,20 +58,6 @@
                        minlength="2" maxlength="10" lay-verify="range">
               </div>
             </div>
-<!--            <div class="layui-form-item">-->
-<!--              <label class="layui-form-label febs-form-item-require">类型：</label>-->
-<!--              <div class="layui-input-block">-->
-<!--                <input type="radio" name="type" lay-filter="site-type" value="0" title="菜单" checked="">-->
-<!--                <input type="radio" name="type" lay-filter="site-type" value="1" title="按钮">-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="layui-form-item">-->
-<!--              <label class="layui-form-label">图标：</label>-->
-<!--              <div class="layui-input-block">-->
-<!--                <input type="text" name="icon" autocomplete="off" class="layui-input"-->
-<!--                       maxlength="50" lay-verify="range">-->
-<!--              </div>-->
-<!--            </div>-->
             <div class="layui-form-item">
               <label class="layui-form-label">站点编码：</label>
               <div class="layui-input-block">
@@ -78,13 +65,6 @@
                        maxlength="50" lay-verify="range">
               </div>
             </div>
-<!--            <div class="layui-form-item">-->
-<!--              <label class="layui-form-label">权限：</label>-->
-<!--              <div class="layui-input-block">-->
-<!--                <input type="text" name="perms" autocomplete="off" class="layui-input"-->
-<!--                       maxlength="50" lay-verify="range">-->
-<!--              </div>-->
-<!--            </div>-->
             <div class="layui-form-item">
               <label class="layui-form-label">排序：</label>
               <div class="layui-input-block">
@@ -92,10 +72,6 @@
                        lay-verify="number">
               </div>
             </div>
-<!--            <div class="layui-form-item">-->
-<!--&lt;!&ndash;              <label class="layui-form-label">定值表：</label>&ndash;&gt;-->
-<!--              <table class="layui-hide" id="test-dropdown-table" lay-filter="test-dropdown-table"></table>-->
-<!--            </div>-->
 
             <button type="reset" class="layui-btn febs-hide" id="reset-form"></button>
             <button class="layui-btn febs-hide" lay-submit="" lay-filter="site-form-submit"
@@ -103,8 +79,7 @@
           </form>
         </div>
         <div class="layui-card-footer">
-          <button type="button" class="layui-btn" id="fixedValue"><i class="layui-icon"></i>上传定值表</button>
-<!--          <button class="layui-btn" id="fixedValue">上传定值表</button>-->
+          <button type="button" class="layui-btn" id="fixedValueUpload"><i class="layui-icon"></i>上传定值表</button>
           <button class="layui-btn" id="submit">保存</button>
         </div>
       </div>
@@ -153,6 +128,41 @@
 
     form.verify(validate);
     form.render();
+
+    //执行实例
+    var uploadInst = upload.render({
+      elem: '#fixedValueUpload' //绑定元素
+      ,url: ctx + 'fixedvalue/import' //上传接口
+      ,accept: 'file'
+      , before: function () {
+        console.log($('#siteIdHiden').val())
+        this.data = {
+          siteId: $('#siteIdHiden').val()
+        }
+      }
+      ,done: function(res){
+        layui.use('layer', function(){
+          if (res.code === 400|| res.code===500) {
+            var layer = layui.layer;
+            layer.msg(res.message, {
+              time: 6000, //6s后自动关闭
+              icon:2
+            });
+          } else {
+            var layer = layui.layer;
+            var table = layui.table;
+            table.reload('test-dropdown-table');
+            layer.msg('上传成功！', {
+              time: 6000, //6s后自动关闭
+              icon: 1
+            });
+          }
+        });
+      }
+      ,error: function(){
+        //请求异常回调
+      }
+    });
 
     dropdown.render({
       elem: $view.find('.action-more'),
@@ -548,11 +558,15 @@
             });
             console.log(JSON.stringify(fixedValueTableIds));
             febs.get(ctx + 'fixedvalue/table/batch/' + fixedValueTableIds+'?fixedValueTableVersionIds='+fixedValueTableVersionIds, null, function () {
-              febs.alert.success('批量删除定值表成功');
-              $query.click();
+              var layer = layui.layer;
+              table.reload('test-dropdown-table');
+              layer.msg('批量删除定值表成功', {
+                time: 6000, //6s后自动关闭
+                icon:1
+              });
             });
             break;
-        };
+        }
       });
     }
     //指定允许上传的文件类型
