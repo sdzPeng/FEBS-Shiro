@@ -11,6 +11,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.session.ExpiredSessionException;
+import org.apache.tomcat.util.http.fileupload.FileUploadBase;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -34,11 +35,11 @@ import java.util.Set;
 @Order(value = Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
 
-//    @ExceptionHandler(value = Exception.class)
-//    public FebsResponse handleException(Exception e) {
-//        log.error("系统内部异常，异常信息", e);
-//        return new FebsResponse().code(HttpStatus.INTERNAL_SERVER_ERROR).message("系统内部异常");
-//    }
+    @ExceptionHandler(value = FileUploadBase.FileSizeLimitExceededException.class)
+    public FebsResponse handleFileSizeLimitExceededException(FileUploadBase.FileSizeLimitExceededException e) {
+        log.error("请求错误", e);
+        return new FebsResponse().code(HttpStatus.BAD_REQUEST).message(e.getMessage());
+    }
 
     @ExceptionHandler(value = FebsException.class)
     public FebsResponse handleFebsException(FebsException e) {
@@ -124,4 +125,10 @@ public class GlobalExceptionHandler {
     public void handleFileDownloadException(FileDownloadException e) {
         log.error("FileDownloadException", e);
     }
+
+//    @ExceptionHandler(value = Exception.class)
+//    public FebsResponse handleException(Exception e) {
+//        log.error("系统内部异常，异常信息", e);
+//        return new FebsResponse().code(HttpStatus.INTERNAL_SERVER_ERROR).message("系统内部异常");
+//    }
 }
