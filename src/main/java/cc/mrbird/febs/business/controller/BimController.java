@@ -149,7 +149,7 @@ public class BimController {
 
     // todo 如果故障点位置不在K218+300到K244+900范围内，则显示暂无相关信息。
     @GetMapping("/exist")
-    @ApiOperation(value = "通过BIM code 获取bim信息")
+    @ApiOperation(value = "判断是否在K218+300到K244+900范围")
     public FebsResponse exist(@RequestParam("mileage") @Validated @Pattern(regexp="K[\\d]+\\+[\\d]+(\\.[\\d]+)*",
             message = "[K218+300.000]") String mileage) throws ValidaException {
         if (StringUtils.isEmpty(mileage) || !mileage.matches("K[\\d]+\\+[\\d]+(\\.[\\d]+)*")){
