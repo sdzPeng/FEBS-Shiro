@@ -940,21 +940,27 @@ public class CalcServiceImpl implements ICalcService {
         KeyValueResult 横联电流比法 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "横联电流比法距离（km）"))
                 .findFirst().orElse(null);
         if (null != 横联电流比法) {
-            failureReport.setHldlbjl(df2.format(Double.parseDouble(横联电流比法.getValue().toString())));
+            failureReport.setHldlbjl(df2.format(Double.parseDouble(横联电流比法.getValue().toString()))+"km");
             Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
                     + (Double.parseDouble(横联电流比法.getValue().toString()) - Double.parseDouble(变电所供电线长度.getSummonValue()))
                     * Double.parseDouble(fixedValueVersionInfo.getDirection());
             failureReport.setHldlbglb(MathUtils.base2scientific(故障点公里标));
+        }else {
+            failureReport.setHldlbjl("无数据");
+            failureReport.setHldlbglb("无数据");
         }
         // 上下行电流比法
         KeyValueResult 上下行电流比法距离 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "上下行电流比法距离（km）"))
                 .findFirst().orElse(null);
         if(null != 上下行电流比法距离) {
-            failureReport.setSxxdlbfcj(df2.format(Double.parseDouble(上下行电流比法距离.getValue().toString())));
+            failureReport.setSxxdlbfcj(df2.format(Double.parseDouble(上下行电流比法距离.getValue().toString()))+"km");
             Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
                     + (Double.parseDouble(上下行电流比法距离.getValue().toString()) - Double.parseDouble(变电所供电线长度.getSummonValue()))
                     * Double.parseDouble(fixedValueVersionInfo.getDirection());
             failureReport.setSxxdlbfglb(MathUtils.base2scientific(故障点公里标));
+        }else {
+            failureReport.setSxxdlbfcj("无数据");
+            failureReport.setSxxdlbfglb("无数据");
         }
         // 吸上电流比法
         if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) != 0) {
@@ -965,12 +971,18 @@ public class CalcServiceImpl implements ICalcService {
                                     Double.parseDouble((null == o2.getValue() ? 0 : o2.getValue()).toString()) ? 1 : -1)
                     .filter(o -> null != o.getValue() && StringUtils.isNotEmpty(o.getValue().toString())).orElse(null);
             if (null != 吸上电流比法F相距离) {
-                failureReport.setXsdlbfjl(df2.format(Double.parseDouble(null == 吸上电流比法F相距离.getValue() ? "0" : 吸上电流比法F相距离.getValue().toString())));
+                failureReport.setXsdlbfjl(df2.format(Double.parseDouble(null == 吸上电流比法F相距离.getValue() ? "0" : 吸上电流比法F相距离.getValue().toString()))+"km");
                 Double 故障点公里标 = Double.parseDouble(起点公里标.getSummonValue())
                         + (Double.parseDouble(吸上电流比法F相距离.getValue().toString()) - Double.parseDouble(变电所供电线长度.getSummonValue()))
                         * Double.parseDouble(fixedValueVersionInfo.getDirection());
                 failureReport.setDlbfglb(MathUtils.base2scientific(故障点公里标));
+            }else {
+                failureReport.setXsdlbfjl("无数据");
+                failureReport.setDlbfglb("无数据");
             }
+        }else {
+            failureReport.setXsdlbfjl("无数据");
+            failureReport.setDlbfglb("无数据");
         }
     }
 }

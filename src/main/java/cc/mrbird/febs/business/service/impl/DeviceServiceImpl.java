@@ -46,7 +46,7 @@ public class DeviceServiceImpl  extends ServiceImpl<DeviceMapper, Device> implem
         log.info("{}条数据，开始存储数据库！", list.size());
         Map<String, List<Device>> deviceGroups = list
                 .stream()
-                .filter(o-> o.getDeviceName().matches(DEVICE_REGEXP))
+                .filter(o-> null!=o.getDeviceName()&&o.getDeviceName().matches(DEVICE_REGEXP))
                 .collect(Collectors.groupingBy(device->device.getDeviceName()+"_"+device.getFailureTime()));
         deviceGroups.forEach((k, v) -> {
             // 保存第一个设备，设备源保存v.size() 条数

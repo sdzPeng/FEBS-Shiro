@@ -286,4 +286,37 @@ public class FixedValueController extends BaseController {
         return new FebsResponse().success().data(fixedValueTableVersions);
     }
 
+    @GetMapping("/v3/list/site")
+    @ApiOperation(value = "通过siteId获取最新定制表")
+    @ApiImplicitParam(name = "siteId", value = "站点id", dataTypeClass = Long.class, example="")
+    public FebsResponse fixedTableVersionLatest(Long siteId) {
+        QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("SITE_ID", siteId);
+        List<FixedValueTable> list = fixedValueTableService.list(queryWrapper);
+        List<FixedValueTableVersion2Dto> fixedValueTableVersions = new ArrayList<>();
+        list.forEach(o -> {
+            QueryWrapper<FixedValueVersion> fixedValueVersionQueryWrapper = new QueryWrapper<>();
+            fixedValueVersionQueryWrapper.eq("FIXED_VALUE_TABLE_ID", o.getFixedValueTableId());
+            List<FixedValueVersion> versions = fixedValueVersionService.list(fixedValueVersionQueryWrapper);
+            for (FixedValueVersion version : versions) {
+                FixedValueTableVersion2Dto fixedValueTableVersionDto = new FixedValueTableVersion2Dto();
+                fixedValueTableVersionDto.setFixedValueTableId(o.getFixedValueTableId());
+                fixedValueTableVersionDto.setFirstTime(o.getCreateTime());
+                fixedValueTableVersionDto.setName(o.getName());
+                fixedValueTableVersionDto.setFixedValueVersionId(version.getFixValueVersionId());
+                fixedValueTableVersionDto.setResourceId(version.getResourceId());
+                fixedValueTableVersionDto.setCreateTime(version.getCreateTime());
+                Resource resource = resourceService.getById(version.getResourceId());
+                fixedValueTableVersionDto.setResourceName(resource.getFileName());
+                fixedValueTableVersions.add(fixedValueTableVersionDto);
+            }
+        });
+        return new FebsResponse()
+                .success()
+                .data(fixedValueTableVersions.stream()
+                        .max(Comparator.comparing(FixedValueTableVersion2Dto::getCreateTime))
+                        .orElse(null)
+                );
+    }
+
 }

@@ -92,15 +92,21 @@ public class FailureReportDto implements Serializable {
      */
     private TableRenderData keyFacilities;
 
+    private String showKeyFacilities;
+
     /**
      * 前后两端最近上道口
      */
     private TableRenderData closedFacilities;
 
+    private String showClosedFacilities;
+
     /**
      * 接触网安装信息
      */
     private TableRenderData touchNetInfo;
+
+    private String showTouchNetInfo;
 
     /**
      * 计算数据源

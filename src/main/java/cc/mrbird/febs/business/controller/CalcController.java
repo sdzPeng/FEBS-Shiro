@@ -237,8 +237,8 @@ public class CalcController {
                             Double.parseDouble((null == o1.getValue() ? 0 : o1.getValue()).toString()) >
                                     Double.parseDouble((null == o2.getValue() ? 0 : o2.getValue()).toString()) ? 1 : -1)
                     .orElse(null);
-            failureReport.setDlbf(电流比法.getKey());
-            failureReport.setTjgzjl(df2.format(Double.parseDouble(null == 电流比法.getValue() ? "0" : 电流比法.getValue().toString())));
+            failureReport.setDlbf(电流比法.getKey().replaceAll("距离（km）", ""));
+            failureReport.setTjgzjl(df2.format(Double.parseDouble(null == 电流比法.getValue() ? "0" : 电流比法.getValue().toString()))+"km");
         }
         KeyValueResult 故障点公里标 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "故障点公里标（km）"))
                 .findFirst()
@@ -267,10 +267,13 @@ public class CalcController {
                 .ifPresent(故障行别 -> failureReport.setUpdown(故障行别.getValue().toString()));
         // 生成第一张表
         failureReport.setKeyFacilities(extractedFirstTable(故障点公里标.getValue().toString()));
+        failureReport.setShowKeyFacilities(failureReport.getKeyFacilities().obtainRowSize()==0?"暂无故障位置相关信息":"");
         // 生成第二张表
         failureReport.setClosedFacilities(extractedSecondTable(故障点公里标.getValue().toString()));
+        failureReport.setShowClosedFacilities(failureReport.getClosedFacilities().obtainRowSize()==0?"暂无故障位置相关信息":"");
         // 生成第三张表
         failureReport.setTouchNetInfo(extractedThirdTable(故障点公里标.getValue().toString()));
+        failureReport.setShowTouchNetInfo(failureReport.getTouchNetInfo().obtainRowSize()==0?"暂无故障位置相关信息":"");
         // 生成第四张表
         failureReport.setCalcData(extractedForthTable(keyValueResults));
         File file;
@@ -431,33 +434,37 @@ public class CalcController {
     }
 
     private TableRenderData extractedFirstTable(String glb) {
-        // 创建表格
-        RowRenderData header = Rows.of("行别", "支柱号", "里程", "类别", "附加信息", "区间/车站").bgColor("F2F2F2").center()
-                .textColor("7F7f7F").textFontFamily("Hei").textFontSize(9).create();
         // 故障点附近前后500m距离
         List<Label> labels = labelService.list()
                 .stream()
                 .filter(o -> Math.abs(Double.parseDouble(o.getMileage())
                         - Double.parseDouble(glb) * 1000) < 500)
                 .collect(Collectors.toList());
-        Tables.TableBuilder tableBuilder = Tables.ofPercentWidth("100%").addRow(header);
-        for (Label label : labels) {
-            RowRenderData row = Rows.of(label.getLine(), label.getPillarNum(),
-                    MathUtils.base2scientific(Double.parseDouble(label.getMileage()) / 1000),
-                    label.getLabel(),
-                    label.getAddition(),
-                    label.getRegion())
-                    .textFontSize(8)
-                    .center()
-                    .create();
-            tableBuilder.addRow(row);
-        }
+        Tables.TableBuilder tableBuilder = Tables.ofPercentWidth("100%");
+        if (labels.size()>0) {
+            // 创建表格
+            RowRenderData header = Rows.of("行别", "支柱号", "里程", "类别", "附加信息", "区间/车站").bgColor("F2F2F2").center()
+                    .textColor("7F7f7F").textFontFamily("Hei").textFontSize(9).create();
+            tableBuilder = Tables.ofPercentWidth("100%").addRow(header);
+            for (Label label : labels) {
+                RowRenderData row = Rows.of(label.getLine(), label.getPillarNum(),
+                                MathUtils.base2scientific(Double.parseDouble(label.getMileage()) / 1000),
+                                label.getLabel(),
+                                label.getAddition(),
+                                label.getRegion())
+                        .textFontSize(8)
+                        .center()
+                        .create();
+                tableBuilder.addRow(row);
+            }
 
-        BorderStyle borderStyle = new BorderStyle();
-        borderStyle.setColor("A6A6A6");
-        borderStyle.setSize(4);
-        borderStyle.setType(XWPFTable.XWPFBorderType.SINGLE);
-        return tableBuilder.border(borderStyle).center()
+            BorderStyle borderStyle = new BorderStyle();
+            borderStyle.setColor("A6A6A6");
+            borderStyle.setSize(4);
+            borderStyle.setType(XWPFTable.XWPFBorderType.SINGLE);
+            tableBuilder.border(borderStyle);
+        }
+        return tableBuilder.center()
                 .create();
     }
 }
