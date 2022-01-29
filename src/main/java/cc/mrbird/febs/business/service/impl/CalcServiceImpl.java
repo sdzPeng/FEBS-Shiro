@@ -963,7 +963,7 @@ public class CalcServiceImpl implements ICalcService {
             failureReport.setSxxdlbfglb("无数据");
         }
         // 吸上电流比法
-        if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) != 0) {
+//        if (NumberUtils.compare(DeviceFailureConstants.ALGORITHM_TYPE.吸上电流比法距离.getNum(), algorithmType) != 0) {
             KeyValueResult 吸上电流比法F相距离 = dataTable.stream().filter(o -> StringUtils.equals(o.getKey(), "吸上电流比法F相距离（km）") ||
                     StringUtils.equals(o.getKey(), "吸上电流比法T相距离（km）"))
                     .max((o1, o2) ->
@@ -980,9 +980,9 @@ public class CalcServiceImpl implements ICalcService {
                 failureReport.setXsdlbfjl("无数据");
                 failureReport.setDlbfglb("无数据");
             }
-        }else {
-            failureReport.setXsdlbfjl("无数据");
-            failureReport.setDlbfglb("无数据");
-        }
+//        }else {
+//            failureReport.setXsdlbfjl("无数据");
+//            failureReport.setDlbfglb("无数据");
+//        }
     }
 }
