@@ -45,4 +45,8 @@ public class DeviceTableDto implements Serializable {
     @TableField(value = "SNAPSHOT")
     @ExcelProperty("报告文件索引")
     private Long reportResourceId;
+
+    private String previewUrl;
+
+    private String contextPath;
 }

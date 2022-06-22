@@ -9,6 +9,7 @@ import cc.mrbird.febs.business.entity.Resource;
 import cc.mrbird.febs.business.listener.DeviceListener;
 import cc.mrbird.febs.business.service.IDeviceFailureService;
 import cc.mrbird.febs.business.service.IDeviceService;
+import cc.mrbird.febs.business.util.ContextPathUtil;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.entity.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,9 +37,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +67,9 @@ public class DeviceFailureController {
 
     @Autowired
     private GridFsTemplate gridFsTemplate;
+
+    @Value("${gaotie.preview}")
+    private String previewUrl;
 
     @PostMapping("attach/fixedtableversion")
     @ApiOperation(value = "设别故障报文关联定值表版本id")
@@ -121,7 +128,8 @@ public class DeviceFailureController {
     @GetMapping("/table/page")
     @ApiOperation(value = "通过定值表版本id获取所有设备故障表")
     // todo bug,设计有问题
-    public FebsResponse getDeviceTablePage(QueryRequest request, Integer fixedValueVersionId) {
+    public FebsResponse getDeviceTablePage(QueryRequest request, Integer fixedValueVersionId,
+                                           HttpServletRequest servletRequest) {
         IPage<DeviceTable> tableByPage = deviceFailureService.findTableByPage(request, fixedValueVersionId);
         List<DeviceTable> tables = tableByPage.getRecords();
         List<DeviceTableDto> collect = new ArrayList<>();
@@ -133,6 +141,8 @@ public class DeviceFailureController {
                 DeviceTableDto deviceTableDto = new DeviceTableDto();
                 BeanUtils.copyProperties(table, deviceTableDto);
                 BeanUtils.copyProperties(o, deviceTableDto);
+                deviceTableDto.setPreviewUrl(previewUrl);
+                deviceTableDto.setContextPath(ContextPathUtil.getBaseURL(servletRequest));
                 return deviceTableDto;
             }).collect(Collectors.toList()));
         }

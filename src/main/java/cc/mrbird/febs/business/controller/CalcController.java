@@ -94,6 +94,17 @@ public class CalcController {
         return new FebsResponse().success().data(dataTable);
     }
 
+    @GetMapping("/failure/attachment")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备id", dataTypeClass = String.class),
+            @ApiImplicitParam(name = "algorithmType", value = "算法类型", dataTypeClass = Integer.class)
+    })
+    @ApiOperation(value = "故障点相关信息返回")
+    public FebsResponse failureAttachment(Long deviceId, @RequestParam(defaultValue = "1")Integer algorithmType) throws ValidaException {
+        List<KeyValueResult> dataTable = calcService.failureAttachment(deviceId, algorithmType);
+        return new FebsResponse().success().data(dataTable);
+    }
+
     @GetMapping("/calc/data")
     @ApiOperation(value = "计算源数据")
     public FebsResponse calcData(Long deviceId) throws ValidaException {

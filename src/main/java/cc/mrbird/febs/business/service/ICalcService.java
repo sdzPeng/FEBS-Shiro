@@ -27,4 +27,6 @@ public interface ICalcService {
     Map<String, Object> currentDistMap(Long deviceId, Integer num) throws ValidaException;
 
     void extracted(Long deviceId, Integer algorithmType, DecimalFormat df2, FailureReportDto failureReport, List<KeyValueResult> dataTable);
+
+    List<KeyValueResult> failureAttachment(Long deviceId, Integer algorithmType) throws ValidaException;
 }

@@ -7,6 +7,7 @@ import cc.mrbird.febs.business.dto.FixedValueTableVersionDto;
 import cc.mrbird.febs.business.entity.*;
 import cc.mrbird.febs.business.listener.FixValueListener;
 import cc.mrbird.febs.business.service.*;
+import cc.mrbird.febs.business.util.ContextPathUtil;
 import cc.mrbird.febs.common.controller.BaseController;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.entity.QueryRequest;
@@ -27,11 +28,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,6 +71,9 @@ public class FixedValueController extends BaseController {
     private ISiteDicService siteDicService;
 
     private final String FIXED_VALUE_META_REGEXP = "元数据";
+
+    @Value("${gaotie.preview}")
+    private String previewUrl;
 
     @Autowired
     private GridFsTemplate gridFsTemplate;
@@ -261,7 +267,7 @@ public class FixedValueController extends BaseController {
     @GetMapping("/v2/list/site")
     @ApiOperation(value = "通过siteId获取定值表列表")
     @ApiImplicitParam(name = "siteId", value = "定值版本id", dataTypeClass = Long.class, example="")
-    public FebsResponse fixedTableVersionList2(Long siteId) {
+    public FebsResponse fixedTableVersionList2(Long siteId, HttpServletRequest servletRequest) {
         QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("SITE_ID", siteId);
         List<FixedValueTable> list = fixedValueTableService.list(queryWrapper);
@@ -280,6 +286,8 @@ public class FixedValueController extends BaseController {
                 fixedValueTableVersionDto.setCreateTime(version.getCreateTime());
                 Resource resource = resourceService.getById(version.getResourceId());
                 fixedValueTableVersionDto.setResourceName(resource.getFileName());
+                fixedValueTableVersionDto.setPreviewUrl(previewUrl);
+                fixedValueTableVersionDto.setContextPath(ContextPathUtil.getBaseURL(servletRequest));
                 fixedValueTableVersions.add(fixedValueTableVersionDto);
             }
         });

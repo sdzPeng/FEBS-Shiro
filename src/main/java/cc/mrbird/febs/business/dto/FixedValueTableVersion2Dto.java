@@ -33,4 +33,8 @@ public class FixedValueTableVersion2Dto implements Serializable {
     private Long resourceId;
 
     private Date firstTime;
+
+    private String contextPath;
+
+    private String previewUrl;
 }

@@ -6,11 +6,11 @@ import cc.mrbird.febs.business.dto.CurrentValue;
 import cc.mrbird.febs.business.dto.DeviceDataDto;
 import cc.mrbird.febs.business.dto.FailureReportDto;
 import cc.mrbird.febs.business.dto.KeyValueResult;
+import cc.mrbird.febs.business.entity.Device;
 import cc.mrbird.febs.business.entity.FixedValue;
 import cc.mrbird.febs.business.entity.FixedValueVersion;
-import cc.mrbird.febs.business.service.ICalcService;
-import cc.mrbird.febs.business.service.IFixedValueService;
-import cc.mrbird.febs.business.service.IFixedValueVersionService;
+import cc.mrbird.febs.business.entity.Label;
+import cc.mrbird.febs.business.service.*;
 import cc.mrbird.febs.business.util.MathUtils;
 import cc.mrbird.febs.common.exception.ValidaException;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.math3.linear.RealVector;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,17 @@ public class CalcServiceImpl implements ICalcService {
     @Autowired
     private IFixedValueService fixedValueService;
     @Autowired
+    private IDeviceService deviceService;
+    @Autowired
     private IFixedValueVersionService fixedValueVersionService;
+    @Autowired
+    private ILabelService labelService;
+
+    @Value("${gaotie.lowest}")
+    private String lowest;
+
+    @Value("${gaotie.hignest}")
+    private String hignest;
 
     public static ThreadLocal<Map<String, Object>> THREAD_LOCAL = new ThreadLocal<>();
 
@@ -984,5 +995,102 @@ public class CalcServiceImpl implements ICalcService {
 //            failureReport.setXsdlbfjl("无数据");
 //            failureReport.setDlbfglb("无数据");
 //        }
+    }
+
+    @Override
+    public List<KeyValueResult> failureAttachment(Long deviceId, Integer algorithmType) throws ValidaException {
+        List<KeyValueResult> keyValueResults = analysisResult(deviceId, algorithmType);
+        List<KeyValueResult> targetResults = new ArrayList<>();
+        Device device = deviceService.getById(deviceId);
+        targetResults.add(new KeyValueResult("故障时间", device.getFailureTime()));
+        targetResults.add(new KeyValueResult("被控站名称", device.getSiteName()));
+        targetResults.add(new KeyValueResult("设备名称", device.getDeviceName()));
+        List<KeyValueResult> 故障区段 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "故障区段")).collect(Collectors.toList());
+        targetResults.add(new KeyValueResult("故障区段", 故障区段.get(0).getValue()));
+        List<KeyValueResult> 故障行别 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "故障行别")).collect(Collectors.toList());
+        targetResults.add(new KeyValueResult("故障行别", 故障行别.get(0).getValue()));
+        List<KeyValueResult> 故障类型 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "故障类型")).collect(Collectors.toList());
+        targetResults.add(new KeyValueResult("故障类型", 故障类型.get(0).getValue()));
+        targetResults.add(new KeyValueResult("故障测距计算方法", DeviceFailureConstants.ALGORITHM_TYPE.getNameByNum(algorithmType).getDesc()));
+        List<KeyValueResult> 推荐故障距离 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "推荐故障距离（km）")).collect(Collectors.toList());
+        targetResults.add(new KeyValueResult("故障距离", MathUtils.base2scientific(Double.parseDouble(推荐故障距离.get(0).getValue().toString()))));
+        KeyValueResult 故障点公里标 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "故障点公里标（km）"))
+                .findFirst()
+                .orElse(null);
+//        String glb = MathUtils.base2scientific((Double.parseDouble(故障点公里标.getValue().toString())));
+        Double glbDouble = Double.parseDouble(故障点公里标.getValue().toString());
+        if (glbDouble*1000>=extracted(lowest)&&glbDouble*1000<=extracted(hignest)) {
+            List<Label> list = labelService.list();
+            StringBuilder sb = new StringBuilder();
+            // 故障点最近的 上行
+            Label labelUpLeft = list
+                    .stream()
+                    .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
+                            StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) < glbDouble * 1000)
+                    .min((o1, o2) -> {
+                        double abs1 = Math.abs(Double.parseDouble(o1.getMileage())*1000 - glbDouble);
+                        double abs2 = Math.abs(Double.parseDouble(o2.getMileage())*1000 - glbDouble);
+                        return abs1 >= abs2 ? -1 : 1;
+                    }).orElse(null);
+            if (null != labelUpLeft) {
+                sb.append(labelUpLeft.getLine())
+                        .append(MathUtils.base2scientific(Double.parseDouble(labelUpLeft.getMileage())/1000))
+                        .append("；");
+            }
+            // 故障点最近的 上行
+            Label labelUpRight = list
+                    .stream()
+                    .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
+                            StringUtils.equals(o.getLine(), "上行") && Double.parseDouble(o.getMileage()) > glbDouble * 1000)
+                    .min((o1, o2) -> {
+                        double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble*1000);
+                        double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble*1000);
+                        return abs1 >= abs2 ? 1 : -1;
+                    }).orElse(null);
+            if (null != labelUpRight) {
+                sb.append(labelUpRight.getLine())
+                        .append(MathUtils.base2scientific(Double.parseDouble(labelUpRight.getMileage())/1000))
+                        .append("；");
+            }
+            // 故障点最近的 上行
+            Label labelDownloadLeft = list
+                    .stream()
+                    .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
+                            StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) < glbDouble * 1000)
+                    .min((o1, o2) -> {
+                        double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble*1000);
+                        double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble*1000);
+                        return abs1 >= abs2 ? -1 : 1;
+                    }).orElse(null);
+            if (null != labelDownloadLeft) {
+                sb.append(labelDownloadLeft.getLine())
+                        .append(MathUtils.base2scientific(Double.parseDouble(labelDownloadLeft.getMileage())/1000))
+                        .append("；");
+            }
+            // 故障点最近的 上行
+            Label labelDownRight = list
+                    .stream()
+                    .filter(o -> StringUtils.equals(o.getLabel(), "上道口") &&
+                            StringUtils.equals(o.getLine(), "下行") && Double.parseDouble(o.getMileage()) > glbDouble * 1000)
+                    .min((o1, o2) -> {
+                        double abs1 = Math.abs(Double.parseDouble(o1.getMileage()) - glbDouble*1000);
+                        double abs2 = Math.abs(Double.parseDouble(o2.getMileage()) - glbDouble*1000);
+                        return abs1 >= abs2 ? 1 : -1;
+                    }).orElse(null);
+            if (null != labelDownRight) {
+                sb.append(labelDownRight.getLine())
+                        .append(MathUtils.base2scientific(Double.parseDouble(labelDownRight.getMileage())/1000))
+                        .append("；");
+            }
+            targetResults.add(new KeyValueResult("最近上道口", sb.toString()));
+        }else {
+            targetResults.add(new KeyValueResult("最近上道口", "暂无相关信息"));
+        }
+        return targetResults;
+    }
+
+    private Double extracted(String mileage) {
+        String[] ks = mileage.replace("K", "").split("\\+");
+        return Double.parseDouble(ks[0])*1000+Double.parseDouble(ks[1]);
     }
 }

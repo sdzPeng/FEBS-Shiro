@@ -493,6 +493,8 @@
                   // window.open('/resource/download?resourceId='+subobj.data.resourceId);
                 }else if (subobj.event === 'preview') {
                   var fileName = subobj.data.name;
+                  var previewUrl = subobj.data.previewUrl;
+                  var contextPath = subobj.data.contextPath;
                   var first = fileName.lastIndexOf(".");//取到文件名开始到最后一个点的长度
                   var namelength = fileName.length;//取到文件名长度
                   var filesuffix = fileName.substring(first, namelength );//截取获得后缀名
@@ -506,7 +508,7 @@
                     // content: '/resource/preview?resourceId='+data.resourceId
                     // content: '/resource/preview?resourceId='+subobj.data.resourceId
 
-                    content: 'http://121.36.253.95:8012/onlinePreview?url='+encodeURIComponent(Base64.encode('http://121.36.253.95:8081/resource/download/'+timestamp+filesuffix+'?resourceId='+subobj.data.resourceId))
+                    content: previewUrl+'?url='+encodeURIComponent(Base64.encode(contextPath+'/resource/download/'+timestamp+filesuffix+'?resourceId='+subobj.data.resourceId))
                   })
                 }else if (subobj.event === 'failurepreview') {
                   if(subobj.data.reportResourceId){
@@ -527,6 +529,8 @@
           // window.open('/resource/download?resourceId='+data.resourceId);
         } else if(obj.event === 'preview') {
           var fileName = data.resourceName;
+          var previewUrl = data.previewUrl;
+          var contextPath = data.contextPath;
           var first = fileName.lastIndexOf(".");//取到文件名开始到最后一个点的长度
           var namelength = fileName.length;//取到文件名长度
           var filesuffix = fileName.substring(first, namelength );//截取获得后缀名
@@ -538,7 +542,7 @@
             fixed: true,
             maxmin: true,
             // content: '/resource/preview?resourceId='+data.resourceId
-            content: 'http://121.36.253.95:8012/onlinePreview?url='+encodeURIComponent(Base64.encode('http://121.36.253.95:8081/resource/download/'+timestamp+filesuffix+'?resourceId='+data.resourceId))
+            content: previewUrl+'?url='+encodeURIComponent(Base64.encode(contextPath+'/resource/download/'+timestamp+filesuffix+'?resourceId='+data.resourceId))
           })
         }
       });
