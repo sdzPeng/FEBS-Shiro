@@ -1011,12 +1011,15 @@ public class CalcServiceImpl implements ICalcService {
         targetResults.add(new KeyValueResult("故障行别", 故障行别.get(0).getValue()));
         List<KeyValueResult> 故障类型 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "故障类型")).collect(Collectors.toList());
         targetResults.add(new KeyValueResult("故障类型", 故障类型.get(0).getValue()));
-        targetResults.add(new KeyValueResult("故障测距计算方法", DeviceFailureConstants.ALGORITHM_TYPE.getNameByNum(algorithmType).getDesc()));
-        List<KeyValueResult> 推荐故障距离 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "推荐故障距离（km）")).collect(Collectors.toList());
-        targetResults.add(new KeyValueResult("故障距离", MathUtils.base2scientific(Double.parseDouble(推荐故障距离.get(0).getValue().toString()))));
         KeyValueResult 故障点公里标 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "故障点公里标（km）"))
                 .findFirst()
                 .orElse(null);
+        if (null != 故障点公里标) {
+            targetResults.add(new KeyValueResult("故障点公里标（km）", MathUtils.base2scientific(Double.parseDouble(故障点公里标.getValue().toString()))));
+        }
+        targetResults.add(new KeyValueResult("故障测距计算方法", DeviceFailureConstants.ALGORITHM_TYPE.getNameByNum(algorithmType).getDesc()));
+        List<KeyValueResult> 推荐故障距离 = keyValueResults.stream().filter(o -> StringUtils.equals(o.getKey(), "推荐故障距离（km）")).collect(Collectors.toList());
+        targetResults.add(new KeyValueResult("故障距离", MathUtils.FORMAT.format(Double.parseDouble(推荐故障距离.get(0).getValue().toString()))));
 //        String glb = MathUtils.base2scientific((Double.parseDouble(故障点公里标.getValue().toString())));
         Double glbDouble = Double.parseDouble(故障点公里标.getValue().toString());
         if (glbDouble*1000>=extracted(lowest)&&glbDouble*1000<=extracted(hignest)) {
