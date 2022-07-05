@@ -61,7 +61,8 @@ public class FixedValueServiceImpl extends ServiceImpl<FixedValueMapper, FixedVa
 
     private FixedTableVersionDto extracted(Resource resource, String sheetName, Long siteId) {
         QueryWrapper<FixedValueTable> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("name", sheetName);
+        queryWrapper.eq("NAME", sheetName);
+        queryWrapper.eq("SITE_ID", siteId);
         final FixedValueTable temp;
         FixedValueTable fixValueTable = fixedValueTableService.getOne(queryWrapper);
         if (ObjectUtils.isEmpty(fixValueTable)) {
