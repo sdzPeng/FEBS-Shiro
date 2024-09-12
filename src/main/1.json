@@ -1,0 +1,3625 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "XDATA",
+        "description": "上海数慧数据中心接口文档",
+        "contact": {
+            "name": "XDATA",
+            "url": "http://www.dist.com.cn",
+            "email": "xdata@dist.com.cn"
+        },
+        "license": {
+            "name": "禁止无关人员调用及恶意调用！"
+        },
+        "version": "2.1.1-SNAPSHOT"
+    },
+    "servers": [
+        {
+            "url": "http://192.168.14.54:36121",
+            "description": "Inferred Url"
+        }
+    ],
+    "tags": [
+        {
+            "name": "dm-dev-controller",
+            "description": "DM Dev Controller"
+        },
+        {
+            "name": "公告服务接口",
+            "description": "Announcement Controller"
+        },
+        {
+            "name": "图层控制器",
+            "description": "Layer Controller"
+        },
+        {
+            "name": "意见服务接口",
+            "description": "Ann Comment Controller"
+        },
+        {
+            "name": "授权管理服务",
+            "description": "Auth Controller"
+        },
+        {
+            "name": "用户管理服务",
+            "description": "User Controller"
+        },
+        {
+            "name": "目录接口",
+            "description": "Catalog Controller"
+        },
+        {
+            "name": "简单提问",
+            "description": "Simple Question Controller"
+        },
+        {
+            "name": "行政区划服务",
+            "description": "Region Controller"
+        },
+        {
+            "name": "资源控制器",
+            "description": "Resource Controller"
+        }
+    ],
+    "paths": {
+        "/announcement/rest/comment/v1": {
+            "post": {
+                "tags": [
+                    "意见服务接口"
+                ],
+                "summary": "增加意见",
+                "operationId": "addUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/新增意见"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/评论-详情"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/rest/comment/v1/export": {
+            "get": {
+                "tags": [
+                    "意见服务接口"
+                ],
+                "summary": "导出",
+                "operationId": "exportUsingGET",
+                "parameters": [
+                    {
+                        "name": "parentId",
+                        "in": "query",
+                        "description": "公告id",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "类型",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ANNOUNCEMENT",
+                                "COMMENT"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/rest/comment/v1/page": {
+            "post": {
+                "tags": [
+                    "意见服务接口"
+                ],
+                "summary": "分页查询",
+                "operationId": "queryByPageUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/意见查询"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageData«评论-列表»"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/rest/comment/v1/{id}": {
+            "get": {
+                "tags": [
+                    "意见服务接口"
+                ],
+                "summary": "根据id查询，获取详情",
+                "operationId": "queryByIdUsingGET",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/评论-详情"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "意见服务接口"
+                ],
+                "summary": "删除",
+                "operationId": "deleteByIdUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce": {
+            "post": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "新增公告",
+                "operationId": "addAnnouncementUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/新增公告"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/公告0"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "删除公告",
+                "operationId": "deleteAnnouncementUsingDELETE",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/attachment/upload": {
+            "post": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "附件上传",
+                "operationId": "uploadAttachmentUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "array",
+                                        "description": "file",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AttachmentDTO"
+                                    }
+                                }
+                            },
+                            "multipart/form-data": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AttachmentDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/attachment/{id}/{attachmentName}": {
+            "get": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "文件下载",
+                "operationId": "downloadAttachmentUsingGET",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "attachmentName",
+                        "in": "path",
+                        "description": "attachmentName",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/image/upload": {
+            "post": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "图片上传",
+                "operationId": "uploadImageUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "description": "file",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/image/{id}": {
+            "get": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "图片预览",
+                "operationId": "previewImageUsingGET",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "删除图片",
+                "operationId": "deleteImageUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/list": {
+            "post": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "获取公告列表",
+                "operationId": "getAnnouncementUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/分页获取应用列表"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageData«公告列表»"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/list/comment": {
+            "post": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "获取公告列表,包含意见数量",
+                "operationId": "getAnnouncementWithCommentUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/分页获取应用列表"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageData«公告列表-意见收集»"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/more/list/": {
+            "post": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "首页获取公告列表",
+                "operationId": "getPublishAnnouncementUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/分页获取应用列表"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageData«公告列表»"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/portal/list": {
+            "get": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "获取最新的三条公告",
+                "operationId": "getTopAnnouncementUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/公告"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/{id}": {
+            "get": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "获取公告详情",
+                "operationId": "getAnnouncementUsingGET",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/公告0"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "修改公告",
+                "operationId": "updateAnnouncementUsingPUT",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/新增公告"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/公告0"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/announce/{id}/attachment": {
+            "post": {
+                "tags": [
+                    "公告服务接口"
+                ],
+                "summary": "获取公告附件",
+                "operationId": "getAnnouncementAttachmentsUsingPOST",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AttachmentDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "授权管理服务"
+                ],
+                "summary": "登录授权",
+                "operationId": "loginUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDto"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/auth/login/status": {
+            "get": {
+                "tags": [
+                    "授权管理服务"
+                ],
+                "summary": "登录授权状态",
+                "operationId": "loginStatusUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/auth/login/userinfo": {
+            "get": {
+                "tags": [
+                    "授权管理服务"
+                ],
+                "summary": "获取用户信息",
+                "operationId": "userInfoUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDto"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/auth/logout": {
+            "get": {
+                "tags": [
+                    "授权管理服务"
+                ],
+                "summary": "销毁登录用户",
+                "operationId": "logoutUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/auth/public/key": {
+            "get": {
+                "tags": [
+                    "授权管理服务"
+                ],
+                "summary": "获取公钥",
+                "operationId": "getPublicKeyUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/catalog": {
+            "get": {
+                "tags": [
+                    "目录接口"
+                ],
+                "summary": "查询目录",
+                "operationId": "catalogUsingGET",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "id",
+                        "required": false,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/目录"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "目录接口"
+                ],
+                "summary": "更新目录",
+                "operationId": "updateCatalogUsingPUT",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CatalogRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/目录"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "目录接口"
+                ],
+                "summary": "创建目录",
+                "operationId": "createCatalogUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CatalogSaveRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/目录"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "目录接口"
+                ],
+                "summary": "删除目录",
+                "operationId": "createCatalogUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "id",
+                        "required": false,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/catalog/children": {
+            "get": {
+                "tags": [
+                    "目录接口"
+                ],
+                "summary": "查询下级目录",
+                "operationId": "queryChildrenUsingGET",
+                "parameters": [
+                    {
+                        "name": "parentId",
+                        "in": "query",
+                        "description": "parentId",
+                        "required": false,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/目录"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/rest/dm/dev/db": {
+            "delete": {
+                "tags": [
+                    "dm-dev-controller"
+                ],
+                "summary": "clearDb",
+                "operationId": "clearDbUsingDELETE",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/layer": {
+            "put": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "修改图层",
+                "operationId": "updateLayerUsingPUT",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LayerUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LayerBO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "保存图层",
+                "operationId": "saveLayerUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LayerSaveRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LayerBO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "删除图层",
+                "operationId": "deleteLayerUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "id",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/layer/attachment": {
+            "get": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "查询附件",
+                "operationId": "getAttachmentUsingGET",
+                "parameters": [
+                    {
+                        "name": "attachmentId",
+                        "in": "query",
+                        "description": "attachmentId",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AttachmentBO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "删除附件",
+                "operationId": "deleteAttachmentUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "attachmentId",
+                        "in": "query",
+                        "description": "attachmentId",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/layer/block/attachment/{blockId}": {
+            "post": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "查询地块下关联的附件",
+                "operationId": "findAttachmentUsingPOST",
+                "parameters": [
+                    {
+                        "name": "blockId",
+                        "in": "path",
+                        "description": "blockId",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AttachmentBO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/layer/block/relation": {
+            "get": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "查询关联的地块",
+                "operationId": "getBlockInfoUsingGET",
+                "parameters": [
+                    {
+                        "name": "blockId",
+                        "in": "query",
+                        "description": "blockId",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BlockInfoBO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "保存地块关联",
+                "operationId": "saveBlockInfoUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/新增地块关联信息"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BlockInfoBO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "删除地块关联",
+                "operationId": "deleteBlockInfoUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "blockId",
+                        "in": "query",
+                        "description": "blockId",
+                        "required": false,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/layer/catalog/{catalogId}": {
+            "get": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "通过目录id获取所有图层及图层挂载的附件信息",
+                "operationId": "getLayersUsingGET",
+                "parameters": [
+                    {
+                        "name": "catalogId",
+                        "in": "path",
+                        "description": "catalogId",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/LayerBO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/layer/upload/{blockId}": {
+            "post": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "上传附件",
+                "operationId": "uploadAttachmentUsingPOST_1",
+                "parameters": [
+                    {
+                        "name": "blockId",
+                        "in": "path",
+                        "description": "blockId",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "description": "file",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AttachmentBO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/layer/{layerId}": {
+            "get": {
+                "tags": [
+                    "图层控制器"
+                ],
+                "summary": "查询图层",
+                "operationId": "getLayerUsingGET",
+                "parameters": [
+                    {
+                        "name": "layerId",
+                        "in": "path",
+                        "description": "layerId",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LayerBO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/region": {
+            "post": {
+                "tags": [
+                    "行政区划服务"
+                ],
+                "summary": "保存数据",
+                "operationId": "saveDataUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/region/tree": {
+            "get": {
+                "tags": [
+                    "行政区划服务"
+                ],
+                "summary": "获取行政区划树",
+                "operationId": "regionTreeUsingGET",
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "query",
+                        "required": false,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "level",
+                        "in": "query",
+                        "required": false,
+                        "style": "form",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RegionDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/region/v2/tree": {
+            "get": {
+                "tags": [
+                    "行政区划服务"
+                ],
+                "summary": "获取行政区划树",
+                "operationId": "regionTreeV2UsingGET",
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "query",
+                        "required": false,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "level",
+                        "in": "query",
+                        "required": false,
+                        "style": "form",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RegionDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/question/v1/public/resource/upload": {
+            "post": {
+                "tags": [
+                    "资源控制器"
+                ],
+                "summary": "上传文件(公众/管理)",
+                "operationId": "uploadMongoUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "multipartFile"
+                                ],
+                                "type": "object",
+                                "properties": {
+                                    "multipartFile": {
+                                        "type": "string",
+                                        "description": "上传的文件",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResourceFileDto"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/question/v1/rest/private/resource/all": {
+            "get": {
+                "tags": [
+                    "资源控制器"
+                ],
+                "summary": "查询所有资源文件(开发阶段使用)",
+                "operationId": "getAllUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/资源文件"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/question/v1/rest/private/resource/delete": {
+            "delete": {
+                "tags": [
+                    "资源控制器"
+                ],
+                "summary": "删除资源文件(管理)",
+                "operationId": "deleteUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "资源文件的id",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/question/v1/rest/private/resource/downLoad": {
+            "get": {
+                "tags": [
+                    "资源控制器"
+                ],
+                "summary": "下载资源文件(公众/管理)",
+                "operationId": "downLoadUsingGET",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "资源文件的id",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/question/v1/rest/private/resource/preview": {
+            "get": {
+                "tags": [
+                    "资源控制器"
+                ],
+                "summary": "预览资源文件(公众/管理)",
+                "operationId": "filePreviewUsingGET",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "资源文件的id",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/question/simple/v1": {
+            "get": {
+                "tags": [
+                    "简单提问"
+                ],
+                "summary": "查询提问",
+                "operationId": "getQuestionUsingGET",
+                "parameters": [
+                    {
+                        "name": "questionId",
+                        "in": "query",
+                        "description": "questionId",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SimpleQuestionDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "简单提问"
+                ],
+                "summary": "更新提问",
+                "operationId": "updateQuestionUsingPUT",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/用户修改"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "简单提问"
+                ],
+                "summary": "我要提问",
+                "operationId": "addQuestionUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/简单问题添加"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "简单提问"
+                ],
+                "summary": "删除提问",
+                "operationId": "delQuestionUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "questionId",
+                        "in": "query",
+                        "description": "questionId",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/question/simple/v1/page": {
+            "post": {
+                "tags": [
+                    "简单提问"
+                ],
+                "summary": "分页查询提问",
+                "operationId": "pageQuestionUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SimplePageRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageData«SimpleQuestionDTO»"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/user": {
+            "put": {
+                "tags": [
+                    "用户管理服务"
+                ],
+                "summary": "修改用户",
+                "operationId": "updateUserUsingPUT",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/用户修改"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "用户管理服务"
+                ],
+                "summary": "删除用户",
+                "operationId": "delUserUsingDELETE",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "description": "userId",
+                        "required": true,
+                        "style": "form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/user/add": {
+            "post": {
+                "tags": [
+                    "用户管理服务"
+                ],
+                "summary": "添加用户",
+                "operationId": "registerUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/用户添加"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/user/list": {
+            "get": {
+                "tags": [
+                    "用户管理服务"
+                ],
+                "summary": "分页查询用户",
+                "operationId": "listUserUsingGET",
+                "parameters": [
+                    {
+                        "name": "index",
+                        "in": "query",
+                        "description": "页号",
+                        "required": true,
+                        "style": "form",
+                        "allowReserved": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "description": "模糊查询",
+                        "required": false,
+                        "style": "form",
+                        "allowReserved": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "页大小",
+                        "required": true,
+                        "style": "form",
+                        "allowReserved": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageData«UserDto»"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/announcement/v1/user/password": {
+            "put": {
+                "tags": [
+                    "用户管理服务"
+                ],
+                "summary": "修改密码",
+                "operationId": "updatePwdUsingPUT",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/用户密码修改"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "x-auth-token": [
+                            "global"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AttachmentBO": {
+                "title": "AttachmentBO",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "resourceName": {
+                        "type": "string",
+                        "description": "附件名称"
+                    }
+                }
+            },
+            "AttachmentDTO": {
+                "title": "AttachmentDTO",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "附件存储路径"
+                    },
+                    "resourceName": {
+                        "type": "string",
+                        "description": "附件名称"
+                    }
+                }
+            },
+            "BlockInfoBO": {
+                "title": "BlockInfoBO",
+                "type": "object",
+                "properties": {
+                    "attachments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AttachmentBO"
+                        }
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "layerId": {
+                        "type": "string"
+                    },
+                    "regionCode": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CatalogRequest": {
+                "title": "CatalogRequest",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "目录id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "目录名称"
+                    },
+                    "parentId": {
+                        "type": "string",
+                        "description": "父级目录id"
+                    },
+                    "type": {
+                        "type": "integer",
+                        "description": "目录类型, 【0目录】【1新闻】【2图层】【3简单问题】【4复杂问题】",
+                        "format": "int32"
+                    }
+                }
+            },
+            "CatalogSaveRequest": {
+                "title": "CatalogSaveRequest",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "目录名称"
+                    },
+                    "parentId": {
+                        "type": "string",
+                        "description": "父级目录id"
+                    },
+                    "type": {
+                        "type": "integer",
+                        "description": "目录类型, 【0目录】【1新闻】【2图层】【3简单问题】【4复杂问题】",
+                        "format": "int32"
+                    }
+                }
+            },
+            "FileInfo": {
+                "title": "FileInfo",
+                "type": "object",
+                "properties": {
+                    "fileId": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LayerBO": {
+                "title": "LayerBO",
+                "type": "object",
+                "properties": {
+                    "blockInfos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BlockInfoBO"
+                        }
+                    },
+                    "catalogId": {
+                        "type": "string"
+                    },
+                    "extension": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LayerSaveRequest": {
+                "title": "LayerSaveRequest",
+                "type": "object",
+                "properties": {
+                    "catalogId": {
+                        "type": "string",
+                        "description": "目录id"
+                    },
+                    "extension": {
+                        "type": "string",
+                        "description": "拓展属性"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "图层名称"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "图层类型"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "图层url"
+                    }
+                }
+            },
+            "LayerUpdateRequest": {
+                "title": "LayerUpdateRequest",
+                "type": "object",
+                "properties": {
+                    "catalogId": {
+                        "type": "string",
+                        "description": "目录id"
+                    },
+                    "extension": {
+                        "type": "string",
+                        "description": "拓展属性"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "图层id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "图层名称"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "图层类型"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "图层url"
+                    }
+                }
+            },
+            "PageData«SimpleQuestionDTO»": {
+                "title": "PageData«SimpleQuestionDTO»",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "description": "总数据量",
+                        "format": "int64"
+                    },
+                    "data": {
+                        "type": "array",
+                        "description": "数据",
+                        "items": {
+                            "$ref": "#/components/schemas/SimpleQuestionDTO"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean",
+                        "description": "是否第一页",
+                        "example": false
+                    },
+                    "hasNext": {
+                        "type": "boolean",
+                        "description": "是否有下一页",
+                        "example": false
+                    },
+                    "hasPrev": {
+                        "type": "boolean",
+                        "description": "是否有上一页",
+                        "example": false
+                    },
+                    "index": {
+                        "type": "integer",
+                        "description": "当前页号",
+                        "format": "int32"
+                    },
+                    "last": {
+                        "type": "boolean",
+                        "description": "是否最后一页",
+                        "example": false
+                    },
+                    "length": {
+                        "type": "integer",
+                        "description": "查询到的数据量",
+                        "format": "int32"
+                    },
+                    "pages": {
+                        "type": "integer",
+                        "description": "总页数",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "页大小",
+                        "format": "int32"
+                    }
+                }
+            },
+            "PageData«UserDto»": {
+                "title": "PageData«UserDto»",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "description": "总数据量",
+                        "format": "int64"
+                    },
+                    "data": {
+                        "type": "array",
+                        "description": "数据",
+                        "items": {
+                            "$ref": "#/components/schemas/UserDto"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean",
+                        "description": "是否第一页",
+                        "example": false
+                    },
+                    "hasNext": {
+                        "type": "boolean",
+                        "description": "是否有下一页",
+                        "example": false
+                    },
+                    "hasPrev": {
+                        "type": "boolean",
+                        "description": "是否有上一页",
+                        "example": false
+                    },
+                    "index": {
+                        "type": "integer",
+                        "description": "当前页号",
+                        "format": "int32"
+                    },
+                    "last": {
+                        "type": "boolean",
+                        "description": "是否最后一页",
+                        "example": false
+                    },
+                    "length": {
+                        "type": "integer",
+                        "description": "查询到的数据量",
+                        "format": "int32"
+                    },
+                    "pages": {
+                        "type": "integer",
+                        "description": "总页数",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "页大小",
+                        "format": "int32"
+                    }
+                }
+            },
+            "PageData«公告列表-意见收集»": {
+                "title": "PageData«公告列表-意见收集»",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "description": "总数据量",
+                        "format": "int64"
+                    },
+                    "data": {
+                        "type": "array",
+                        "description": "数据",
+                        "items": {
+                            "$ref": "#/components/schemas/公告列表-意见收集"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean",
+                        "description": "是否第一页",
+                        "example": false
+                    },
+                    "hasNext": {
+                        "type": "boolean",
+                        "description": "是否有下一页",
+                        "example": false
+                    },
+                    "hasPrev": {
+                        "type": "boolean",
+                        "description": "是否有上一页",
+                        "example": false
+                    },
+                    "index": {
+                        "type": "integer",
+                        "description": "当前页号",
+                        "format": "int32"
+                    },
+                    "last": {
+                        "type": "boolean",
+                        "description": "是否最后一页",
+                        "example": false
+                    },
+                    "length": {
+                        "type": "integer",
+                        "description": "查询到的数据量",
+                        "format": "int32"
+                    },
+                    "pages": {
+                        "type": "integer",
+                        "description": "总页数",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "页大小",
+                        "format": "int32"
+                    }
+                }
+            },
+            "PageData«公告列表»": {
+                "title": "PageData«公告列表»",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "description": "总数据量",
+                        "format": "int64"
+                    },
+                    "data": {
+                        "type": "array",
+                        "description": "数据",
+                        "items": {
+                            "$ref": "#/components/schemas/公告列表"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean",
+                        "description": "是否第一页",
+                        "example": false
+                    },
+                    "hasNext": {
+                        "type": "boolean",
+                        "description": "是否有下一页",
+                        "example": false
+                    },
+                    "hasPrev": {
+                        "type": "boolean",
+                        "description": "是否有上一页",
+                        "example": false
+                    },
+                    "index": {
+                        "type": "integer",
+                        "description": "当前页号",
+                        "format": "int32"
+                    },
+                    "last": {
+                        "type": "boolean",
+                        "description": "是否最后一页",
+                        "example": false
+                    },
+                    "length": {
+                        "type": "integer",
+                        "description": "查询到的数据量",
+                        "format": "int32"
+                    },
+                    "pages": {
+                        "type": "integer",
+                        "description": "总页数",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "页大小",
+                        "format": "int32"
+                    }
+                }
+            },
+            "PageData«评论-列表»": {
+                "title": "PageData«评论-列表»",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "description": "总数据量",
+                        "format": "int64"
+                    },
+                    "data": {
+                        "type": "array",
+                        "description": "数据",
+                        "items": {
+                            "$ref": "#/components/schemas/评论-列表"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean",
+                        "description": "是否第一页",
+                        "example": false
+                    },
+                    "hasNext": {
+                        "type": "boolean",
+                        "description": "是否有下一页",
+                        "example": false
+                    },
+                    "hasPrev": {
+                        "type": "boolean",
+                        "description": "是否有上一页",
+                        "example": false
+                    },
+                    "index": {
+                        "type": "integer",
+                        "description": "当前页号",
+                        "format": "int32"
+                    },
+                    "last": {
+                        "type": "boolean",
+                        "description": "是否最后一页",
+                        "example": false
+                    },
+                    "length": {
+                        "type": "integer",
+                        "description": "查询到的数据量",
+                        "format": "int32"
+                    },
+                    "pages": {
+                        "type": "integer",
+                        "description": "总页数",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "页大小",
+                        "format": "int32"
+                    }
+                }
+            },
+            "RegionDTO": {
+                "title": "RegionDTO",
+                "type": "object",
+                "properties": {
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RegionDTO"
+                        }
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "level": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "szm": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RegionRequest": {
+                "title": "RegionRequest",
+                "type": "object",
+                "properties": {
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RegionRequest"
+                        }
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "level": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "szm": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ResourceFileDto": {
+                "title": "ResourceFileDto",
+                "type": "object",
+                "properties": {
+                    "fileName": {
+                        "type": "string"
+                    },
+                    "filePath": {
+                        "type": "string"
+                    },
+                    "fileSuffix": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SimplePageRequest": {
+                "title": "SimplePageRequest",
+                "type": "object",
+                "properties": {
+                    "endTime": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "keyword": {
+                        "type": "string"
+                    },
+                    "pageNo": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "startTime": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "SimpleQuestionDTO": {
+                "title": "SimpleQuestionDTO",
+                "type": "object",
+                "properties": {
+                    "attachmentIds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FileInfo"
+                        }
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "createTime": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "nickName": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UserDto": {
+                "title": "UserDto",
+                "type": "object",
+                "properties": {
+                    "coverFileId": {
+                        "type": "string"
+                    },
+                    "coverFilePath": {
+                        "type": "string"
+                    },
+                    "createTime": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "effective": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "passWord": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "registerSource": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "userLevel": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "userName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UserRequest": {
+                "title": "UserRequest",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "pwd": {
+                        "type": "string"
+                    }
+                }
+            },
+            "公告": {
+                "title": "公告",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "标题"
+                    }
+                }
+            },
+            "公告0": {
+                "title": "公告0",
+                "type": "object",
+                "properties": {
+                    "attachments": {
+                        "type": "array",
+                        "description": "附件列表",
+                        "items": {
+                            "$ref": "#/components/schemas/AttachmentDTO"
+                        }
+                    },
+                    "author": {
+                        "type": "string",
+                        "description": "作者"
+                    },
+                    "catalogId": {
+                        "type": "string",
+                        "description": "目录id"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "内容"
+                    },
+                    "contentText": {
+                        "type": "string",
+                        "description": "内容缩略"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "公告访问数量",
+                        "format": "int32"
+                    },
+                    "createTime": {
+                        "type": "string",
+                        "description": "发布时间",
+                        "format": "date-time"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "description": "截止日期",
+                        "format": "date-time"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "orgId": {
+                        "type": "string",
+                        "description": "发布部门id"
+                    },
+                    "orgName": {
+                        "type": "string",
+                        "description": "发布部门"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "description": "公示日期",
+                        "format": "date-time"
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "公告状态"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "标题"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "公告类型"
+                    }
+                }
+            },
+            "公告列表": {
+                "title": "公告列表",
+                "type": "object",
+                "properties": {
+                    "author": {
+                        "type": "string",
+                        "description": "作者"
+                    },
+                    "contentText": {
+                        "type": "string",
+                        "description": "内容缩略"
+                    },
+                    "createTime": {
+                        "type": "string",
+                        "description": "发布时间",
+                        "format": "date-time"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "description": "截止日期",
+                        "format": "date-time"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "orgId": {
+                        "type": "string",
+                        "description": "发布部门id"
+                    },
+                    "orgName": {
+                        "type": "string",
+                        "description": "发布部门"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "description": "公示日期",
+                        "format": "date-time"
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "公告状态"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "标题"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "公告类型"
+                    }
+                }
+            },
+            "公告列表-意见收集": {
+                "title": "公告列表-意见收集",
+                "type": "object",
+                "properties": {
+                    "author": {
+                        "type": "string",
+                        "description": "作者"
+                    },
+                    "commentCount": {
+                        "type": "integer",
+                        "description": "意见数量",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "内容"
+                    },
+                    "contentText": {
+                        "type": "string",
+                        "description": "内容缩略"
+                    },
+                    "createTime": {
+                        "type": "string",
+                        "description": "发布时间",
+                        "format": "date-time"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "description": "截止日期",
+                        "format": "date-time"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "orgId": {
+                        "type": "string",
+                        "description": "发布部门id"
+                    },
+                    "orgName": {
+                        "type": "string",
+                        "description": "发布部门"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "description": "公示日期",
+                        "format": "date-time"
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "公告状态"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "标题"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "公告类型"
+                    }
+                }
+            },
+            "分页获取应用列表": {
+                "title": "分页获取应用列表",
+                "type": "object",
+                "properties": {
+                    "catalogId": {
+                        "type": "string",
+                        "description": "目录id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "公告名称"
+                    },
+                    "pageNo": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "意见查询": {
+                "title": "意见查询",
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "description": "内容"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "姓名"
+                    },
+                    "pageNo": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "parentId": {
+                        "type": "string",
+                        "description": "关联的公告id"
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "description": "电话"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "类型 ANNOUNCEMENT-关联公告;COMMENT-不关联，单独意见",
+                        "enum": [
+                            "ANNOUNCEMENT",
+                            "COMMENT"
+                        ]
+                    }
+                }
+            },
+            "新增公告": {
+                "title": "新增公告",
+                "type": "object",
+                "properties": {
+                    "attachments": {
+                        "type": "array",
+                        "description": "附件",
+                        "items": {
+                            "$ref": "#/components/schemas/AttachmentDTO"
+                        }
+                    },
+                    "catalogId": {
+                        "type": "string",
+                        "description": "目录id"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "内容"
+                    },
+                    "contentText": {
+                        "type": "string",
+                        "description": "内容缩略"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "公告访问数量",
+                        "format": "int32"
+                    },
+                    "deleteAttachmentIds": {
+                        "type": "array",
+                        "description": "删除附件id",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "description": "截止日期",
+                        "format": "date-time"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "description": "公示日期",
+                        "format": "date-time"
+                    },
+                    "state": {
+                        "type": "integer",
+                        "description": "公告状态 【0未发布】【1已发布】",
+                        "format": "int32"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "标题"
+                    },
+                    "type": {
+                        "type": "integer",
+                        "description": "公告类型 【0新闻】【1公告】",
+                        "format": "int32"
+                    }
+                }
+            },
+            "新增地块关联信息": {
+                "title": "新增地块关联信息",
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "描述信息"
+                    },
+                    "layerId": {
+                        "type": "string",
+                        "description": "图层id"
+                    },
+                    "regionCode": {
+                        "type": "string",
+                        "description": "行政区划code"
+                    }
+                }
+            },
+            "新增意见": {
+                "title": "新增意见",
+                "type": "object",
+                "properties": {
+                    "attachmentIds": {
+                        "type": "array",
+                        "description": "附件id",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "内容"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "姓名"
+                    },
+                    "parentId": {
+                        "type": "string",
+                        "description": "关联的公告id"
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "description": "电话"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "类型 ANNOUNCEMENT-关联公告;COMMENT-不关联，单独意见",
+                        "enum": [
+                            "ANNOUNCEMENT",
+                            "COMMENT"
+                        ]
+                    }
+                }
+            },
+            "用户修改": {
+                "title": "用户修改",
+                "type": "object",
+                "properties": {
+                    "coverFileId": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "userName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "用户密码修改": {
+                "title": "用户密码修改",
+                "type": "object",
+                "properties": {
+                    "newPassword": {
+                        "type": "string"
+                    },
+                    "oldPassword": {
+                        "type": "string"
+                    },
+                    "userId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "用户添加": {
+                "title": "用户添加",
+                "type": "object",
+                "properties": {
+                    "coverFileId": {
+                        "type": "string"
+                    },
+                    "passWord": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "userName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "目录": {
+                "title": "目录",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "目录id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "目录名称"
+                    },
+                    "parentId": {
+                        "type": "string",
+                        "description": "父级目录id"
+                    },
+                    "type": {
+                        "type": "integer",
+                        "description": "目录类型",
+                        "format": "int32"
+                    }
+                }
+            },
+            "简单问题添加": {
+                "title": "简单问题添加",
+                "type": "object",
+                "properties": {
+                    "attachmentIds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FileInfo"
+                        }
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "nickName": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    }
+                }
+            },
+            "评论-列表": {
+                "title": "评论-列表",
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "description": "内容"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "上传人姓名"
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "description": "电话号"
+                    },
+                    "publishTime": {
+                        "type": "string",
+                        "description": "提交时间",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "评论-详情": {
+                "title": "评论-详情",
+                "type": "object",
+                "properties": {
+                    "attachmentIds": {
+                        "type": "array",
+                        "description": "上传文件id",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "content": {
+                        "type": "object",
+                        "description": "内容"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "上传人姓名"
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "description": "上传人电话"
+                    },
+                    "publishTime": {
+                        "type": "string",
+                        "description": "提交时间",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "资源文件": {
+                "title": "资源文件",
+                "type": "object",
+                "properties": {
+                    "fileName": {
+                        "type": "string",
+                        "description": "文件名"
+                    },
+                    "filePath": {
+                        "type": "string",
+                        "description": "路径"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "资源文件id"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "x-auth-token": {
+                "type": "apiKey",
+                "name": "x-auth-token",
+                "in": "header"
+            }
+        }
+    }
+}
